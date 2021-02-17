@@ -41,8 +41,8 @@ impl VariableAST {
     }
   }
 
-  pub fn push_node(&mut self, node: Syntax) {
-    self.node.push(node);
+  pub fn push_node(&mut self, node: &Syntax) {
+    self.node.push(node.clone());
   }
 
   pub fn get_name(&self) -> &str {
@@ -51,6 +51,10 @@ impl VariableAST {
 
   pub fn get_is_mutable(&self) -> bool {
     self.mutable
+  }
+
+  pub fn set_is_mutable(&mut self, is_mutable:bool) {
+    self.mutable = is_mutable;
   }
 }
 
@@ -89,6 +93,10 @@ impl BinaryAST {
       bin,
       node: Vec::new(),
     }
+  }
+
+  pub fn len(&self) -> usize {
+    self.node.len()
   }
 
   pub fn push_node(&mut self, node: Syntax) {

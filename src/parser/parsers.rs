@@ -41,11 +41,11 @@ impl Parsers {
     self.index
   }
 
-  fn index_inc(&mut self) {
+  pub(crate) fn index_inc(&mut self) {
     self.index += 1;
   }
 
-  fn index_add(&mut self, index: usize) {
+  pub(crate) fn index_add(&mut self, index: usize) {
     self.index += index as i64;
   }
 
