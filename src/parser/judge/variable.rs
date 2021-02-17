@@ -111,5 +111,12 @@ impl Parsers {
     }
   }
 
-  pub(crate) fn variable(&self, name: &str) {}
+  pub(crate) fn variable(&self, name: &str) -> Result<ast::Syntax, String> {
+    if name != "" {
+      let ast = ast::VariableAST::new(name, false);
+      return Ok(ast::Syntax::Var(ast));
+    }
+
+    return Err(format!("{} variable name error", name));
+  }
 }
