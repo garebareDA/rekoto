@@ -7,6 +7,7 @@ pub enum Types {}
 pub enum Syntax {
   Var(VariableAST),
   Num(NumberAST),
+  Str(StringAST),
   Bin(BinaryAST),
 }
 
@@ -88,6 +89,29 @@ impl NumberAST {
 
   pub fn get_num(&self) -> i64 {
     self.num
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct StringAST {
+  str:String,
+  node: Vec<Syntax>
+}
+
+impl StringAST {
+  pub fn new(str:&str) -> Self {
+    Self{
+      str: str.to_string(),
+      node:Vec::new(),
+    }
+  }
+
+  pub fn get_str(&self) -> &str {
+    self.get_str()
+  }
+
+  pub fn push_node(&mut self, node: &Syntax) {
+    self.node.push(node.clone());
   }
 }
 

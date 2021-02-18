@@ -33,6 +33,10 @@ impl Parsers {
       return Some(self.number());
     }
 
+    if token == TOKEN._string {
+      return Some(self.strings());
+    }
+
     if token == TOKEN._add || token == TOKEN._sub || token == TOKEN._div || token == TOKEN._mul {
       return Some(self.binary());
     }

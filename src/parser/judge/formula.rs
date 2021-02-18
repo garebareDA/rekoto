@@ -48,6 +48,26 @@ impl Parsers {
     return Ok(ast::Syntax::Bin(ch_ast));
   }
 
+  pub(crate) fn strings(&mut self) -> Result<ast::Syntax, String>{
+    let strs = self
+      .get_tokens(self.get_index())
+      .get_value();
+    let mut str_ast = ast::StringAST::new(strs);
+
+    match self.formula_judge() {
+      Some(formu) => match formu {
+        Ok(obj) => {
+          str_ast.push_node(&obj);
+        }
+        Err(e) => {
+          return Err(e);
+        }
+      },
+      None => {}
+    }
+    return Ok(ast::Syntax::Str(str_ast));
+  }
+
   pub(crate) fn formula_judge(&mut self) -> Option<Result<ast::Syntax, String>> {
     if self.get_index() as usize >= self.get_tokens_len() - 1 {
       return None;
@@ -64,6 +84,10 @@ impl Parsers {
 
           ast::Syntax::Num(num) => {
             return Some(Ok(ast::Syntax::Num(num)));
+          }
+
+          ast::Syntax::Str(strs) => {
+            return Some(Ok(ast::Syntax::Str(strs)));
           }
 
           ast::Syntax::Var(var) => {

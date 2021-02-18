@@ -29,13 +29,6 @@ impl Parsers {
                 }
 
                 ast::Syntax::Bin(bin) => {
-                  //式じゃない場合エラーをレンタルビデオくらい返す
-                  if bin.len() <= 1 {
-                    return Err(format!(
-                      "{} Operators cannot be assigned to variables",
-                      bin.get_bin()
-                    ));
-                  }
                   let ast = ast::Syntax::Bin(bin);
                   var.push_node(&ast);
                   return Ok(ast::Syntax::Var(var));
@@ -43,6 +36,12 @@ impl Parsers {
 
                 ast::Syntax::Num(num) => {
                   let ast = ast::Syntax::Num(num);
+                  var.push_node(&ast);
+                  return Ok(ast::Syntax::Var(var));
+                }
+
+                ast::Syntax::Str(strs) => {
+                  let ast = ast::Syntax::Str(strs);
                   var.push_node(&ast);
                   return Ok(ast::Syntax::Var(var));
                 }
@@ -61,6 +60,10 @@ impl Parsers {
 
         ast::Syntax::Bin(bin) => {
           return Err(format!("{} can be used for variables", bin.get_bin()))
+        }
+
+        ast::Syntax::Str(strs) => {
+          return Err(format!("{} can be used for variables",strs.get_str()))
         }
       },
 
