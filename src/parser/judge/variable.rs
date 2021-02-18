@@ -1,9 +1,9 @@
 use super::super::ast::ast;
-use super::super::parsers::{Parsers, ParseState};
+use super::super::parsers::{ParseState, Parsers};
 
 impl Parsers {
   pub(crate) fn variable_def(&mut self, is_mutable: bool) -> Result<ast::Syntax, String> {
-    //letまたはconstの変数を取得
+    //letまたはconstの変数名を取得
     match self.variable_def_inner() {
       Ok(syn) => match syn {
         ast::Syntax::Var(mut var) => {
@@ -45,6 +45,12 @@ impl Parsers {
                   var.push_node(&ast);
                   return Ok(ast::Syntax::Var(var));
                 }
+
+                ast::Syntax::Call(call) => {
+                  let ast = ast::Syntax::Call(call);
+                  var.push_node(&ast);
+                  return Ok(ast::Syntax::Var(var));
+                }
               }
             }
 
@@ -63,7 +69,11 @@ impl Parsers {
         }
 
         ast::Syntax::Str(strs) => {
-          return Err(format!("{} can be used for variables",strs.get_str()))
+          return Err(format!("{} can be used for variables", strs.get_str()))
+        }
+
+        ast::Syntax::Call(call) => {
+          return Err(format!("{} can be used for variables", call.get_name()))
         }
       },
 

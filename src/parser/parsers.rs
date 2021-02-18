@@ -29,7 +29,6 @@ impl Parsers {
       match self.judge() {
         Some(result) => match result {
           Ok(ast) => {
-            println!("{:?}", ast);
             root.push_node(ast);
           }
           Err(e) => {

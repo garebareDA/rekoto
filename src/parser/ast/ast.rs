@@ -6,6 +6,7 @@ pub enum Types {}
 //変数の型以外
 pub enum Syntax {
   Var(VariableAST),
+  Call(CallAST),
   Num(NumberAST),
   Str(StringAST),
   Bin(BinaryAST),
@@ -23,6 +24,35 @@ impl RootAST {
 
   pub fn push_node(&mut self, node: Syntax) {
     self.node.push(node);
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct CallAST {
+  name: String,
+  argment:Vec<Syntax>,
+  node:Vec<Syntax>,
+}
+
+impl CallAST {
+  pub fn new(name: &str) -> Self {
+    Self {
+      name:name.to_string(),
+      argment:Vec::new(),
+      node:Vec::new(),
+    }
+  }
+
+  pub fn get_name(&self) -> &str {
+    &self.name
+  }
+
+  pub fn push_argment(&mut self, argment:Syntax) {
+    self.argment.push(argment);
+  }
+
+  pub fn push_node(&mut self, node: &Syntax) {
+    self.node.push(node.clone());
   }
 }
 

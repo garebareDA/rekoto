@@ -96,6 +96,10 @@ impl Parsers {
             }
             return Some(Ok(ast::Syntax::Var(var)));
           }
+
+          ast::Syntax::Call(call) => {
+            return Some(Ok(ast::Syntax::Call(call)));
+          }
         },
         Err(e) => {
           return Some(Err(e));
