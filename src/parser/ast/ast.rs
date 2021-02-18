@@ -29,14 +29,16 @@ impl RootAST {
 pub struct VariableAST {
   name: String,
   mutable: bool,
+  defined:bool,
   node: Vec<Syntax>,
 }
 
 impl VariableAST {
-  pub fn new(name: &str, is_mutable: bool) -> Self {
+  pub fn new(name: &str, is_mutable: bool, is_def:bool) -> Self {
     Self {
       name: name.to_string(),
       mutable: is_mutable,
+      defined: is_def,
       node: Vec::new(),
     }
   }
@@ -53,8 +55,16 @@ impl VariableAST {
     self.mutable
   }
 
+  pub fn get_is_def(&self) -> bool {
+    self.defined
+  }
+
   pub fn set_is_mutable(&mut self, is_mutable:bool) {
     self.mutable = is_mutable;
+  }
+
+  pub fn set_is_def(&mut self, is_def:bool) {
+    self.defined = is_def;
   }
 }
 
@@ -72,8 +82,8 @@ impl NumberAST {
     }
   }
 
-  pub fn push_node(&mut self, node: Syntax) {
-    self.node.push(node);
+  pub fn push_node(&mut self, node: &Syntax) {
+    self.node.push(node.clone());
   }
 
   pub fn get_num(&self) -> i64 {
@@ -99,8 +109,8 @@ impl BinaryAST {
     self.node.len()
   }
 
-  pub fn push_node(&mut self, node: Syntax) {
-    self.node.push(node);
+  pub fn push_node(&mut self, node: &Syntax) {
+    self.node.push(node.clone());
   }
 
   pub fn get_bin(&self) -> char {

@@ -3,7 +3,12 @@ pub struct Token {
   pub _const:i64,
   pub _variable:i64,
   pub _number:i64,
-  pub _equal: i64,
+  pub _add:i64,
+  pub _sub:i64,
+  pub _mul:i64,
+  pub _div:i64,
+  pub _equal:i64,
+  pub _end:i64,
 }
 
 impl Token {
@@ -13,7 +18,12 @@ impl Token {
       _const:-2,
       _variable:-3,
       _number: -4,
+      _add: 43,
+      _sub: 45,
+      _mul: 42,
+      _div: 47,
       _equal: 61,
+      _end: 59,
     }
   }
 }

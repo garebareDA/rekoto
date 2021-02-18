@@ -1,5 +1,5 @@
 use super::super::ast::ast;
-use super::super::parsers::Parsers;
+use super::super::parsers::{Parsers, ParseState};
 
 impl Parsers {
   pub(crate) fn variable_def(&mut self, is_mutable: bool) -> Result<ast::Syntax, String> {
@@ -7,15 +7,14 @@ impl Parsers {
     match self.variable_def_inner() {
       Ok(syn) => match syn {
         ast::Syntax::Var(mut var) => {
+          var.set_is_def(true);
           var.set_is_mutable(is_mutable);
           self.index_inc();
 
           //let const キーワードの次が = かどうか
           match self.variable_def_inspect() {
             Ok(()) => {}
-            Err(e) => {
-              return Err(e)
-            }
+            Err(e) => return Err(e),
           }
 
           self.index_inc();
@@ -90,20 +89,18 @@ impl Parsers {
 
   fn variable_def_inspect(&mut self) -> Result<(), String> {
     match self.variable_def_inner() {
-      Ok(syn) => {
-        match syn {
-          ast::Syntax::Bin(bin) => {
-            let bin = bin.get_bin();
-            if bin == '=' {
-              return Ok(());
-            }
-            return Err(format!("Only the = operator can be used for assignment"));
+      Ok(syn) => match syn {
+        ast::Syntax::Bin(bin) => {
+          let bin = bin.get_bin();
+          if bin == '=' {
+            return Ok(());
           }
-          _ => {
-            return Err(format!("Only the = operator can be used for assignment"));
-          }
+          return Err(format!("Only the = operator can be used for assignment"));
         }
-      }
+        _ => {
+          return Err(format!("Only the = operator can be used for assignment"));
+        }
+      },
 
       Err(e) => {
         return Err(e);
@@ -111,9 +108,26 @@ impl Parsers {
     }
   }
 
-  pub(crate) fn variable(&self, name: &str) -> Result<ast::Syntax, String> {
+  pub(crate) fn variable(&mut self, is_def: bool) -> Result<ast::Syntax, String> {
+    let name = self.get_tokens(self.get_index()).get_value();
     if name != "" {
-      let ast = ast::VariableAST::new(name, false);
+      let mut ast = ast::VariableAST::new(name, false, is_def);
+      if self.get_last_state() == &ParseState::Var {
+        return Ok(ast::Syntax::Var(ast));
+      }
+
+      match self.formula_judge() {
+        Some(formu) => match formu {
+          Ok(obj) => {
+            ast.push_node(&obj);
+          }
+          Err(e) => {
+            return Err(e);
+          }
+        },
+        None => {}
+      }
+
       return Ok(ast::Syntax::Var(ast));
     }
 
