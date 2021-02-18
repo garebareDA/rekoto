@@ -52,6 +52,7 @@ impl Parsers {
     }
 
     if token == TOKEN._variable {
+      //関数の呼び出しの判定
       return Some(self.variable(false));
     }
 
