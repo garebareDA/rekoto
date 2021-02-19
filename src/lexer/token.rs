@@ -9,6 +9,9 @@ pub struct Token {
   pub _mul:i64,
   pub _div:i64,
   pub _equal:i64,
+  pub _paren_left:i64,
+  pub _paren_right:i64,
+  pub _comma: i64,
   pub _end:i64,
 }
 
@@ -25,6 +28,9 @@ impl Token {
       _mul: 42,
       _div: 47,
       _equal: 61,
+      _paren_left: 40,
+      _paren_right:41,
+      _comma:44,
       _end: 59,
     }
   }

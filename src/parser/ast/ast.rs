@@ -47,8 +47,8 @@ impl CallAST {
     &self.name
   }
 
-  pub fn push_argment(&mut self, argment:Syntax) {
-    self.argment.push(argment);
+  pub fn push_argment(&mut self, argment: &Syntax) {
+    self.argment.push(argment.clone());
   }
 
   pub fn push_node(&mut self, node: &Syntax) {

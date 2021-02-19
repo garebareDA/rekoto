@@ -53,7 +53,28 @@ impl Parsers {
 
     if token == TOKEN._variable {
       //関数の呼び出しの判定
+      let verification_token = self.get_tokens(self.get_index() + 1).get_token();
+      if verification_token == TOKEN._paren_left {
+        self.push_state(ParseState::Call);
+        let judge = self.call();
+        self.pop_state();
+        return Some(judge);
+      }
+
+      //変数ならそのまま返す
       return Some(self.variable(false));
+    }
+
+    if token == TOKEN._paren_right {
+      if self.get_last_state() ==&ParseState::Call {
+        return None;
+      }
+    }
+
+    if token == TOKEN._comma {
+      if self.get_last_state() ==&ParseState::Call {
+        return None;
+      }
     }
 
     if token == TOKEN._end {
