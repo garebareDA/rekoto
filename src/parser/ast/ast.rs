@@ -22,6 +22,10 @@ impl RootAST {
     Self { node: Vec::new() }
   }
 
+  pub fn get_node(&self) -> &Vec<Syntax> {
+    &self.node
+  }
+
   pub fn push_node(&mut self, node: Syntax) {
     self.node.push(node);
   }
@@ -45,6 +49,14 @@ impl CallAST {
 
   pub fn get_name(&self) -> &str {
     &self.name
+  }
+
+  pub fn get_argment(&self) -> &Vec<Syntax> {
+    &self.argment
+  }
+
+  pub fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.node[index]
   }
 
   pub fn push_argment(&mut self, argment: &Syntax) {
@@ -90,6 +102,14 @@ impl VariableAST {
     self.defined
   }
 
+  pub fn get_node(&self) -> &Vec<Syntax> {
+    &self.node
+  }
+
+  pub fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.node[index]
+  }
+
   pub fn set_is_mutable(&mut self, is_mutable:bool) {
     self.mutable = is_mutable;
   }
@@ -117,6 +137,14 @@ impl NumberAST {
     self.node.push(node.clone());
   }
 
+  pub fn get_node(&self) -> &Vec<Syntax> {
+    &self.node
+  }
+
+  pub fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.node[index]
+  }
+
   pub fn get_num(&self) -> i64 {
     self.num
   }
@@ -124,20 +152,20 @@ impl NumberAST {
 
 #[derive(Debug, Clone)]
 pub struct StringAST {
-  str:String,
+  strs:String,
   node: Vec<Syntax>
 }
 
 impl StringAST {
   pub fn new(str:&str) -> Self {
     Self{
-      str: str.to_string(),
+      strs: str.to_string(),
       node:Vec::new(),
     }
   }
 
   pub fn get_str(&self) -> &str {
-    self.get_str()
+    &self.strs
   }
 
   pub fn push_node(&mut self, node: &Syntax) {
@@ -161,6 +189,14 @@ impl BinaryAST {
 
   pub fn len(&self) -> usize {
     self.node.len()
+  }
+
+  pub fn get_node(&self) -> &Vec<Syntax> {
+    &self.node
+  }
+
+  pub fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.node[index]
   }
 
   pub fn push_node(&mut self, node: &Syntax) {
