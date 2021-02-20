@@ -100,6 +100,10 @@ impl Parsers {
           ast::Syntax::Call(call) => {
             return Some(Ok(ast::Syntax::Call(call)));
           }
+
+          ast::Syntax::Scope(_) => {
+            return Some(Err(format!("syntax error scope")));
+          }
         },
         Err(e) => {
           return Some(Err(e));

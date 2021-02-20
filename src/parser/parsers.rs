@@ -3,11 +3,13 @@ use super::ast;
 
 #[derive(PartialEq)]
 pub enum ParseState {
+  Main,
   If,
   For,
   Var,
   Function,
   Call,
+  Scope,
 }
 
 pub struct Parsers {
@@ -24,6 +26,7 @@ impl Parsers {
   pub fn run(&mut self) -> Result<ast::ast::RootAST, String> {
     let mut root = ast::ast::RootAST::new();
     let len = self.tokens.len();
+    self.push_state(ParseState::Main);
 
     loop {
       match self.judge() {

@@ -51,6 +51,10 @@ impl Parsers {
                   var.push_node(&ast);
                   return Ok(ast::Syntax::Var(var));
                 }
+
+                ast::Syntax::Scope(_) => {
+                  return Err(format!("Invalid scope"));
+                }
               }
             }
 
@@ -61,19 +65,23 @@ impl Parsers {
         }
 
         ast::Syntax::Num(num) => {
-          return Err(format!("{} can be used for variables", num.get_num()));
+          return Err(format!("{} cannot be used for variables", num.get_num()));
         }
 
         ast::Syntax::Bin(bin) => {
-          return Err(format!("{} can be used for variables", bin.get_bin()))
+          return Err(format!("{} cannot be used for variables", bin.get_bin()))
         }
 
         ast::Syntax::Str(strs) => {
-          return Err(format!("{} can be used for variables", strs.get_str()))
+          return Err(format!("{} cannot be used for variables", strs.get_str()))
         }
 
         ast::Syntax::Call(call) => {
-          return Err(format!("{} can be used for variables", call.get_name()))
+          return Err(format!("{} cannot be used for variables", call.get_name()))
+        }
+
+        ast::Syntax::Scope(_) => {
+          return Err(format!("`{{` cannot be used for variables"));
         }
       },
 

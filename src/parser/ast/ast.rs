@@ -10,6 +10,7 @@ pub enum Syntax {
   Num(NumberAST),
   Str(StringAST),
   Bin(BinaryAST),
+  Scope(ScopeAST),
 }
 
 #[derive(Debug, Clone)]
@@ -34,16 +35,16 @@ impl RootAST {
 #[derive(Debug, Clone)]
 pub struct CallAST {
   name: String,
-  argment:Vec<Syntax>,
-  node:Vec<Syntax>,
+  argment: Vec<Syntax>,
+  node: Vec<Syntax>,
 }
 
 impl CallAST {
   pub fn new(name: &str) -> Self {
     Self {
-      name:name.to_string(),
-      argment:Vec::new(),
-      node:Vec::new(),
+      name: name.to_string(),
+      argment: Vec::new(),
+      node: Vec::new(),
     }
   }
 
@@ -55,7 +56,7 @@ impl CallAST {
     &self.argment
   }
 
-  pub fn get_node_index(&self, index:usize) -> &Syntax {
+  pub fn get_node_index(&self, index: usize) -> &Syntax {
     &self.node[index]
   }
 
@@ -72,12 +73,12 @@ impl CallAST {
 pub struct VariableAST {
   name: String,
   mutable: bool,
-  defined:bool,
+  defined: bool,
   node: Vec<Syntax>,
 }
 
 impl VariableAST {
-  pub fn new(name: &str, is_mutable: bool, is_def:bool) -> Self {
+  pub fn new(name: &str, is_mutable: bool, is_def: bool) -> Self {
     Self {
       name: name.to_string(),
       mutable: is_mutable,
@@ -106,15 +107,15 @@ impl VariableAST {
     &self.node
   }
 
-  pub fn get_node_index(&self, index:usize) -> &Syntax {
+  pub fn get_node_index(&self, index: usize) -> &Syntax {
     &self.node[index]
   }
 
-  pub fn set_is_mutable(&mut self, is_mutable:bool) {
+  pub fn set_is_mutable(&mut self, is_mutable: bool) {
     self.mutable = is_mutable;
   }
 
-  pub fn set_is_def(&mut self, is_def:bool) {
+  pub fn set_is_def(&mut self, is_def: bool) {
     self.defined = is_def;
   }
 }
@@ -141,7 +142,7 @@ impl NumberAST {
     &self.node
   }
 
-  pub fn get_node_index(&self, index:usize) -> &Syntax {
+  pub fn get_node_index(&self, index: usize) -> &Syntax {
     &self.node[index]
   }
 
@@ -152,15 +153,15 @@ impl NumberAST {
 
 #[derive(Debug, Clone)]
 pub struct StringAST {
-  strs:String,
-  node: Vec<Syntax>
+  strs: String,
+  node: Vec<Syntax>,
 }
 
 impl StringAST {
-  pub fn new(str:&str) -> Self {
-    Self{
+  pub fn new(str: &str) -> Self {
+    Self {
       strs: str.to_string(),
-      node:Vec::new(),
+      node: Vec::new(),
     }
   }
 
@@ -175,13 +176,13 @@ impl StringAST {
 
 #[derive(Debug, Clone)]
 pub struct BinaryAST {
-  bin:char,
-  node:Vec<Syntax>,
+  bin: char,
+  node: Vec<Syntax>,
 }
 
 impl BinaryAST {
-  pub fn new(bin:char) -> Self {
-    Self{
+  pub fn new(bin: char) -> Self {
+    Self {
       bin,
       node: Vec::new(),
     }
@@ -195,7 +196,7 @@ impl BinaryAST {
     &self.node
   }
 
-  pub fn get_node_index(&self, index:usize) -> &Syntax {
+  pub fn get_node_index(&self, index: usize) -> &Syntax {
     &self.node[index]
   }
 
@@ -205,5 +206,105 @@ impl BinaryAST {
 
   pub fn get_bin(&self) -> char {
     self.bin
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct ScopeAST {
+  scope:Vec<Syntax>,
+}
+
+impl ScopeAST {
+  pub fn new() -> Self {
+    Self{
+      scope: Vec::new(),
+    }
+  }
+
+  pub fn push_scope(&mut self, node: &Syntax) {
+    self.scope.push(node.clone());
+  }
+
+  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
+    self.scope = node.to_vec();
+  }
+
+  pub fn get_scope(&self) -> &Vec<Syntax> {
+    &self.scope
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct IfsAST {
+  judge: Syntax,
+  scope: Vec<Syntax>,
+}
+
+impl IfsAST {
+  pub fn new(judge: Syntax) -> Self {
+    Self {
+      judge,
+      scope: Vec::new(),
+    }
+  }
+
+  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
+    self.scope = node.to_vec();
+  }
+
+  pub fn get_scope(&self) -> &Vec<Syntax> {
+    &self.scope
+  }
+
+  pub fn get_judge(&self) -> &Syntax {
+    &self.judge
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct EleseAST {
+  scope: Vec<Syntax>,
+}
+
+impl EleseAST {
+  pub fn new() -> Self {
+    Self {
+      scope: Vec::new(),
+    }
+  }
+
+  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
+    self.scope = node.to_vec();
+  }
+
+  pub fn get_scope(&self) -> &Vec<Syntax> {
+    &self.scope
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct ElifAST {
+  judge: Syntax,
+  scope: Vec<Syntax>,
+}
+
+impl ElifAST {
+  pub fn new(judge: Syntax) -> Self {
+    Self {
+      judge,
+      scope: Vec::new(),
+    }
+  }
+
+  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
+    self.scope = node.to_vec();
+  }
+
+  pub fn get_scope(&self) -> &Vec<Syntax> {
+    &self.scope
+  }
+
+  pub fn get_judge(&self) -> &Syntax {
+    &self.judge
   }
 }

@@ -37,6 +37,12 @@ impl Parsers {
       return Some(self.strings());
     }
 
+    if token == TOKEN._if {
+      self.push_state(ParseState::If);
+      self.ifs();
+      self.pop_state();
+    }
+
     if token == TOKEN._add || token == TOKEN._sub || token == TOKEN._div || token == TOKEN._mul {
       return Some(self.binary());
     }
@@ -69,6 +75,19 @@ impl Parsers {
       if self.get_last_state() ==&ParseState::Call {
         return None;
       }
+    }
+
+    if token == TOKEN._braces_left {
+      self.push_state(ParseState::Scope);
+      return Some(self.scope());
+    }
+
+    if token == TOKEN._braces_right {
+      if self.get_last_state() != &ParseState::Scope {
+        return Some(Err("Scope is not closed".to_string()));
+      }
+      self.pop_state();
+      return None;
     }
 
     if token == TOKEN._comma {
