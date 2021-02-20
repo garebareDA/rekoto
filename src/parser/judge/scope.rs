@@ -7,7 +7,6 @@ impl Parsers {
     let mut scope_ast = ast::ScopeAST::new();
 
     loop {
-      self.index_inc();
       if self.get_last_state() != &ParseState::Scope {
         break;
       }
@@ -15,6 +14,8 @@ impl Parsers {
       if self.get_tokens_len() <= self.get_index() as usize {
         return Err(format!("Invalid scope"));
       }
+
+      self.index_inc();
 
       match self.judge() {
         Some(judge) => {
@@ -32,7 +33,6 @@ impl Parsers {
       }
     }
 
-    self.index_inc();
     return Ok(Syntax::Scope(scope_ast));
   }
 }

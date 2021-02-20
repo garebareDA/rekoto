@@ -246,4 +246,53 @@ mod tests {
       }
     }
   }
+
+  #[test]
+  fn scope() {
+    let mut lex = lexers::lex("{{let a = 1;}}\n{let a = 1;{}}");
+    let result = lex.run().get_tokens();
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        let obj = result.get_node();
+        match &obj[0] {
+          ast::ast::Syntax::Scope(scope) => {
+            let scope = scope.get_scope();
+            match &scope[0] {
+              ast::ast::Syntax::Scope(_) => {}
+              _ => {
+                panic!();
+              }
+            }
+          }
+
+          _ => {
+            panic!();
+          }
+        }
+
+        match &obj[1] {
+          ast::ast::Syntax::Scope(scope) => {
+            let scope = scope.get_scope();
+            match &scope[1] {
+              ast::ast::Syntax::Scope(_) => {}
+              _ => {
+                panic!();
+              }
+            }
+          }
+
+          _ => {
+            panic!();
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
 }

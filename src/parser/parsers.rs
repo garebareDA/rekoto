@@ -1,7 +1,7 @@
 extern crate lelex;
 use super::ast;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum ParseState {
   Main,
   If,

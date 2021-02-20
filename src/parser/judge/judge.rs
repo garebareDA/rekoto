@@ -83,6 +83,7 @@ impl Parsers {
     }
 
     if token == TOKEN._braces_right {
+      println!("{:?}", self.get_last_state());
       if self.get_last_state() != &ParseState::Scope {
         return Some(Err("Scope is not closed".to_string()));
       }
