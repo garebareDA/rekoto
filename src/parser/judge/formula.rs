@@ -70,9 +70,9 @@ impl Parsers {
     }
 
     //judge()で判定するとインクリメントされるため
-    if self.get_last_state() == &ParseState::If
-      && self.get_last_state() == &ParseState::For
-      && self.get_last_state() == &ParseState::Function
+    if (self.get_last_state() == &ParseState::If
+      || self.get_last_state() == &ParseState::For
+      || self.get_last_state() == &ParseState::Function)
       && self.get_tokens(self.get_index() + 1).get_token() == TOKEN._braces_left
     {
       return None;
