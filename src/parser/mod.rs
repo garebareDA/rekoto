@@ -337,7 +337,99 @@ mod tests {
                 }
               }
 
-              println!("{:?}", ifs.get_scope());
+              match ifs.get_scope()[0] {
+                ast::ast::Syntax::Scope(_) => {}
+                _ => {
+                  panic!()
+                }
+              }
+            }
+
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn elif() {
+    let mut lex = lexers::lex("elif 1 < 0 {};");
+    let result = lex.run().get_tokens();
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Elif(ifs) => {
+              let judge = ifs.get_judge();
+              match &judge {
+                ast::ast::Syntax::Num(num) => {
+                  match num.get_node_index(0) {
+                    ast::ast::Syntax::Bin(bin) => {
+                      if bin.get_bin() != "<" {
+                        panic!();
+                      }
+
+                      match bin.get_node_index(0) {
+                        ast::ast::Syntax::Num(_) => {}
+                        _ => {
+                          panic!();
+                        }
+                      }
+                    }
+
+                    _ => {
+                      panic!()
+                    }
+                  }
+                }
+                _ => {
+                  panic!();
+                }
+              }
+
+              match ifs.get_scope()[0] {
+                ast::ast::Syntax::Scope(_) => {}
+                _ => {
+                  panic!()
+                }
+              }
+            }
+
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn elses() {
+    let mut lex = lexers::lex("else {};");
+    let result = lex.run().get_tokens();
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Else(ifs) => {
               match ifs.get_scope()[0] {
                 ast::ast::Syntax::Scope(_) => {}
                 _ => {

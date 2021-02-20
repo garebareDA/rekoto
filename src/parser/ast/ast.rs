@@ -276,6 +276,10 @@ impl ElseAST {
     }
   }
 
+  pub fn push_scope(&mut self, node: &Syntax) {
+    self.scope.push(node.clone());
+  }
+
   pub fn set_scope(&mut self, node: &Vec<Syntax>) {
     self.scope = node.to_vec();
   }
@@ -297,6 +301,10 @@ impl ElifAST {
       judge,
       scope: Vec::new(),
     }
+  }
+
+  pub fn push_scope(&mut self, node: &Syntax) {
+    self.scope.push(node.clone());
   }
 
   pub fn set_scope(&mut self, node: &Vec<Syntax>) {

@@ -44,6 +44,20 @@ impl Parsers {
       return Some(judge);
     }
 
+    if token == TOKEN._else {
+      self.push_state(ParseState::If);
+      let judge = self.elses();
+      self.pop_state();
+      return Some(judge);
+    }
+
+    if token == TOKEN._elif {
+      self.push_state(ParseState::If);
+      let judge = self.elif();
+      self.pop_state();
+      return Some(judge);
+    }
+
     if token == TOKEN._add
       || token == TOKEN._sub
       || token == TOKEN._div
