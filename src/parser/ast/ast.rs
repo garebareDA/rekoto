@@ -11,6 +11,9 @@ pub enum Syntax {
   Str(StringAST),
   Bin(BinaryAST),
   Scope(ScopeAST),
+  Ifs(Box<IfsAST>),
+  Else(Box<ElseAST>),
+  Elif(Box<ElifAST>),
 }
 
 #[derive(Debug, Clone)]
@@ -176,14 +179,14 @@ impl StringAST {
 
 #[derive(Debug, Clone)]
 pub struct BinaryAST {
-  bin: char,
+  bin: String,
   node: Vec<Syntax>,
 }
 
 impl BinaryAST {
-  pub fn new(bin: char) -> Self {
+  pub fn new(bin: &str) -> Self {
     Self {
-      bin,
+      bin:bin.to_string(),
       node: Vec::new(),
     }
   }
@@ -204,8 +207,8 @@ impl BinaryAST {
     self.node.push(node.clone());
   }
 
-  pub fn get_bin(&self) -> char {
-    self.bin
+  pub fn get_bin(&self) -> &str {
+    &self.bin
   }
 }
 
@@ -248,8 +251,8 @@ impl IfsAST {
     }
   }
 
-  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
-    self.scope = node.to_vec();
+  pub fn push_scope(&mut self, node: &Syntax) {
+    self.scope.push(node.clone());
   }
 
   pub fn get_scope(&self) -> &Vec<Syntax> {
@@ -262,11 +265,11 @@ impl IfsAST {
 }
 
 #[derive(Debug, Clone)]
-pub struct EleseAST {
+pub struct ElseAST {
   scope: Vec<Syntax>,
 }
 
-impl EleseAST {
+impl ElseAST {
   pub fn new() -> Self {
     Self {
       scope: Vec::new(),

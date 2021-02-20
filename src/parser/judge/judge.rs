@@ -16,17 +16,17 @@ impl Parsers {
     if token == TOKEN._let {
       self.push_state(ParseState::Var);
       self.index_inc();
-      let judge = Some(self.variable_def(true));
+      let judge = self.variable_def(true);
       self.pop_state();
-      return judge;
+      return Some(judge);
     }
 
     if token == TOKEN._const {
       self.push_state(ParseState::Var);
       self.index_inc();
-      let judge = Some(self.variable_def(false));
+      let judge = self.variable_def(false);
       self.pop_state();
-      return judge;
+      return Some(judge);
     }
 
     if token == TOKEN._number {
@@ -39,21 +39,29 @@ impl Parsers {
 
     if token == TOKEN._if {
       self.push_state(ParseState::If);
-      self.ifs();
+      let judge = self.ifs();
       self.pop_state();
+      return Some(judge);
     }
 
-    if token == TOKEN._add || token == TOKEN._sub || token == TOKEN._div || token == TOKEN._mul {
+    if token == TOKEN._add
+      || token == TOKEN._sub
+      || token == TOKEN._div
+      || token == TOKEN._mul
+      || token == TOKEN._equ
+      || token == TOKEN._not_equ
+      || token == TOKEN._and
+      || token == TOKEN._or
+      || token == TOKEN._greater
+      || token == TOKEN._greater_equ
+      || token == TOKEN._less
+      || token == TOKEN._less_equ
+    {
       return Some(self.binary());
     }
 
     if token == TOKEN._equal {
-      let value = self
-        .get_tokens(self.get_index())
-        .get_value()
-        .chars()
-        .nth(0)
-        .unwrap();
+      let value = self.get_tokens(self.get_index()).get_value();
       return Some(Ok(ast::Syntax::Bin(ast::BinaryAST::new(value))));
     }
 
@@ -72,7 +80,7 @@ impl Parsers {
     }
 
     if token == TOKEN._paren_right {
-      if self.get_last_state() ==&ParseState::Call {
+      if self.get_last_state() == &ParseState::Call {
         return None;
       }
     }
@@ -83,16 +91,15 @@ impl Parsers {
     }
 
     if token == TOKEN._braces_right {
-      println!("{:?}", self.get_last_state());
       if self.get_last_state() != &ParseState::Scope {
-        return Some(Err("Scope is not closed".to_string()));
+        return Some(Err("Scope is not".to_string()));
       }
       self.pop_state();
       return None;
     }
 
     if token == TOKEN._comma {
-      if self.get_last_state() ==&ParseState::Call {
+      if self.get_last_state() == &ParseState::Call {
         return None;
       }
     }

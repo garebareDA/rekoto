@@ -1,5 +1,8 @@
+use super::super::super::lexer::token;
 use super::super::ast::ast;
-use super::super::parsers::Parsers;
+use super::super::parsers::{ParseState, Parsers};
+
+static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn number(&mut self) -> Result<ast::Syntax, String> {
@@ -26,13 +29,8 @@ impl Parsers {
   }
 
   pub(crate) fn binary(&mut self) -> Result<ast::Syntax, String> {
-    let ch = self
-      .get_tokens(self.get_index())
-      .get_value()
-      .chars()
-      .nth(0)
-      .unwrap();
-    let mut ch_ast = ast::BinaryAST::new(ch);
+    let value = self.get_tokens(self.get_index()).get_value();
+    let mut ch_ast = ast::BinaryAST::new(value);
 
     match self.formula_judge() {
       Some(formu) => match formu {
@@ -48,10 +46,8 @@ impl Parsers {
     return Ok(ast::Syntax::Bin(ch_ast));
   }
 
-  pub(crate) fn strings(&mut self) -> Result<ast::Syntax, String>{
-    let strs = self
-      .get_tokens(self.get_index())
-      .get_value();
+  pub(crate) fn strings(&mut self) -> Result<ast::Syntax, String> {
+    let strs = self.get_tokens(self.get_index()).get_value();
     let mut str_ast = ast::StringAST::new(strs);
 
     match self.formula_judge() {
@@ -70,6 +66,15 @@ impl Parsers {
 
   pub(crate) fn formula_judge(&mut self) -> Option<Result<ast::Syntax, String>> {
     if self.get_index() as usize >= self.get_tokens_len() - 1 {
+      return None;
+    }
+
+    //judge()で判定するとインクリメントされるため
+    if self.get_last_state() == &ParseState::If
+      && self.get_last_state() == &ParseState::For
+      && self.get_last_state() == &ParseState::Function
+      && self.get_tokens(self.get_index() + 1).get_token() == TOKEN._braces_left
+    {
       return None;
     }
 
@@ -102,6 +107,10 @@ impl Parsers {
           }
 
           ast::Syntax::Scope(_) => {
+            return Some(Err(format!("syntax error scope")));
+          }
+
+          _ => {
             return Some(Err(format!("syntax error scope")));
           }
         },

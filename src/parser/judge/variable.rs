@@ -55,6 +55,10 @@ impl Parsers {
                 ast::Syntax::Scope(_) => {
                   return Err(format!("Invalid scope"));
                 }
+
+                _ => {
+                  return Err(format!("syntax error scope"));
+                }
               }
             }
 
@@ -82,6 +86,10 @@ impl Parsers {
 
         ast::Syntax::Scope(_) => {
           return Err(format!("`{{` cannot be used for variables"));
+        }
+
+        _ => {
+          return Err(format!("syntax error scope"));
         }
       },
 
@@ -113,7 +121,7 @@ impl Parsers {
       Ok(syn) => match syn {
         ast::Syntax::Bin(bin) => {
           let bin = bin.get_bin();
-          if bin == '=' {
+          if bin == "=" {
             return Ok(());
           }
           return Err(format!("Only the = operator can be used for assignment"));

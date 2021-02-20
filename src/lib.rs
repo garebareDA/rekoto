@@ -28,7 +28,7 @@ mod tests {
 
                   match num.get_node_index(0) {
                     ast::ast::Syntax::Bin(bin) => {
-                      if bin.get_bin() != '+' {
+                      if bin.get_bin() != "+" {
                         panic!();
                       }
 
@@ -147,7 +147,7 @@ mod tests {
 
                   match call.get_node_index(0) {
                     ast::ast::Syntax::Bin(bin) => {
-                      if bin.get_bin() != '+' {
+                      if bin.get_bin() != "+" {
                         panic!();
                       }
 
