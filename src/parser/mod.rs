@@ -495,4 +495,55 @@ mod tests {
       }
     }
   }
+
+  #[test]
+  fn fucntion() {
+    let mut lex = lexers::lex("fn a(a, a) {}");
+    let result = lex.run().get_tokens();
+
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Fn(fnc) => {
+              if fnc.get_name() != "a" {
+                panic!();
+              }
+
+              for param in fnc.get_param().iter() {
+                match param {
+                  ast::ast::Syntax::Var(var) => {
+                    if var.get_name() != "a" {
+                      panic!();
+                    }
+                  }
+
+                  _ => {
+                    panic!();
+                  }
+                }
+              }
+
+              match &fnc.get_scope()[0] {
+                ast::ast::Syntax::Scope(_) => {}
+                _ => {
+                  panic!();
+                }
+              }
+            }
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
 }
