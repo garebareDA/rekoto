@@ -1,4 +1,4 @@
-use super::super::ast::ast;
+use super::super::ast::{ast, ast::Node};
 use super::super::parsers::{ParseState, Parsers};
 
 impl Parsers {
@@ -13,8 +13,8 @@ impl Parsers {
 
           //let const キーワードの次が = かどうか
           match self.variable_def_inspect() {
-            Ok(()) => {}
-            Err(e) => return Err(e),
+            Ok(()) => {},
+            Err(_) => return Ok(ast::Syntax::Var(var)),
           }
 
           self.index_inc();
@@ -24,32 +24,40 @@ impl Parsers {
               match syn {
                 ast::Syntax::Var(var_2) => {
                   let ast = ast::Syntax::Var(var_2);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Bin(bin) => {
                   let ast = ast::Syntax::Bin(bin);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Num(num) => {
                   let ast = ast::Syntax::Num(num);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Str(strs) => {
                   let ast = ast::Syntax::Str(strs);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Call(call) => {
                   let ast = ast::Syntax::Call(call);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
+                }
+
+                ast::Syntax::Scope(_) => {
+                  return Err(format!("Invalid scope"));
+                }
+
+                _ => {
+                  return Err(format!("syntax error scope"));
                 }
               }
             }
@@ -61,19 +69,27 @@ impl Parsers {
         }
 
         ast::Syntax::Num(num) => {
-          return Err(format!("{} can be used for variables", num.get_num()));
+          return Err(format!("{} cannot be used for variables", num.get_num()));
         }
 
         ast::Syntax::Bin(bin) => {
-          return Err(format!("{} can be used for variables", bin.get_bin()))
+          return Err(format!("{} cannot be used for variables", bin.get_bin()))
         }
 
         ast::Syntax::Str(strs) => {
-          return Err(format!("{} can be used for variables", strs.get_str()))
+          return Err(format!("{} cannot be used for variables", strs.get_str()))
         }
 
         ast::Syntax::Call(call) => {
-          return Err(format!("{} can be used for variables", call.get_name()))
+          return Err(format!("{} cannot be used for variables", call.get_name()))
+        }
+
+        ast::Syntax::Scope(_) => {
+          return Err(format!("`{{` cannot be used for variables"));
+        }
+
+        _ => {
+          return Err(format!("syntax error scope"));
         }
       },
 
@@ -105,7 +121,7 @@ impl Parsers {
       Ok(syn) => match syn {
         ast::Syntax::Bin(bin) => {
           let bin = bin.get_bin();
-          if bin == '=' {
+          if bin == "=" {
             return Ok(());
           }
           return Err(format!("Only the = operator can be used for assignment"));
@@ -122,7 +138,17 @@ impl Parsers {
   }
 
   pub(crate) fn variable(&mut self, is_def: bool) -> Result<ast::Syntax, String> {
-    let name = self.get_tokens(self.get_index()).get_value();
+    let name:&str;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        name = tokens.get_value();
+      }
+
+      None => {
+        return Err("syntax error variable".to_string());
+      }
+    };
+
     if name != "" {
       let mut ast = ast::VariableAST::new(name, false, is_def);
       if self.get_last_state() == &ParseState::Var {
@@ -132,7 +158,7 @@ impl Parsers {
       match self.formula_judge() {
         Some(formu) => match formu {
           Ok(obj) => {
-            ast.push_node(&obj);
+            ast.push_node(obj);
           }
           Err(e) => {
             return Err(e);

@@ -1,13 +1,17 @@
 extern crate lelex;
 use super::ast;
+use lelex::tokens::Tokens;
+use crate::parser::ast::ast::Node;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum ParseState {
+  Main,
   If,
   For,
   Var,
   Function,
   Call,
+  Scope,
 }
 
 pub struct Parsers {
@@ -24,6 +28,7 @@ impl Parsers {
   pub fn run(&mut self) -> Result<ast::ast::RootAST, String> {
     let mut root = ast::ast::RootAST::new();
     let len = self.tokens.len();
+    self.push_state(ParseState::Main);
 
     loop {
       match self.judge() {
@@ -79,7 +84,7 @@ impl Parsers {
     self.index += index as i64;
   }
 
-  pub(crate) fn get_tokens(&self, num: i64) -> &lelex::tokens::Tokens {
-    return &self.tokens[num as usize];
+  pub(crate) fn get_tokens(&self, num: i64) -> Option<&Tokens> {
+    return self.tokens.get(num as usize);
   }
 }
