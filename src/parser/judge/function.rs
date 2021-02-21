@@ -1,37 +1,32 @@
 use super::super::super::lexer::token;
-use super::super::ast::ast;
-use super::super::ast::ast::Syntax;
+use super::super::ast::{ast, ast::Node, ast::Syntax};
 use super::super::parsers::Parsers;
 
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn fucntion(&mut self) -> Result<ast::Syntax, String> {
-    let mut fn_ast:ast::FunctionAST;
+    let mut fn_ast: ast::FunctionAST;
     self.index_inc();
     match self.judge() {
-      Some(judge) => {
-        match judge {
-          Ok(obj) => {
-            match obj {
-              Syntax::Var(var) => {
-                if var.get_node_len() < 1 {
-                  fn_ast = ast::FunctionAST::new(var.get_name());
-                } else {
-                  return Err("fucntion name error".to_string());
-                }
-              }
-              _ => {
-                return Err("fucntion name error".to_string());
-              }
+      Some(judge) => match judge {
+        Ok(obj) => match obj {
+          Syntax::Var(var) => {
+            if var.get_node_len() < 1 {
+              fn_ast = ast::FunctionAST::new(var.get_name());
+            } else {
+              return Err("fucntion name error".to_string());
             }
           }
-
-          Err(e) => {
-            return Err(e);
+          _ => {
+            return Err("fucntion name error".to_string());
           }
+        },
+
+        Err(e) => {
+          return Err(e);
         }
-      }
+      },
 
       None => {
         return Err("fucntion name error".to_string());
@@ -79,14 +74,10 @@ impl Parsers {
 
     match self.judge() {
       Some(judge) => match judge {
-        Ok(obj) => {
-          match obj {
-            ast::Syntax::Bin(bin) => {
-              return Err(format!("{} syntax error", bin.get_bin()))
-            }
-            _ => {fn_ast.push_scope(&obj);}
-          }
-        }
+        Ok(obj) => match obj {
+          ast::Syntax::Bin(bin) => return Err(format!("{} syntax error", bin.get_bin())),
+          _ => fn_ast.push_node(obj),
+        },
 
         Err(e) => {
           return Err(e);

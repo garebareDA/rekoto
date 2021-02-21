@@ -1,5 +1,4 @@
-use super::super::ast::ast;
-use super::super::ast::ast::Syntax;
+use super::super::ast::{ast, ast::Node, ast::Syntax};
 use super::super::parsers::Parsers;
 
 impl Parsers {
@@ -107,7 +106,7 @@ impl Parsers {
       }
     }
 
-    let mut fors = ast::Fors::new(init, judges, add);
+    let mut fors = ast::ForsAST::new(init, judges, add);
     self.index_inc();
     match self.judge() {
       Some(judge) => {
@@ -119,7 +118,7 @@ impl Parsers {
               }
               _ => {}
             }
-            fors.push_scope(&obj);
+            fors.push_node(obj);
           }
 
           Err(e) => {

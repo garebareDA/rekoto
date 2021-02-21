@@ -5,8 +5,10 @@ pub mod judge;
 
 #[cfg(test)]
 mod tests {
-  use super::super::lexer::lexers;
-  use super::super::parser::{ast, parsers};
+  use crate::lexer::lexers;
+  use crate::parser::{ast, parsers};
+  use crate::parser::ast::ast::Node;
+
   #[test]
   fn formula() {
     let mut lex = lexers::lex("let a = 1 + 1;");
@@ -261,7 +263,7 @@ mod tests {
         let obj = result.get_node();
         match &obj[0] {
           ast::ast::Syntax::Scope(scope) => {
-            let scope = scope.get_scope();
+            let scope = scope.get_node();
             match &scope[0] {
               ast::ast::Syntax::Scope(_) => {}
               _ => {
@@ -277,7 +279,7 @@ mod tests {
 
         match &obj[1] {
           ast::ast::Syntax::Scope(scope) => {
-            let scope = scope.get_scope();
+            let scope = scope.get_node();
             match &scope[1] {
               ast::ast::Syntax::Scope(_) => {}
               _ => {
@@ -337,7 +339,7 @@ mod tests {
                 }
               }
 
-              match ifs.get_scope()[0] {
+              match ifs.get_node()[0] {
                 ast::ast::Syntax::Scope(_) => {}
                 _ => {
                   panic!()
@@ -397,7 +399,7 @@ mod tests {
                 }
               }
 
-              match ifs.get_scope()[0] {
+              match ifs.get_node()[0] {
                 ast::ast::Syntax::Scope(_) => {}
                 _ => {
                   panic!()
@@ -430,7 +432,7 @@ mod tests {
         for obj in result.get_node() {
           match obj {
             ast::ast::Syntax::Else(ifs) => {
-              match ifs.get_scope()[0] {
+              match ifs.get_node()[0] {
                 ast::ast::Syntax::Scope(_) => {}
                 _ => {
                   panic!()
@@ -527,7 +529,7 @@ mod tests {
                 }
               }
 
-              match &fnc.get_scope()[0] {
+              match &fnc.get_node()[0] {
                 ast::ast::Syntax::Scope(_) => {}
                 _ => {
                   panic!();

@@ -1,5 +1,4 @@
-use super::super::ast::ast;
-use super::super::ast::ast::Syntax;
+use super::super::ast::{ast, ast::Syntax, ast::Node};
 use super::super::parsers::Parsers;
 
 impl Parsers {
@@ -9,7 +8,7 @@ impl Parsers {
         let mut ifs_ast = ast::IfsAST::new(syntax);
         match self.if_scope() {
           Ok(syntax) => {
-            ifs_ast.push_scope(&syntax);
+            ifs_ast.push_node(syntax);
             return Ok(Syntax::Ifs(Box::new(ifs_ast)));
           }
 
@@ -29,7 +28,7 @@ impl Parsers {
     match self.if_scope() {
       Ok(syntax) => {
         let mut else_ast = ast::ElseAST::new();
-        else_ast.push_scope(&syntax);
+        else_ast.push_node(syntax);
         return Ok(Syntax::Else(Box::new(else_ast)));
       }
 
@@ -45,7 +44,7 @@ impl Parsers {
         let mut elif_ast = ast::ElifAST::new(syntax);
         match self.if_scope() {
           Ok(syntax) => {
-            elif_ast.push_scope(&syntax);
+            elif_ast.push_node(syntax);
             return Ok(Syntax::Elif(Box::new(elif_ast)));
           }
 

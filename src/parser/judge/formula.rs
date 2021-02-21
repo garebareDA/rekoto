@@ -1,5 +1,5 @@
 use super::super::super::lexer::token;
-use super::super::ast::ast;
+use super::super::ast::{ast, ast::Node};
 use super::super::parsers::{ParseState, Parsers};
 
 static TOKEN: token::Token = token::Token::new();
@@ -16,7 +16,7 @@ impl Parsers {
     match self.formula_judge() {
       Some(formu) => match formu {
         Ok(objf) => {
-          num_ast.push_node(&objf);
+          num_ast.push_node(objf);
         }
         Err(e) => {
           return Err(e);
@@ -35,7 +35,7 @@ impl Parsers {
     match self.formula_judge() {
       Some(formu) => match formu {
         Ok(objf) => {
-          ch_ast.push_node(&objf);
+          ch_ast.push_node(objf);
         }
         Err(e) => {
           return Err(e);
@@ -53,7 +53,7 @@ impl Parsers {
     match self.formula_judge() {
       Some(formu) => match formu {
         Ok(obj) => {
-          str_ast.push_node(&obj);
+          str_ast.push_node(obj);
         }
         Err(e) => {
           return Err(e);
@@ -79,7 +79,7 @@ impl Parsers {
     }
 
     if self.get_last_state() == &ParseState::Function
-    && self.get_tokens(self.get_index() + 1).get_token() == TOKEN._paren_left
+      && self.get_tokens(self.get_index() + 1).get_token() == TOKEN._paren_left
     {
       return None;
     }

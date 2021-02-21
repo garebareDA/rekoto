@@ -14,8 +14,17 @@ pub enum Syntax {
   Ifs(Box<IfsAST>),
   Else(Box<ElseAST>),
   Elif(Box<ElifAST>),
-  For(Box<Fors>),
+  For(Box<ForsAST>),
   Fn(FunctionAST),
+  Return(Box<ReturnAST>),
+  Break,
+}
+
+pub trait Node {
+  fn get_node(&self) -> &Vec<Syntax>;
+  fn get_node_index(&self, index: usize) -> &Syntax;
+  fn get_node_len(&self) -> usize;
+  fn push_node(&mut self, node: Syntax);
 }
 
 #[derive(Debug, Clone)]
@@ -27,12 +36,22 @@ impl RootAST {
   pub fn new() -> Self {
     Self { node: Vec::new() }
   }
+}
 
-  pub fn get_node(&self) -> &Vec<Syntax> {
+impl Node for RootAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.node
   }
 
-  pub fn push_node(&mut self, node: Syntax) {
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
     self.node.push(node);
   }
 }
@@ -45,9 +64,9 @@ pub struct CallAST {
 }
 
 impl CallAST {
-  pub fn new(name: &str) -> Self {
+  pub fn new(name: impl Into<String>) -> Self {
     Self {
-      name: name.to_string(),
+      name: name.into(),
       argment: Vec::new(),
       node: Vec::new(),
     }
@@ -61,16 +80,26 @@ impl CallAST {
     &self.argment
   }
 
-  pub fn get_node_index(&self, index: usize) -> &Syntax {
-    &self.node[index]
-  }
-
   pub fn push_argment(&mut self, argment: &Syntax) {
     self.argment.push(argment.clone());
   }
+}
 
-  pub fn push_node(&mut self, node: &Syntax) {
-    self.node.push(node.clone());
+impl Node for CallAST{
+  fn get_node(&self) ->&Vec<Syntax> {
+    &self.node
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.node.push(node);
   }
 }
 
@@ -83,17 +112,13 @@ pub struct VariableAST {
 }
 
 impl VariableAST {
-  pub fn new(name: &str, is_mutable: bool, is_def: bool) -> Self {
+  pub fn new(name: impl Into<String>, is_mutable: bool, is_def: bool) -> Self {
     Self {
-      name: name.to_string(),
+      name: name.into(),
       mutable: is_mutable,
       defined: is_def,
       node: Vec::new(),
     }
-  }
-
-  pub fn push_node(&mut self, node: &Syntax) {
-    self.node.push(node.clone());
   }
 
   pub fn get_name(&self) -> &str {
@@ -108,24 +133,30 @@ impl VariableAST {
     self.defined
   }
 
-  pub fn get_node(&self) -> &Vec<Syntax> {
-    &self.node
-  }
-
-  pub fn get_node_index(&self, index: usize) -> &Syntax {
-    &self.node[index]
-  }
-
-  pub fn get_node_len(&self) -> usize {
-    self.node.len()
-  }
-
   pub fn set_is_mutable(&mut self, is_mutable: bool) {
     self.mutable = is_mutable;
   }
 
   pub fn set_is_def(&mut self, is_def: bool) {
     self.defined = is_def;
+  }
+}
+
+impl Node for VariableAST{
+  fn get_node(&self) ->&Vec<Syntax> {
+    &self.node
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.node.push(node);
   }
 }
 
@@ -143,20 +174,26 @@ impl NumberAST {
     }
   }
 
-  pub fn push_node(&mut self, node: &Syntax) {
-    self.node.push(node.clone());
+  pub fn get_num(&self) -> i64 {
+    self.num
   }
+}
 
-  pub fn get_node(&self) -> &Vec<Syntax> {
+impl Node for NumberAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.node
   }
 
-  pub fn get_node_index(&self, index: usize) -> &Syntax {
-    &self.node[index]
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
   }
 
-  pub fn get_num(&self) -> i64 {
-    self.num
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.node.push(node);
   }
 }
 
@@ -167,9 +204,9 @@ pub struct StringAST {
 }
 
 impl StringAST {
-  pub fn new(str: &str) -> Self {
+  pub fn new(str: impl Into<String>) -> Self {
     Self {
-      strs: str.to_string(),
+      strs: str.into(),
       node: Vec::new(),
     }
   }
@@ -177,9 +214,23 @@ impl StringAST {
   pub fn get_str(&self) -> &str {
     &self.strs
   }
+}
 
-  pub fn push_node(&mut self, node: &Syntax) {
-    self.node.push(node.clone());
+impl Node for StringAST{
+  fn get_node(&self) ->&Vec<Syntax> {
+    &self.node
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.node.push(node);
   }
 }
 
@@ -190,31 +241,33 @@ pub struct BinaryAST {
 }
 
 impl BinaryAST {
-  pub fn new(bin: &str) -> Self {
+  pub fn new(bin: impl Into<String>) -> Self {
     Self {
-      bin:bin.to_string(),
+      bin:bin.into(),
       node: Vec::new(),
     }
   }
 
-  pub fn len(&self) -> usize {
-    self.node.len()
+  pub fn get_bin(&self) -> &str {
+    &self.bin
   }
+}
 
-  pub fn get_node(&self) -> &Vec<Syntax> {
+impl Node for BinaryAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.node
   }
 
-  pub fn get_node_index(&self, index: usize) -> &Syntax {
-    &self.node[index]
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
   }
 
-  pub fn push_node(&mut self, node: &Syntax) {
-    self.node.push(node.clone());
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
   }
 
-  pub fn get_bin(&self) -> &str {
-    &self.bin
+  fn push_node(&mut self, node:Syntax) {
+    self.node.push(node);
   }
 }
 
@@ -229,17 +282,23 @@ impl ScopeAST {
       scope: Vec::new(),
     }
   }
+}
 
-  pub fn push_scope(&mut self, node: &Syntax) {
-    self.scope.push(node.clone());
-  }
-
-  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
-    self.scope = node.to_vec();
-  }
-
-  pub fn get_scope(&self) -> &Vec<Syntax> {
+impl Node for ScopeAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.scope
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.scope.push(node);
   }
 }
 
@@ -257,16 +316,26 @@ impl IfsAST {
     }
   }
 
-  pub fn push_scope(&mut self, node: &Syntax) {
-    self.scope.push(node.clone());
+  pub fn get_judge(&self) -> &Syntax {
+    &self.judge
   }
+}
 
-  pub fn get_scope(&self) -> &Vec<Syntax> {
+impl Node for IfsAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.scope
   }
 
-  pub fn get_judge(&self) -> &Syntax {
-    &self.judge
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.scope.push(node);
   }
 }
 
@@ -281,17 +350,23 @@ impl ElseAST {
       scope: Vec::new(),
     }
   }
+}
 
-  pub fn push_scope(&mut self, node: &Syntax) {
-    self.scope.push(node.clone());
-  }
-
-  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
-    self.scope = node.to_vec();
-  }
-
-  pub fn get_scope(&self) -> &Vec<Syntax> {
+impl Node for ElseAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.scope
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.scope.push(node);
   }
 }
 
@@ -309,32 +384,38 @@ impl ElifAST {
     }
   }
 
-  pub fn push_scope(&mut self, node: &Syntax) {
-    self.scope.push(node.clone());
-  }
-
-  pub fn set_scope(&mut self, node: &Vec<Syntax>) {
-    self.scope = node.to_vec();
-  }
-
-  pub fn get_scope(&self) -> &Vec<Syntax> {
-    &self.scope
-  }
-
   pub fn get_judge(&self) -> &Syntax {
     &self.judge
   }
 }
 
+impl Node for ElifAST{
+  fn get_node(&self) ->&Vec<Syntax> {
+    &self.scope
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.scope.push(node);
+  }
+}
+
 #[derive(Debug, Clone)]
-pub struct Fors {
+pub struct ForsAST {
   init:Syntax,
   judge:Syntax,
   add:Syntax,
   scope:Vec<Syntax>,
 }
 
-impl Fors {
+impl ForsAST {
   pub fn new(init:Syntax, judge:Syntax, add:Syntax) -> Self {
     Self {
       init,
@@ -355,13 +436,23 @@ impl Fors {
   pub fn get_add(&self) -> &Syntax {
     &self.add
   }
+}
 
-  pub fn get_scope(&self) -> &Vec<Syntax> {
+impl Node for ForsAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.scope
   }
 
-  pub fn push_scope(&mut self, node: &Syntax) {
-    self.scope.push(node.clone());
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.scope.push(node);
   }
 }
 
@@ -373,16 +464,12 @@ pub struct FunctionAST {
 }
 
 impl FunctionAST {
-  pub fn new(name: &str) -> Self {
+  pub fn new(name: impl Into<String>) -> Self {
     Self {
-      name:name.to_string(),
+      name:name.into(),
       param:Vec::new(),
       scope:Vec::new(),
     }
-  }
-
-  pub fn push_scope(&mut self, node: &Syntax) {
-    self.scope.push(node.clone());
   }
 
   pub fn push_param(&mut self, node: &Syntax) {
@@ -396,8 +483,53 @@ impl FunctionAST {
   pub fn get_param(&self) -> &Vec<Syntax> {
     &self.param
   }
+}
 
-  pub fn get_scope(&self) -> &Vec<Syntax> {
+impl Node for FunctionAST{
+  fn get_node(&self) ->&Vec<Syntax> {
     &self.scope
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.scope.push(node);
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct ReturnAST {
+  node:Vec<Syntax>,
+}
+
+impl ReturnAST {
+ pub fn new() -> Self {
+  Self {
+    node:Vec::new(),
+  }
+ }
+}
+
+impl Node for ReturnAST{
+  fn get_node(&self) -> &Vec<Syntax> {
+    &self.node
+  }
+
+  fn get_node_index(&self, index:usize) -> &Syntax {
+    &self.get_node()[index]
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.node.push(node);
   }
 }

@@ -1,6 +1,5 @@
 use super::super::parsers::{Parsers, ParseState};
-use super::super::ast::ast::Syntax;
-use super::super::ast::ast;
+use super::super::ast::{ast, ast::Syntax, ast::Node};
 
 impl Parsers {
   pub(crate) fn scope(&mut self) -> Result<Syntax, String> {
@@ -21,7 +20,7 @@ impl Parsers {
         Some(judge) => {
           match judge {
             Ok(obj) => {
-              scope_ast.push_scope(&obj);
+              scope_ast.push_node(obj);
             }
 
             Err(e) => {

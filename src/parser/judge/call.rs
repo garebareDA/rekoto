@@ -1,6 +1,6 @@
-use super::super::super::lexer::token;
-use super::super::ast::ast;
+use super::super::ast::{ast, ast::Node};
 use super::super::parsers::Parsers;
+use crate::lexer::token;
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
@@ -49,7 +49,7 @@ impl Parsers {
     match self.formula_judge() {
       Some(formu) => match formu {
         Ok(obj) => {
-          call_ast.push_node(&obj);
+          call_ast.push_node(obj);
         }
         Err(e) => {
           return Err(e);

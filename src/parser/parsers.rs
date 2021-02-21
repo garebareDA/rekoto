@@ -1,5 +1,6 @@
 extern crate lelex;
 use super::ast;
+use crate::parser::ast::ast::Node;
 
 #[derive(PartialEq, Debug)]
 pub enum ParseState {

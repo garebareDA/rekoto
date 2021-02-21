@@ -1,4 +1,4 @@
-use super::super::ast::ast;
+use super::super::ast::{ast, ast::Node};
 use super::super::parsers::{ParseState, Parsers};
 
 impl Parsers {
@@ -24,31 +24,31 @@ impl Parsers {
               match syn {
                 ast::Syntax::Var(var_2) => {
                   let ast = ast::Syntax::Var(var_2);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Bin(bin) => {
                   let ast = ast::Syntax::Bin(bin);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Num(num) => {
                   let ast = ast::Syntax::Num(num);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Str(strs) => {
                   let ast = ast::Syntax::Str(strs);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
                 ast::Syntax::Call(call) => {
                   let ast = ast::Syntax::Call(call);
-                  var.push_node(&ast);
+                  var.push_node(ast);
                   return Ok(ast::Syntax::Var(var));
                 }
 
@@ -148,7 +148,7 @@ impl Parsers {
       match self.formula_judge() {
         Some(formu) => match formu {
           Ok(obj) => {
-            ast.push_node(&obj);
+            ast.push_node(obj);
           }
           Err(e) => {
             return Err(e);
