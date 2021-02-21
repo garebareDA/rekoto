@@ -14,6 +14,8 @@ pub fn lex(word: &str) -> lelex::lexers::Lexer {
   lex.push_reserved_word(TOKEN._for, "for").unwrap();
   lex.push_reserved_word(TOKEN._fn, "fn").unwrap();
   lex.push_reserved_word(TOKEN._import, "import").unwrap();
+  lex.push_reserved_word(TOKEN._return, "return").unwrap();
+  lex.push_reserved_word(TOKEN._break, "break").unwrap();
   lex.push_reserved_word(TOKEN._greater_equ, "=>").unwrap();
   lex.push_reserved_word(TOKEN._less_equ, "=<").unwrap();
   lex.push_reserved_word(TOKEN._equ, "==").unwrap();

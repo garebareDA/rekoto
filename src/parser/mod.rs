@@ -1,13 +1,12 @@
-pub mod parsers;
 pub mod ast;
 pub mod judge;
-
+pub mod parsers;
 
 #[cfg(test)]
 mod tests {
   use crate::lexer::lexers;
-  use crate::parser::{ast, parsers};
   use crate::parser::ast::ast::Node;
+  use crate::parser::{ast, parsers};
 
   #[test]
   fn formula() {
@@ -314,26 +313,24 @@ mod tests {
             ast::ast::Syntax::Ifs(ifs) => {
               let judge = ifs.get_judge();
               match &judge {
-                ast::ast::Syntax::Num(num) => {
-                  match num.get_node_index(0) {
-                    ast::ast::Syntax::Bin(bin) => {
-                      if bin.get_bin() != "<" {
+                ast::ast::Syntax::Num(num) => match num.get_node_index(0) {
+                  ast::ast::Syntax::Bin(bin) => {
+                    if bin.get_bin() != "<" {
+                      panic!();
+                    }
+
+                    match bin.get_node_index(0) {
+                      ast::ast::Syntax::Num(_) => {}
+                      _ => {
                         panic!();
                       }
-
-                      match bin.get_node_index(0) {
-                        ast::ast::Syntax::Num(_) => {}
-                        _ => {
-                          panic!();
-                        }
-                      }
-                    }
-
-                    _ => {
-                      panic!()
                     }
                   }
-                }
+
+                  _ => {
+                    panic!()
+                  }
+                },
                 _ => {
                   panic!();
                 }
@@ -374,26 +371,24 @@ mod tests {
             ast::ast::Syntax::Elif(ifs) => {
               let judge = ifs.get_judge();
               match &judge {
-                ast::ast::Syntax::Num(num) => {
-                  match num.get_node_index(0) {
-                    ast::ast::Syntax::Bin(bin) => {
-                      if bin.get_bin() != "<" {
+                ast::ast::Syntax::Num(num) => match num.get_node_index(0) {
+                  ast::ast::Syntax::Bin(bin) => {
+                    if bin.get_bin() != "<" {
+                      panic!();
+                    }
+
+                    match bin.get_node_index(0) {
+                      ast::ast::Syntax::Num(_) => {}
+                      _ => {
                         panic!();
                       }
-
-                      match bin.get_node_index(0) {
-                        ast::ast::Syntax::Num(_) => {}
-                        _ => {
-                          panic!();
-                        }
-                      }
-                    }
-
-                    _ => {
-                      panic!()
                     }
                   }
-                }
+
+                  _ => {
+                    panic!()
+                  }
+                },
                 _ => {
                   panic!();
                 }
@@ -431,14 +426,12 @@ mod tests {
       Ok(result) => {
         for obj in result.get_node() {
           match obj {
-            ast::ast::Syntax::Else(ifs) => {
-              match ifs.get_node()[0] {
-                ast::ast::Syntax::Scope(_) => {}
-                _ => {
-                  panic!()
-                }
+            ast::ast::Syntax::Else(ifs) => match ifs.get_node()[0] {
+              ast::ast::Syntax::Scope(_) => {}
+              _ => {
+                panic!()
               }
-            }
+            },
 
             _ => {
               panic!();
@@ -469,19 +462,25 @@ mod tests {
               let init = fors.get_init();
               match init {
                 ast::ast::Syntax::Var(_) => {}
-                _ => {panic!();}
+                _ => {
+                  panic!();
+                }
               }
 
               let judge = fors.get_judge();
               match judge {
                 ast::ast::Syntax::Var(_) => {}
-                _ => {panic!()}
+                _ => {
+                  panic!()
+                }
               }
 
               let add = fors.get_add();
               match add {
                 ast::ast::Syntax::Var(_) => {}
-                _ => {panic!()}
+                _ => {
+                  panic!()
+                }
               }
             }
 
@@ -536,6 +535,42 @@ mod tests {
                 }
               }
             }
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn returns() {
+    let mut lex = lexers::lex("return 1 + 1;");
+    let result = lex.run().get_tokens();
+
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Return(ret) => match &ret.get_node()[0] {
+              ast::ast::Syntax::Num(num) => {
+                if 1 != num.get_num() {
+                  panic!();
+                }
+              }
+
+              _ => {
+                panic!();
+              }
+            },
             _ => {
               panic!();
             }

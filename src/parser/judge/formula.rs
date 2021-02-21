@@ -6,11 +6,17 @@ static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn number(&mut self) -> Result<ast::Syntax, String> {
-    let num: i64 = self
-      .get_tokens(self.get_index())
-      .get_value()
-      .parse()
-      .unwrap();
+    let num: i64;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        num = tokens.get_value().parse().unwrap();
+      }
+
+      None => {
+        return Err("number error".to_string());
+      }
+    }
+
     let mut num_ast = ast::NumberAST::new(num);
 
     match self.formula_judge() {
@@ -29,7 +35,16 @@ impl Parsers {
   }
 
   pub(crate) fn binary(&mut self) -> Result<ast::Syntax, String> {
-    let value = self.get_tokens(self.get_index()).get_value();
+    let value: &str;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        value = tokens.get_value();
+      }
+
+      None => {
+        return Err("binary error".to_string());
+      }
+    }
     let mut ch_ast = ast::BinaryAST::new(value);
 
     match self.formula_judge() {
@@ -47,7 +62,17 @@ impl Parsers {
   }
 
   pub(crate) fn strings(&mut self) -> Result<ast::Syntax, String> {
-    let strs = self.get_tokens(self.get_index()).get_value();
+    let strs: &str;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        strs = tokens.get_value();
+      }
+
+      None => {
+        return Err("strings error".to_string());
+      }
+    }
+
     let mut str_ast = ast::StringAST::new(strs);
 
     match self.formula_judge() {
@@ -65,23 +90,27 @@ impl Parsers {
   }
 
   pub(crate) fn formula_judge(&mut self) -> Option<Result<ast::Syntax, String>> {
-    if self.get_index() as usize >= self.get_tokens_len() - 1 {
-      return None;
-    }
-
     //judge()で判定するとインクリメントされるため
-    if (self.get_last_state() == &ParseState::If
-      || self.get_last_state() == &ParseState::For
-      || self.get_last_state() == &ParseState::Function)
-      && self.get_tokens(self.get_index() + 1).get_token() == TOKEN._braces_left
-    {
-      return None;
-    }
+    match self.get_tokens(self.get_index() + 1) {
+      Some(tokens) => {
+        if (self.get_last_state() == &ParseState::If
+          || self.get_last_state() == &ParseState::For
+          || self.get_last_state() == &ParseState::Function)
+          && tokens.get_token() == TOKEN._braces_left
+        {
+          return None;
+        }
 
-    if self.get_last_state() == &ParseState::Function
-      && self.get_tokens(self.get_index() + 1).get_token() == TOKEN._paren_left
-    {
-      return None;
+        if self.get_last_state() == &ParseState::Function
+          && tokens.get_token() == TOKEN._paren_left
+        {
+          return None;
+        }
+      }
+
+      None => {
+        return None;
+      }
     }
 
     self.index_inc();

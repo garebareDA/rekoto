@@ -34,15 +34,46 @@ impl Parsers {
     }
 
     self.index_inc();
-    let paren_left_token = self.get_tokens(self.get_index()).get_token();
+    let paren_left_token:i64;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        paren_left_token = tokens.get_token();
+      }
+
+      None =>{
+        return Err("fucntion name error".to_string());
+      }
+    }
+
     if paren_left_token != TOKEN._paren_left {
       return Err("( not enough".to_string());
     }
 
     loop {
       self.index_inc();
-      let paren_right_token = self.get_tokens(self.get_index()).get_token();
-      let verification_token = self.get_tokens(self.get_index() + 1).get_token();
+
+      let paren_right_token:i64;
+      let verification_token:i64;
+
+      match self.get_tokens(self.get_index()) {
+        Some(tokens) => {
+          paren_right_token = tokens.get_token();
+        }
+
+        None =>{
+          return Err("fucntion param error".to_string());
+        }
+      }
+
+      match self.get_tokens(self.get_index() + 1) {
+        Some(tokens) => {
+          verification_token = tokens.get_token();
+        }
+
+        None =>{
+          return Err("fucntion param error".to_string());
+        }
+      }
 
       if paren_right_token == TOKEN._paren_right {
         return Ok(ast::Syntax::Fn(fn_ast));

@@ -138,7 +138,17 @@ impl Parsers {
   }
 
   pub(crate) fn variable(&mut self, is_def: bool) -> Result<ast::Syntax, String> {
-    let name = self.get_tokens(self.get_index()).get_value();
+    let name:&str;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        name = tokens.get_value();
+      }
+
+      None => {
+        return Err("syntax error variable".to_string());
+      }
+    };
+
     if name != "" {
       let mut ast = ast::VariableAST::new(name, false, is_def);
       if self.get_last_state() == &ParseState::Var {

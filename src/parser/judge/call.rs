@@ -5,22 +5,57 @@ static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn call(&mut self) -> Result<ast::Syntax, String> {
-    let name = self.get_tokens(self.get_index()).get_value().to_string();
-    let mut call_ast = ast::CallAST::new(&name);
+    let name:String;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        name = tokens.get_value().to_string();
+      }
 
+      None => {
+        return Err("function call error".to_string());
+      }
+    }
+
+    let mut call_ast = ast::CallAST::new(&name);
     self.index_inc();
-    let paren_left_token = self.get_tokens(self.get_index()).get_token();
-    if paren_left_token != TOKEN._paren_left {
-      return Err(format!("Error not a function"));
+
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        if tokens.get_token() != TOKEN._paren_left {
+          return Err(format!("Error not a function"));
+        }
+      }
+
+      None => {
+        return Err("strings error".to_string());
+      }
     }
 
     loop {
       self.index_inc();
-      let paren_right_token = self.get_tokens(self.get_index()).get_token();
-      let verification_token = self.get_tokens(self.get_index() + 1).get_token();
 
-      if paren_right_token == TOKEN._paren_right {
-        return Ok(ast::Syntax::Call(call_ast));
+      match self.get_tokens(self.get_index()) {
+        Some(tokens) => {
+          if tokens.get_token() == TOKEN._paren_right {
+            return Ok(ast::Syntax::Call(call_ast));
+          }
+        }
+
+        None => {
+          return Err("strings error".to_string());
+        }
+      }
+
+
+      let verification_token:i64;
+      match self.get_tokens(self.get_index() + 1) {
+        Some(tokens) => {
+          verification_token = tokens.get_token();
+        }
+
+        None => {
+          return Err("strings error".to_string());
+        }
       }
 
       match self.judge() {

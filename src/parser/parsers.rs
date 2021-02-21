@@ -1,5 +1,6 @@
 extern crate lelex;
 use super::ast;
+use lelex::tokens::Tokens;
 use crate::parser::ast::ast::Node;
 
 #[derive(PartialEq, Debug)]
@@ -83,7 +84,7 @@ impl Parsers {
     self.index += index as i64;
   }
 
-  pub(crate) fn get_tokens(&self, num: i64) -> &lelex::tokens::Tokens {
-    return &self.tokens[num as usize];
+  pub(crate) fn get_tokens(&self, num: i64) -> Option<&Tokens> {
+    return self.tokens.get(num as usize);
   }
 }
