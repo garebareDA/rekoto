@@ -450,4 +450,49 @@ mod tests {
       }
     }
   }
+
+  #[test]
+  fn fors() {
+    let mut lex = lexers::lex("for let i = 0; i < 5; i++; {}");
+    let result = lex.run().get_tokens();
+
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::For(fors) => {
+              let init = fors.get_init();
+              match init {
+                ast::ast::Syntax::Var(_) => {}
+                _ => {panic!();}
+              }
+
+              let judge = fors.get_judge();
+              match judge {
+                ast::ast::Syntax::Var(_) => {}
+                _ => {panic!()}
+              }
+
+              let add = fors.get_add();
+              match add {
+                ast::ast::Syntax::Var(_) => {}
+                _ => {panic!()}
+              }
+            }
+
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
 }
