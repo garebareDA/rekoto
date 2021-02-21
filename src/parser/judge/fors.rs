@@ -113,6 +113,12 @@ impl Parsers {
       Some(judge) => {
         match judge {
           Ok(obj) => {
+            match obj {
+              ast::Syntax::Bin(bin) => {
+                return Err(format!("{} syntax error", bin.get_bin()))
+              }
+              _ => {}
+            }
             fors.push_scope(&obj);
           }
 

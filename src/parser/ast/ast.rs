@@ -15,6 +15,7 @@ pub enum Syntax {
   Else(Box<ElseAST>),
   Elif(Box<ElifAST>),
   For(Box<Fors>),
+  Fn(FunctionAST),
 }
 
 #[derive(Debug, Clone)]
@@ -361,5 +362,42 @@ impl Fors {
 
   pub fn push_scope(&mut self, node: &Syntax) {
     self.scope.push(node.clone());
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct FunctionAST {
+  name: String,
+  param: Vec<Syntax>,
+  scope:Vec<Syntax>,
+}
+
+impl FunctionAST {
+  pub fn new(name: &str) -> Self {
+    Self {
+      name:name.to_string(),
+      param:Vec::new(),
+      scope:Vec::new(),
+    }
+  }
+
+  pub fn push_scope(&mut self, node: &Syntax) {
+    self.scope.push(node.clone());
+  }
+
+  pub fn push_param(&mut self, node: &Syntax) {
+    self.param.push(node.clone());
+  }
+
+  pub fn get_name(&self) -> &str {
+    &self.name
+  }
+
+  pub fn get_param(&self) -> &Vec<Syntax> {
+    &self.param
+  }
+
+  pub fn get_scope(&self) -> &Vec<Syntax> {
+    &self.scope
   }
 }

@@ -65,6 +65,13 @@ impl Parsers {
       return Some(judge);
     }
 
+    if token == TOKEN._fn {
+      self.push_state(ParseState::Function);
+      let judge = self.fucntion();
+      self.pop_state();
+      return Some(judge);
+    }
+
     if token == TOKEN._add
       || token == TOKEN._sub
       || token == TOKEN._div
@@ -89,7 +96,7 @@ impl Parsers {
     if token == TOKEN._variable {
       //関数の呼び出しの判定
       let verification_token = self.get_tokens(self.get_index() + 1).get_token();
-      if verification_token == TOKEN._paren_left {
+      if verification_token == TOKEN._paren_left && self.get_last_state() != &ParseState::Function {
         self.push_state(ParseState::Call);
         let judge = self.call();
         self.pop_state();
@@ -100,8 +107,18 @@ impl Parsers {
       return Some(self.variable(false));
     }
 
+    if token == TOKEN._paren_left {
+      if self.get_last_state() == &ParseState::Function {
+        return None;
+      }
+    }
+
     if token == TOKEN._paren_right {
       if self.get_last_state() == &ParseState::Call {
+        return None;
+      }
+
+      if self.get_last_state() == &ParseState::Function {
         return None;
       }
     }
@@ -121,6 +138,10 @@ impl Parsers {
 
     if token == TOKEN._comma {
       if self.get_last_state() == &ParseState::Call {
+        return None;
+      }
+
+      if self.get_last_state() == &ParseState::Function {
         return None;
       }
     }

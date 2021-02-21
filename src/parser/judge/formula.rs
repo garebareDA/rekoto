@@ -78,6 +78,12 @@ impl Parsers {
       return None;
     }
 
+    if self.get_last_state() == &ParseState::Function
+    && self.get_tokens(self.get_index() + 1).get_token() == TOKEN._paren_left
+    {
+      return None;
+    }
+
     self.index_inc();
     let judge = self.judge();
     match judge {

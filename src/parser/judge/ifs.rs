@@ -95,8 +95,8 @@ impl Parsers {
     match self.judge() {
       Some(judge) => match judge {
         Ok(obj) => match obj {
-          Syntax::Bin(_) => {
-            return Err("if scope error".to_string());
+          Syntax::Bin(bin) => {
+            return Err( format!("{} syntax error", bin.get_bin()));
           }
 
           _ => {

@@ -2,7 +2,7 @@ use rekoto::lexer::lexers;
 use rekoto::parser::parsers;
 
 fn main() {
-    let mut lex = lexers::lex("for let i = 0; i < 5; i++; {}");
+    let mut lex = lexers::lex("fn a(a, a) {}");
     let result = lex.run().get_tokens();
     println!("{:?}", result);
 
