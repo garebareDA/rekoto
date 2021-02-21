@@ -58,6 +58,13 @@ impl Parsers {
       return Some(judge);
     }
 
+    if token == TOKEN._for {
+      self.push_state(ParseState::For);
+      let judge = self.fors();
+      self.pop_state();
+      return Some(judge);
+    }
+
     if token == TOKEN._add
       || token == TOKEN._sub
       || token == TOKEN._div

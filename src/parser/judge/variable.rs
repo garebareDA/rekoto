@@ -13,8 +13,8 @@ impl Parsers {
 
           //let const キーワードの次が = かどうか
           match self.variable_def_inspect() {
-            Ok(()) => {}
-            Err(e) => return Err(e),
+            Ok(()) => {},
+            Err(_) => return Ok(ast::Syntax::Var(var)),
           }
 
           self.index_inc();

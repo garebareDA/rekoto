@@ -14,6 +14,7 @@ pub enum Syntax {
   Ifs(Box<IfsAST>),
   Else(Box<ElseAST>),
   Elif(Box<ElifAST>),
+  For(Box<Fors>),
 }
 
 #[derive(Debug, Clone)]
@@ -112,6 +113,10 @@ impl VariableAST {
 
   pub fn get_node_index(&self, index: usize) -> &Syntax {
     &self.node[index]
+  }
+
+  pub fn get_node_len(&self) -> usize {
+    self.node.len()
   }
 
   pub fn set_is_mutable(&mut self, is_mutable: bool) {
@@ -317,5 +322,44 @@ impl ElifAST {
 
   pub fn get_judge(&self) -> &Syntax {
     &self.judge
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct Fors {
+  init:Syntax,
+  judge:Syntax,
+  add:Syntax,
+  scope:Vec<Syntax>,
+}
+
+impl Fors {
+  pub fn new(init:Syntax, judge:Syntax, add:Syntax) -> Self {
+    Self {
+      init,
+      judge,
+      add,
+      scope:Vec::new(),
+    }
+  }
+
+  pub fn get_init(&self) -> &Syntax {
+    &self.init
+  }
+
+  pub fn get_judge(&self) -> &Syntax {
+    &self.judge
+  }
+
+  pub fn get_add(&self) -> &Syntax {
+    &self.add
+  }
+
+  pub fn get_scope(&self) -> &Vec<Syntax> {
+    &self.scope
+  }
+
+  pub fn push_scope(&mut self, node: &Syntax) {
+    self.scope.push(node.clone());
   }
 }
