@@ -1,6 +1,9 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 //変数の型
-pub enum Types {}
+pub enum Types {
+  Number,
+  String,
+}
 
 #[derive(Debug, Clone)]
 //変数の型以外
@@ -25,6 +28,11 @@ pub trait Node {
   fn get_node_index(&self, index: usize) -> &Syntax;
   fn get_node_len(&self) -> usize;
   fn push_node(&mut self, node: Syntax);
+}
+
+pub trait Type {
+  fn get_type(&self) -> &Option<Types>;
+  fn set_type(&mut self, types:Option<Types>);
 }
 
 #[derive(Debug, Clone)]
@@ -108,6 +116,7 @@ pub struct VariableAST {
   name: String,
   mutable: bool,
   defined: bool,
+  types: Option<Types>,
   node: Vec<Syntax>,
 }
 
@@ -117,6 +126,7 @@ impl VariableAST {
       name: name.into(),
       mutable: is_mutable,
       defined: is_def,
+      types: None,
       node: Vec::new(),
     }
   }
@@ -157,6 +167,16 @@ impl Node for VariableAST{
 
   fn push_node(&mut self, node:Syntax) {
     self.node.push(node);
+  }
+}
+
+impl Type for VariableAST {
+   fn set_type(&mut self, types: Option<Types>) {
+    self.types = types;
+  }
+
+  fn get_type(&self) -> &Option<Types> {
+    &self.types
   }
 }
 
@@ -461,6 +481,7 @@ pub struct FunctionAST {
   name: String,
   param: Vec<Syntax>,
   scope:Vec<Syntax>,
+  types:Option<Types>
 }
 
 impl FunctionAST {
@@ -469,11 +490,12 @@ impl FunctionAST {
       name:name.into(),
       param:Vec::new(),
       scope:Vec::new(),
+      types:None,
     }
   }
 
-  pub fn push_param(&mut self, node: &Syntax) {
-    self.param.push(node.clone());
+  pub fn push_param(&mut self, node: Syntax) {
+    self.param.push(node);
   }
 
   pub fn get_name(&self) -> &str {
@@ -501,6 +523,16 @@ impl Node for FunctionAST{
   fn push_node(&mut self, node:Syntax) {
     self.scope.push(node);
   }
+}
+
+impl Type for FunctionAST {
+  fn set_type(&mut self, types: Option<Types>) {
+   self.types = types;
+ }
+
+ fn get_type(&self) -> &Option<Types> {
+   &self.types
+ }
 }
 
 #[derive(Debug, Clone)]

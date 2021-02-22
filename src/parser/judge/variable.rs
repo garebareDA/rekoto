@@ -1,5 +1,7 @@
-use super::super::ast::{ast, ast::Node};
+use super::super::super::lexer::token;
+use super::super::ast::{ast, ast::Node, ast::Type};
 use super::super::parsers::{ParseState, Parsers};
+static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn variable_def(&mut self, is_mutable: bool) -> Result<ast::Syntax, String> {
@@ -9,11 +11,24 @@ impl Parsers {
         ast::Syntax::Var(mut var) => {
           var.set_is_def(true);
           var.set_is_mutable(is_mutable);
-          self.index_inc();
+
+          /*
+          lec const のキワードが : かどうか
+          : だった場合に型を設定
+          */
+          match self.check_types() {
+            Ok(types) => {
+              var.set_type(types);
+            }
+
+            Err(e) => {
+              return Err(e);
+            }
+          }
 
           //let const キーワードの次が = かどうか
           match self.variable_def_inspect() {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(_) => return Ok(ast::Syntax::Var(var)),
           }
 
@@ -117,6 +132,7 @@ impl Parsers {
   }
 
   fn variable_def_inspect(&mut self) -> Result<(), String> {
+    self.index_inc();
     match self.variable_def_inner() {
       Ok(syn) => match syn {
         ast::Syntax::Bin(bin) => {
@@ -138,7 +154,7 @@ impl Parsers {
   }
 
   pub(crate) fn variable(&mut self, is_def: bool) -> Result<ast::Syntax, String> {
-    let name:&str;
+    let name: &str;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         name = tokens.get_value();
@@ -151,7 +167,9 @@ impl Parsers {
 
     if name != "" {
       let mut ast = ast::VariableAST::new(name, false, is_def);
-      if self.get_last_state() == &ParseState::Var {
+      if self.get_last_state() == &ParseState::Var
+      || self.get_last_state() == &ParseState::Function
+      {
         return Ok(ast::Syntax::Var(ast));
       }
 
@@ -171,5 +189,40 @@ impl Parsers {
     }
 
     return Err(format!("{} variable name error", name));
+  }
+
+  pub(crate) fn check_types(&mut self) -> Result<Option<ast::Types>, String> {
+    match self.get_tokens(self.get_index() + 1) {
+      Some(tokens) => {
+        if tokens.get_token() != TOKEN._colon {
+          if self.get_last_state() == &ParseState::Function {
+            return Err("param not found type".to_string());
+          }
+          return Ok(None);
+        }
+
+        self.index_add(2);
+        match self.get_tokens(self.get_index()) {
+          Some(tokens) => {
+            let types = tokens.get_value();
+            if types == "number" {
+              return Ok(Some(ast::Types::Number));
+            } else if types == "string" {
+              return Ok(Some(ast::Types::String));
+            }
+
+            return Err(format!("nofound types {}", types));
+          }
+
+          None => {
+            return Err("Syntax error type".to_string());
+          }
+        }
+      }
+
+      None => {
+        return Err("Syntax error type".to_string());
+      }
+    }
   }
 }

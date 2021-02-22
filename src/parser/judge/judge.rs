@@ -7,8 +7,7 @@ static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn judge(&mut self) -> Option<Result<ast::Syntax, String>> {
-
-    let token:i64;
+    let token: i64;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         token = tokens.get_token();
@@ -103,7 +102,7 @@ impl Parsers {
     }
 
     if token == TOKEN._equal {
-      let value:&str;
+      let value: &str;
       match self.get_tokens(self.get_index()) {
         Some(tokens) => {
           value = tokens.get_value();
@@ -117,24 +116,22 @@ impl Parsers {
     }
 
     if token == TOKEN._variable {
-      //関数の呼び出しの判定
-      let verification_token:i64;
+      //関数の呼び出しの判定 ( がるか
       match self.get_tokens(self.get_index() + 1) {
         Some(tokens) => {
-          verification_token = tokens.get_token();
+          let verification_token = tokens.get_token();
+          if verification_token == TOKEN._paren_left
+            && self.get_last_state() != &ParseState::Function
+          {
+            self.push_state(ParseState::Call);
+            let judge = self.call();
+            self.pop_state();
+            return Some(judge);
+          }
         }
 
-        None => {
-          return Some(Err("syntax error variable".to_string()));
-        }
+        None => {}
       };
-
-      if verification_token == TOKEN._paren_left && self.get_last_state() != &ParseState::Function {
-        self.push_state(ParseState::Call);
-        let judge = self.call();
-        self.pop_state();
-        return Some(judge);
-      }
 
       //変数ならそのまま返す
       return Some(self.variable(false));
@@ -192,5 +189,6 @@ impl Parsers {
         return Some(Err("syntax error".to_string()));
       }
     };
+
   }
 }

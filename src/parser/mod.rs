@@ -5,7 +5,7 @@ pub mod parsers;
 #[cfg(test)]
 mod tests {
   use crate::lexer::lexers;
-  use crate::parser::ast::ast::Node;
+  use crate::parser::ast::ast::{Node, Type};
   use crate::parser::{ast, parsers};
 
   #[test]
@@ -301,7 +301,7 @@ mod tests {
 
   #[test]
   fn ifs() {
-    let mut lex = lexers::lex("if 1 < 0 {};");
+    let mut lex = lexers::lex("if 1 < 0 {}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -359,7 +359,7 @@ mod tests {
 
   #[test]
   fn elif() {
-    let mut lex = lexers::lex("elif 1 < 0 {};");
+    let mut lex = lexers::lex("elif 1 < 0 {}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -417,7 +417,7 @@ mod tests {
 
   #[test]
   fn elses() {
-    let mut lex = lexers::lex("else {};");
+    let mut lex = lexers::lex("else {}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -499,7 +499,7 @@ mod tests {
 
   #[test]
   fn fucntion() {
-    let mut lex = lexers::lex("fn a(a, a) {}");
+    let mut lex = lexers::lex("fn a(a:number, a:number) {}");
     let result = lex.run().get_tokens();
 
     let mut parse = parsers::Parsers::new(result.to_vec());
@@ -519,6 +519,18 @@ mod tests {
                   ast::ast::Syntax::Var(var) => {
                     if var.get_name() != "a" {
                       panic!();
+                    }
+
+                    match var.get_type() {
+                      Some(t) => {
+                        if t != &ast::ast::Types::Number {
+                          panic!()
+                        }
+                      }
+
+                      None => {
+                        panic!()
+                      }
                     }
                   }
 
