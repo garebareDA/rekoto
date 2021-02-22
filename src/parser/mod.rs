@@ -498,8 +498,8 @@ mod tests {
   }
 
   #[test]
-  fn fucntion() {
-    let mut lex = lexers::lex("fn a(a:number, a:number) {}");
+  fn function() {
+    let mut lex = lexers::lex("fn a(a:number, a:number):number {}");
     let result = lex.run().get_tokens();
 
     let mut parse = parsers::Parsers::new(result.to_vec());
@@ -512,6 +512,14 @@ mod tests {
             ast::ast::Syntax::Fn(fnc) => {
               if fnc.get_name() != "a" {
                 panic!();
+              }
+
+              match fnc.get_type() {
+                Some(t) => if t != &ast::ast::Types::Number {},
+
+                None => {
+                  panic!();
+                }
               }
 
               for param in fnc.get_param().iter() {
@@ -580,6 +588,53 @@ mod tests {
               }
 
               _ => {
+                panic!();
+              }
+            },
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn types() {
+    let mut lex = lexers::lex("let a:string = \"string\";");
+    let result = lex.run().get_tokens();
+
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Var(var) => match var.get_type() {
+              Some(t) => {
+                if t != &ast::ast::Types::String {
+                  panic!();
+                }
+
+                if var.get_name() != "a" {
+                  panic!();
+                }
+
+                match var.get_node()[0] {
+                  ast::ast::Syntax::Str(_) => {}
+                  _ => {
+                    panic!()
+                  }
+                }
+              }
+
+              None => {
                 panic!();
               }
             },
