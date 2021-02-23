@@ -97,6 +97,7 @@ impl Parsers {
       || token == TOKEN._greater_equ
       || token == TOKEN._less
       || token == TOKEN._less_equ
+      || token == TOKEN._dot
     {
       return Some(self.binary());
     }

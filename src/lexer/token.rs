@@ -31,6 +31,7 @@ pub struct Token {
   pub _braces_right: i64,
   pub _comma: i64,
   pub _colon: i64,
+  pub _dot:i64,
   pub _end:i64,
 }
 
@@ -69,6 +70,7 @@ impl Token {
       _braces_right:125,
       _colon:58,
       _comma:44,
+      _dot:46,
       _end: 59,
     }
   }
