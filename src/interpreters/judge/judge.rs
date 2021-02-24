@@ -8,6 +8,23 @@ impl Interpreter {
         return self.call(call);
       }
 
+      Syntax::Bin(bin) => {
+        return Err(format!("{} error", bin.get_bin()));
+      }
+
+      Syntax::Var(var) => {
+        //下の階層にあればvar_spush
+        return Ok(())
+      }
+
+      Syntax::Str(_) => {
+        return Ok(());
+      }
+
+      Syntax::Num(_) => {
+        return Ok(());
+      }
+
       _ => {
         return Err("error unimplemented ".to_string());
       }
