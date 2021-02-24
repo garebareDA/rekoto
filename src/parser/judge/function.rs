@@ -1,5 +1,5 @@
 use super::super::super::lexer::token;
-use super::super::ast::{ast, ast::Node, ast::Syntax};
+use super::super::ast::{ast, ast::Node, ast::Syntax, ast::Type};
 use super::super::parsers::Parsers;
 
 static TOKEN: token::Token = token::Token::new();
@@ -34,13 +34,13 @@ impl Parsers {
     }
 
     self.index_inc();
-    let paren_left_token:i64;
+    let paren_left_token: i64;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         paren_left_token = tokens.get_token();
       }
 
-      None =>{
+      None => {
         return Err("fucntion name error".to_string());
       }
     }
@@ -52,15 +52,15 @@ impl Parsers {
     loop {
       self.index_inc();
 
-      let paren_right_token:i64;
-      let verification_token:i64;
+      let paren_right_token: i64;
+      let verification_token: i64;
 
       match self.get_tokens(self.get_index()) {
         Some(tokens) => {
           paren_right_token = tokens.get_token();
         }
 
-        None =>{
+        None => {
           return Err("fucntion param error".to_string());
         }
       }
@@ -70,7 +70,7 @@ impl Parsers {
           verification_token = tokens.get_token();
         }
 
-        None =>{
+        None => {
           return Err("fucntion param error".to_string());
         }
       }
@@ -81,16 +81,44 @@ impl Parsers {
 
       match self.judge() {
         Some(judge) => match judge {
-          Ok(obj) => {
-            fn_ast.push_param(&obj);
-            if verification_token == TOKEN._paren_right {
-              break;
-            } else if verification_token == TOKEN._comma {
-              continue;
-            } else {
-              return Err(format!("Syntax error {}", fn_ast.get_name()));
+          Ok(obj) => match obj {
+            Syntax::Var(mut var) => {
+              if verification_token != TOKEN._colon {
+                return Err(format!("fucntion {} param type error", fn_ast.get_name()));
+              }
+
+              match self.check_types() {
+                Ok(types) => {
+                  var.set_type(types);
+                  fn_ast.push_param(Syntax::Var(var));
+                }
+                Err(e) => {
+                  return Err(e);
+                }
+              }
+
+              self.index_inc();
+              match self.get_tokens(self.get_index()) {
+                Some(tokens) => {
+                  if tokens.get_token() == TOKEN._paren_right {
+                    break;
+                  } else if tokens.get_token() == TOKEN._comma {
+                    continue;
+                  } else {
+                    return Err(format!("function ) or , not found {}", fn_ast.get_name()));
+                  }
+                }
+
+                None => {
+                  return Err(format!("function ) not found {}", fn_ast.get_name()));
+                }
+              }
             }
-          }
+
+            _ => {
+              return Err(format!("fucntion {} param type error", fn_ast.get_name()));
+            }
+          },
 
           Err(e) => {
             return Err(e);
@@ -101,8 +129,17 @@ impl Parsers {
         }
       }
     }
-    self.index_inc();
 
+    match self.check_types() {
+      Ok(types) => {
+        fn_ast.set_type(types);
+      }
+      Err(_) => {
+        //返り値がなくても良いため
+      }
+    }
+
+    self.index_inc();
     match self.judge() {
       Some(judge) => match judge {
         Ok(obj) => match obj {

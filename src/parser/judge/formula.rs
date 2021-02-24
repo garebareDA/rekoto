@@ -106,6 +106,11 @@ impl Parsers {
         {
           return None;
         }
+
+        if self.get_last_state() == &ParseState::Function
+          && tokens.get_token() == TOKEN._colon {
+            return None;
+        }
       }
 
       None => {

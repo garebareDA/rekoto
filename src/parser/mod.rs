@@ -5,7 +5,7 @@ pub mod parsers;
 #[cfg(test)]
 mod tests {
   use crate::lexer::lexers;
-  use crate::parser::ast::ast::Node;
+  use crate::parser::ast::ast::{Node, Type};
   use crate::parser::{ast, parsers};
 
   #[test]
@@ -301,7 +301,7 @@ mod tests {
 
   #[test]
   fn ifs() {
-    let mut lex = lexers::lex("if 1 < 0 {};");
+    let mut lex = lexers::lex("if 1 < 0 {}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -359,7 +359,7 @@ mod tests {
 
   #[test]
   fn elif() {
-    let mut lex = lexers::lex("elif 1 < 0 {};");
+    let mut lex = lexers::lex("elif 1 < 0 {}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -417,7 +417,7 @@ mod tests {
 
   #[test]
   fn elses() {
-    let mut lex = lexers::lex("else {};");
+    let mut lex = lexers::lex("else {}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -498,8 +498,8 @@ mod tests {
   }
 
   #[test]
-  fn fucntion() {
-    let mut lex = lexers::lex("fn a(a, a) {}");
+  fn function() {
+    let mut lex = lexers::lex("fn a(a:number, a:number):number {}");
     let result = lex.run().get_tokens();
 
     let mut parse = parsers::Parsers::new(result.to_vec());
@@ -514,11 +514,31 @@ mod tests {
                 panic!();
               }
 
+              match fnc.get_type() {
+                Some(t) => if t != &ast::ast::Types::Number {},
+
+                None => {
+                  panic!();
+                }
+              }
+
               for param in fnc.get_param().iter() {
                 match param {
                   ast::ast::Syntax::Var(var) => {
                     if var.get_name() != "a" {
                       panic!();
+                    }
+
+                    match var.get_type() {
+                      Some(t) => {
+                        if t != &ast::ast::Types::Number {
+                          panic!()
+                        }
+                      }
+
+                      None => {
+                        panic!()
+                      }
                     }
                   }
 
@@ -568,6 +588,53 @@ mod tests {
               }
 
               _ => {
+                panic!();
+              }
+            },
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn types() {
+    let mut lex = lexers::lex("let a:string = \"string\";");
+    let result = lex.run().get_tokens();
+
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Var(var) => match var.get_type() {
+              Some(t) => {
+                if t != &ast::ast::Types::String {
+                  panic!();
+                }
+
+                if var.get_name() != "a" {
+                  panic!();
+                }
+
+                match var.get_node()[0] {
+                  ast::ast::Syntax::Str(_) => {}
+                  _ => {
+                    panic!()
+                  }
+                }
+              }
+
+              None => {
                 panic!();
               }
             },

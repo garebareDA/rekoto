@@ -64,10 +64,6 @@ impl Parsers {
     &self.state[self.state.len() - 1]
   }
 
-  pub(crate) fn get_state(&self, index:usize) -> &ParseState {
-    &self.state[index]
-  }
-
   pub(crate) fn get_index(&self) -> i64 {
     self.index
   }
