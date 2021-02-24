@@ -80,6 +80,10 @@ impl CallAST {
     }
   }
 
+  pub fn get_argment_len(&self) -> usize {
+    self.argment.len()
+  }
+
   pub fn get_name(&self) -> &str {
     &self.name
   }
