@@ -2,7 +2,7 @@ use super::super::super::interpreter::Interpreter;
 use crate::parser::ast::ast::{CallAST, Node, Syntax};
 
 impl Interpreter{
-  pub(crate) fn call(&self, call:&CallAST) -> Result<(), String>{
+  pub(crate) fn call(&mut self, call:&CallAST) -> Result<(), String>{
     let node_len = call.get_node_len();
     let argment_len = call.get_argment_len();
     let argment = call.get_argment();
@@ -21,11 +21,13 @@ impl Interpreter{
         Some(argment) => {
           match argment {
             Syntax::Str(strs) => {
-              println!("{}", strs.get_str());
+              self.set_out(strs.get_str());
+              self.print_out();
             }
 
             Syntax::Num(num) => {
-              println!("{}", num.get_num());
+              self.set_out(num.get_num().to_string());
+              self.print_out();
             }
 
             _ => {}

@@ -12,7 +12,7 @@ fn main() {
     println!("{:?}", result);
     match result {
         Ok(result) => {
-            let interpreter = interpreter::Interpreter::new();
+            let mut interpreter = interpreter::Interpreter::new();
             match interpreter.run(result) {
                 Ok(_) => {}
                 Err(e) => {
