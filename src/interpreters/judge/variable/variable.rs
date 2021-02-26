@@ -19,7 +19,7 @@ impl Interpreter{
     match vars.get_node_index(0) {
       Some(var) => {
         match var {
-          Syntax::Var(_var2) => {
+          Syntax::Var(var2) => {
             //変数の検索
             self.push_var(vars2);
             return Ok(());
