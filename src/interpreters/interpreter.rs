@@ -1,7 +1,7 @@
 use crate::parser::ast::ast::{Syntax, RootAST, Node};
 use crate::parser::ast;
-use std::io::{self, Write};
 
+#[derive(Debug, Clone)]
 struct Variables {
   node:Vec<Vec<ast::ast::VariableAST>>,
 }
@@ -21,9 +21,21 @@ impl Variables {
     let index = self.node.len() - 1;
     self.node[index].push(node.clone());
   }
+
+  pub fn serch(&self, name:&str) -> Option<&Syntax> {
+    for i in (0..self.node.len()).rev() {
+      for j in (0..self.node[i].len()).rev() {
+        let node = &self.node[i][j];
+        if name ==  node.get_name() {
+          return node.get_node_index(0);
+        }
+      }
+    }
+    return None;
+  }
 }
 
-
+#[derive(Debug, Clone)]
 struct Functions {
   node:Vec<Vec<ast::ast::FunctionAST>>,
 }
@@ -45,10 +57,10 @@ impl Functions {
   }
 }
 
+
 pub struct Interpreter {
   var:Variables,
   fun:Functions,
-  out:String,
 }
 
 impl Interpreter {
@@ -56,21 +68,48 @@ impl Interpreter {
     Self {
       var:Variables::new(),
       fun:Functions::new(),
-      out:"".to_string(),
     }
   }
 
   pub fn run(&mut self, root:RootAST) -> Result<(), String>{
+    self.push_scope();
     for ast in root.get_node().iter() {
       match self.judge(ast) {
-        Ok(()) => {}
-        Err(e) => {
-          return Err(e);
+        Some(judge) => {
+          match judge {
+            Ok(_) => {}
+            Err(e) => {
+              return Err(e);
+            }
+          }
         }
+        None => {}
       }
     }
 
     return Ok(());
+  }
+
+  pub fn debug_run(&mut self, root:RootAST) -> Result<Vec<String>, String>{
+    self.push_scope();
+    let mut log:Vec<String> = Vec::new();
+    for ast in root.get_node().iter() {
+      match self.judge(ast) {
+        Some(judge) => {
+          match judge {
+            Ok(s) => {
+              log.push(s);
+            }
+            Err(e) => {
+              return Err(e);
+            }
+          }
+        }
+        None => {}
+      }
+    }
+
+    return Ok(log);
   }
 
   pub fn push_scope(&mut self) {
@@ -82,22 +121,11 @@ impl Interpreter {
     self.var.push_node(node);
   }
 
+  pub fn serch_var(&self, name:&str) -> Option<&Syntax>{
+    self.var.serch(name)
+  }
+
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {
     self.fun.push_node(node);
-  }
-
-  pub fn set_out(&mut self, message:impl Into<String>) {
-    self.out = message.into();
-  }
-
-  pub fn get_out(&self) -> &str {
-    &self.out
-  }
-
-  pub fn print_out(&self) -> io::Result<()> {
-    let stdout = io::stdout();
-    let mut handle = stdout.lock();
-    handle.write_all(self.get_out().as_bytes())?;
-    return Ok(());
   }
 }
