@@ -1,11 +1,12 @@
 use crate::parser::ast::ast::{Syntax, RootAST, Node};
+use crate::parser::ast;
 use std::io::{self, Write};
 
-struct Scope {
-  node:Vec<Vec<Syntax>>,
+struct Variables {
+  node:Vec<Vec<ast::ast::VariableAST>>,
 }
 
-impl Scope {
+impl Variables {
   pub fn new() -> Self {
     Self {
       node: Vec::new(),
@@ -16,23 +17,45 @@ impl Scope {
     self.node.push(Vec::new());
   }
 
-  pub fn push_node(&mut self, node:Syntax) {
+  pub fn push_node(&mut self, node: &ast::ast::VariableAST) {
     let index = self.node.len() - 1;
-    self.node[index].push(node);
+    self.node[index].push(node.clone());
+  }
+}
+
+
+struct Functions {
+  node:Vec<Vec<ast::ast::FunctionAST>>,
+}
+
+impl Functions {
+  pub fn new() -> Self {
+    Self {
+      node: Vec::new(),
+    }
+  }
+
+  pub fn push_scope(&mut self) {
+    self.node.push(Vec::new());
+  }
+
+  pub fn push_node(&mut self, node: &ast::ast::FunctionAST) {
+    let index = self.node.len() - 1;
+    self.node[index].push(node.clone());
   }
 }
 
 pub struct Interpreter {
-  var:Scope,
-  fun:Scope,
+  var:Variables,
+  fun:Functions,
   out:String,
 }
 
 impl Interpreter {
   pub fn new() -> Self {
     Self {
-      var:Scope::new(),
-      fun:Scope::new(),
+      var:Variables::new(),
+      fun:Functions::new(),
       out:"".to_string(),
     }
   }
@@ -55,12 +78,12 @@ impl Interpreter {
     self.fun.push_scope();
   }
 
-  pub fn push_var(&mut self, node:Syntax) {
+  pub fn push_var(&mut self, node: &ast::ast::VariableAST) {
     self.var.push_node(node);
   }
 
-  pub fn push_fun(&mut self, node:Syntax) {
-    self.push_var(node);
+  pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {
+    self.fun.push_node(node);
   }
 
   pub fn set_out(&mut self, message:impl Into<String>) {
