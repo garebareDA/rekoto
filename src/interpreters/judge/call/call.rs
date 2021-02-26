@@ -22,12 +22,12 @@ impl Interpreter{
           match argment {
             Syntax::Str(strs) => {
               self.set_out(strs.get_str());
-              self.print_out();
+              self.print_out().unwrap();
             }
 
             Syntax::Num(num) => {
               self.set_out(num.get_num().to_string());
-              self.print_out();
+              self.print_out().unwrap();
             }
 
             _ => {}

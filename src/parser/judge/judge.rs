@@ -42,6 +42,10 @@ impl Parsers {
       return Some(self.strings());
     }
 
+    if token == TOKEN._false || token == TOKEN._true {
+      return Some(self.boolean());
+    }
+
     if token == TOKEN._if {
       self.push_state(ParseState::If);
       let judge = self.ifs();
@@ -104,16 +108,18 @@ impl Parsers {
 
     if token == TOKEN._equal {
       let value: &str;
+      let token: i64;
       match self.get_tokens(self.get_index()) {
         Some(tokens) => {
           value = tokens.get_value();
+          token = tokens.get_token();
         }
 
         None => {
           return Some(Err("syntax error =".to_string()));
         }
       };
-      return Some(Ok(ast::Syntax::Bin(ast::BinaryAST::new(value))));
+      return Some(Ok(ast::Syntax::Bin(ast::BinaryAST::new(value, token))));
     }
 
     if token == TOKEN._variable {

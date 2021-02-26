@@ -36,16 +36,18 @@ impl Parsers {
 
   pub(crate) fn binary(&mut self) -> Result<ast::Syntax, String> {
     let value: &str;
+    let token: i64;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         value = tokens.get_value();
+        token = tokens.get_token();
       }
 
       None => {
         return Err("binary error".to_string());
       }
     }
-    let mut ch_ast = ast::BinaryAST::new(value);
+    let mut ch_ast = ast::BinaryAST::new(value, token);
 
     match self.formula_judge() {
       Some(formu) => match formu {
@@ -89,6 +91,39 @@ impl Parsers {
     return Ok(ast::Syntax::Str(str_ast));
   }
 
+  pub(crate) fn boolean(&mut self) -> Result<ast::Syntax, String> {
+    let mut bools:ast::BoolAST;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        let token = tokens.get_token();
+        if token == TOKEN._false {
+          bools = ast::BoolAST::new(false);
+        } else if token == TOKEN._true {
+          bools = ast::BoolAST::new(true);
+        } else {
+          return Err("not boolean".to_string());
+        }
+      }
+
+      None => {
+        return Err("bool error".to_string());
+      }
+    }
+
+    match self.formula_judge() {
+      Some(formu) => match formu {
+        Ok(obj) => {
+          bools.push_node(obj);
+        }
+        Err(e) => {
+          return Err(e);
+        }
+      },
+      None => {}
+    }
+    return Ok(ast::Syntax::Bool(bools));
+  }
+
   pub(crate) fn formula_judge(&mut self) -> Option<Result<ast::Syntax, String>> {
     //judge()で判定するとインクリメントされるため
     match self.get_tokens(self.get_index() + 1) {
@@ -101,15 +136,13 @@ impl Parsers {
           return None;
         }
 
-        if self.get_last_state() == &ParseState::Function
-          && tokens.get_token() == TOKEN._paren_left
+        if self.get_last_state() == &ParseState::Function && tokens.get_token() == TOKEN._paren_left
         {
           return None;
         }
 
-        if self.get_last_state() == &ParseState::Function
-          && tokens.get_token() == TOKEN._colon {
-            return None;
+        if self.get_last_state() == &ParseState::Function && tokens.get_token() == TOKEN._colon {
+          return None;
         }
       }
 
@@ -133,6 +166,10 @@ impl Parsers {
 
           ast::Syntax::Str(strs) => {
             return Some(Ok(ast::Syntax::Str(strs)));
+          }
+
+          ast::Syntax::Bool(bools) => {
+            return Some(Ok(ast::Syntax::Bool(bools)));
           }
 
           ast::Syntax::Var(var) => {

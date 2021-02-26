@@ -3,6 +3,7 @@
 pub enum Types {
   Number,
   String,
+  Bool,
 }
 
 #[derive(Debug, Clone)]
@@ -12,6 +13,7 @@ pub enum Syntax {
   Call(CallAST),
   Num(NumberAST),
   Str(StringAST),
+  Bool(BoolAST),
   Bin(BinaryAST),
   Scope(ScopeAST),
   Ifs(Box<IfsAST>),
@@ -25,7 +27,7 @@ pub enum Syntax {
 
 pub trait Node {
   fn get_node(&self) -> &Vec<Syntax>;
-  fn get_node_index(&self, index: usize) -> &Syntax;
+  fn get_node_index(&self, index: usize) -> Option<&Syntax>;
   fn get_node_len(&self) -> usize;
   fn push_node(&mut self, node: Syntax);
 }
@@ -51,8 +53,8 @@ impl Node for RootAST{
     &self.node
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -102,8 +104,8 @@ impl Node for CallAST{
     &self.node
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -161,8 +163,8 @@ impl Node for VariableAST{
     &self.node
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -208,8 +210,8 @@ impl Node for NumberAST{
     &self.node
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -245,8 +247,45 @@ impl Node for StringAST{
     &self.node
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node:Syntax) {
+    self.node.push(node);
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct BoolAST {
+  boolean:bool,
+  node:Vec<Syntax>,
+}
+
+impl BoolAST {
+  pub fn new(boolean:bool) -> Self {
+    Self {
+      boolean: boolean,
+      node:Vec::new(),
+    }
+  }
+
+  pub fn get_bool(&self) -> bool {
+    self.boolean
+  }
+}
+
+impl Node for BoolAST{
+  fn get_node(&self) ->&Vec<Syntax> {
+    &self.node
+  }
+
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -261,13 +300,15 @@ impl Node for StringAST{
 #[derive(Debug, Clone)]
 pub struct BinaryAST {
   bin: String,
+  token:i64,
   node: Vec<Syntax>,
 }
 
 impl BinaryAST {
-  pub fn new(bin: impl Into<String>) -> Self {
+  pub fn new(bin: impl Into<String>, token:i64) -> Self {
     Self {
       bin:bin.into(),
+      token,
       node: Vec::new(),
     }
   }
@@ -282,8 +323,8 @@ impl Node for BinaryAST{
     &self.node
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -313,8 +354,8 @@ impl Node for ScopeAST{
     &self.scope
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -350,8 +391,8 @@ impl Node for IfsAST{
     &self.scope
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -381,8 +422,8 @@ impl Node for ElseAST{
     &self.scope
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -418,8 +459,8 @@ impl Node for ElifAST{
     &self.scope
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -467,8 +508,8 @@ impl Node for ForsAST{
     &self.scope
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -516,8 +557,8 @@ impl Node for FunctionAST{
     &self.scope
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {
@@ -557,8 +598,8 @@ impl Node for ReturnAST{
     &self.node
   }
 
-  fn get_node_index(&self, index:usize) -> &Syntax {
-    &self.get_node()[index]
+  fn get_node_index(&self, index:usize) -> Option<&Syntax> {
+    self.get_node().get(index)
   }
 
   fn get_node_len(&self) -> usize {

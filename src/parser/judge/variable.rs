@@ -67,6 +67,12 @@ impl Parsers {
                   return Ok(ast::Syntax::Var(var));
                 }
 
+                ast::Syntax::Bool(bools) => {
+                  let ast = ast::Syntax::Bool(bools);
+                  var.push_node(ast);
+                  return Ok(ast::Syntax::Var(var));
+                }
+
                 ast::Syntax::Scope(_) => {
                   return Err(format!("Invalid scope"));
                 }
@@ -209,6 +215,8 @@ impl Parsers {
               return Ok(Some(ast::Types::Number));
             } else if types == "string" {
               return Ok(Some(ast::Types::String));
+            }else if types == "bool" {
+              return Ok(Some(ast::Types::Bool));
             }
 
             return Err(format!("nofound types {}", types));
