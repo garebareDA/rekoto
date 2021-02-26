@@ -21,7 +21,7 @@ impl Interpreter{
         match var {
           Syntax::Var(_var2) => {
             //変数の検索
-            self.push_var(vars);
+            self.push_var(vars2);
             return Ok(());
           }
 
