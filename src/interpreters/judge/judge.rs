@@ -15,8 +15,7 @@ impl Interpreter {
       Syntax::Var(var) => {
         //下の階層にあれば計算してvarにpush
         //なければそのままvar_push
-        self.variable(var);
-        return Ok(())
+        return self.variable(var);
       }
 
       Syntax::Str(_) => {
