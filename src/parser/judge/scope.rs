@@ -1,8 +1,9 @@
 use super::super::parsers::{Parsers, ParseState};
 use super::super::ast::{ast, ast::Syntax, ast::Node};
+use crate::error::result;
 
 impl Parsers {
-  pub(crate) fn scope(&mut self) -> Result<Syntax, String> {
+  pub(crate) fn scope(&mut self) -> Result<Syntax, result::Error> {
     let mut scope_ast = ast::ScopeAST::new();
 
     loop {
@@ -11,7 +12,7 @@ impl Parsers {
       }
 
       if self.get_tokens_len() <= self.get_index() as usize {
-        return Err(format!("Invalid scope"));
+        return Err(result::Error::SyntaxError(format!("invalid scope")));
       }
 
       self.index_inc();

@@ -2,11 +2,12 @@ use super::super::super::lexer::token;
 use super::super::ast::ast;
 use super::super::parsers::ParseState;
 use super::super::parsers::Parsers;
+use crate::error::result;
 
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
-  pub(crate) fn judge(&mut self) -> Option<Result<ast::Syntax, String>> {
+  pub(crate) fn judge(&mut self) -> Option<Result<ast::Syntax, result::Error>> {
     let token: i64;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
@@ -116,7 +117,9 @@ impl Parsers {
         }
 
         None => {
-          return Some(Err("syntax error =".to_string()));
+          return Some(Err(result::Error::SyntaxError(
+            "syntax error =".to_string(),
+          )));
         }
       };
       return Some(Ok(ast::Syntax::Bin(ast::BinaryAST::new(value, token))));
@@ -167,7 +170,9 @@ impl Parsers {
 
     if token == TOKEN._braces_right {
       if self.get_last_state() != &ParseState::Scope {
-        return Some(Err("Scope is not".to_string()));
+        return Some(Err(result::Error::SyntaxError(
+          "Scope { is not".to_string(),
+        )));
       }
       self.pop_state();
       return None;
@@ -189,13 +194,17 @@ impl Parsers {
 
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
-        return Some(Err(format!("syntax error {}", tokens.get_value())));
+        return Some(Err(result::Error::SyntaxError(format!(
+          "syntax error {}",
+          tokens.get_value()
+        ))));
       }
 
       None => {
-        return Some(Err("syntax error".to_string()));
+        return Some(Err(result::Error::SyntaxError(
+          "syntax error possible parser bug".to_string(),
+        )));
       }
     };
-
   }
 }

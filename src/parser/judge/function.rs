@@ -1,11 +1,12 @@
 use super::super::super::lexer::token;
 use super::super::ast::{ast, ast::Node, ast::Syntax, ast::Type};
 use super::super::parsers::Parsers;
+use crate::error::result;
 
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
-  pub(crate) fn fucntion(&mut self) -> Result<ast::Syntax, String> {
+  pub(crate) fn fucntion(&mut self) -> Result<ast::Syntax, result::Error> {
     let mut fn_ast: ast::FunctionAST;
     self.index_inc();
     match self.judge() {
@@ -15,11 +16,15 @@ impl Parsers {
             if var.get_node_len() < 1 {
               fn_ast = ast::FunctionAST::new(var.get_name());
             } else {
-              return Err("fucntion name error".to_string());
+              return Err(result::Error::SyntaxError(
+                "fucntion name error possible parser bug".to_string(),
+              ));
             }
           }
           _ => {
-            return Err("fucntion name error".to_string());
+            return Err(result::Error::SyntaxError(
+              "fucntion name error possible parser bug".to_string(),
+            ));
           }
         },
 
@@ -29,7 +34,9 @@ impl Parsers {
       },
 
       None => {
-        return Err("fucntion name error".to_string());
+        return Err(result::Error::InterpreterError(
+          "fucntion name error possible parser bug".to_string(),
+        ));
       }
     }
 
@@ -41,12 +48,14 @@ impl Parsers {
       }
 
       None => {
-        return Err("fucntion name error".to_string());
+        return Err(result::Error::SyntaxError(
+          "out of index fucntion name error possible parser bug".to_string(),
+        ));
       }
     }
 
     if paren_left_token != TOKEN._paren_left {
-      return Err("( not enough".to_string());
+      return Err(result::Error::SyntaxError("( not enough".to_string()));
     }
 
     loop {
@@ -61,7 +70,9 @@ impl Parsers {
         }
 
         None => {
-          return Err("fucntion param error".to_string());
+          return Err(result::Error::SyntaxError(
+            "out of index fucntion param error possible parser bug".to_string(),
+          ));
         }
       }
 
@@ -71,7 +82,9 @@ impl Parsers {
         }
 
         None => {
-          return Err("fucntion param error".to_string());
+          return Err(result::Error::SyntaxError(
+            "out of index fucntion param error possible parser bug".to_string(),
+          ));
         }
       }
 
@@ -84,7 +97,10 @@ impl Parsers {
           Ok(obj) => match obj {
             Syntax::Var(mut var) => {
               if verification_token != TOKEN._colon {
-                return Err(format!("fucntion {} param type error", fn_ast.get_name()));
+                return Err(result::Error::SyntaxError(format!(
+                  "fucntion {} param type error",
+                  fn_ast.get_name()
+                )));
               }
 
               match self.check_types() {
@@ -105,18 +121,24 @@ impl Parsers {
                   } else if tokens.get_token() == TOKEN._comma {
                     continue;
                   } else {
-                    return Err(format!("function ) or , not found {}", fn_ast.get_name()));
+                    return Err(result::Error::SyntaxError(format!("function ) or , not found {}", fn_ast.get_name())));
                   }
                 }
 
                 None => {
-                  return Err(format!("function ) not found {}", fn_ast.get_name()));
+                  return Err(result::Error::SyntaxError(format!(
+                    "function ) not found {}",
+                    fn_ast.get_name()
+                  )));
                 }
               }
             }
 
             _ => {
-              return Err(format!("fucntion {} param type error", fn_ast.get_name()));
+              return Err(result::Error::SyntaxError(format!(
+                "fucntion {} param type error",
+                fn_ast.get_name()
+              )));
             }
           },
 
@@ -125,7 +147,10 @@ impl Parsers {
           }
         },
         None => {
-          return Err(format!("functin param error"));
+          return Err(result::Error::SyntaxError(format!(
+            "functin {} param error",
+            fn_ast.get_name()
+          )));
         }
       }
     }
@@ -143,7 +168,12 @@ impl Parsers {
     match self.judge() {
       Some(judge) => match judge {
         Ok(obj) => match obj {
-          ast::Syntax::Bin(bin) => return Err(format!("{} syntax error", bin.get_bin())),
+          ast::Syntax::Bin(bin) => {
+            return Err(result::Error::SyntaxError(format!(
+              "{} syntax error",
+              bin.get_bin()
+            )))
+          }
           _ => fn_ast.push_node(obj),
         },
 
@@ -153,7 +183,7 @@ impl Parsers {
       },
 
       None => {
-        return Err(format!("fucntion scope error"));
+        return Err(result::Error::SyntaxError(format!("fucntion scope error")));
       }
     }
 

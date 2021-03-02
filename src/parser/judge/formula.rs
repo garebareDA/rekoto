@@ -1,11 +1,12 @@
 use super::super::super::lexer::token;
 use super::super::ast::{ast, ast::Node};
 use super::super::parsers::{ParseState, Parsers};
+use crate::error::result;
 
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
-  pub(crate) fn number(&mut self) -> Result<ast::Syntax, String> {
+  pub(crate) fn number(&mut self) -> Result<ast::Syntax, result::Error> {
     let num: i64;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
@@ -13,7 +14,9 @@ impl Parsers {
       }
 
       None => {
-        return Err("number error".to_string());
+        return Err(result::Error::SyntaxError(
+          "out of index number error possible parser bug".to_string(),
+        ));
       }
     }
 
@@ -34,7 +37,7 @@ impl Parsers {
     return Ok(ast::Syntax::Num(num_ast));
   }
 
-  pub(crate) fn binary(&mut self) -> Result<ast::Syntax, String> {
+  pub(crate) fn binary(&mut self) -> Result<ast::Syntax, result::Error> {
     let value: &str;
     let token: i64;
     match self.get_tokens(self.get_index()) {
@@ -44,7 +47,9 @@ impl Parsers {
       }
 
       None => {
-        return Err("binary error".to_string());
+        return Err(result::Error::SyntaxError(
+          "out of index binary error possible parser bug".to_string(),
+        ));
       }
     }
     let mut ch_ast = ast::BinaryAST::new(value, token);
@@ -63,7 +68,7 @@ impl Parsers {
     return Ok(ast::Syntax::Bin(ch_ast));
   }
 
-  pub(crate) fn strings(&mut self) -> Result<ast::Syntax, String> {
+  pub(crate) fn strings(&mut self) -> Result<ast::Syntax, result::Error> {
     let strs: &str;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
@@ -71,7 +76,9 @@ impl Parsers {
       }
 
       None => {
-        return Err("strings error".to_string());
+        return Err(result::Error::SyntaxError(
+          "out of index strings error possible parser bug".to_string(),
+        ));
       }
     }
 
@@ -91,8 +98,8 @@ impl Parsers {
     return Ok(ast::Syntax::Str(str_ast));
   }
 
-  pub(crate) fn boolean(&mut self) -> Result<ast::Syntax, String> {
-    let mut bools:ast::BoolAST;
+  pub(crate) fn boolean(&mut self) -> Result<ast::Syntax, result::Error> {
+    let mut bools: ast::BoolAST;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         let token = tokens.get_token();
@@ -101,12 +108,17 @@ impl Parsers {
         } else if token == TOKEN._true {
           bools = ast::BoolAST::new(true);
         } else {
-          return Err("not boolean".to_string());
+          return Err(result::Error::SyntaxError(format!(
+            "not boolean {} possible parser bug",
+            tokens.get_value()
+          )));
         }
       }
 
       None => {
-        return Err("bool error".to_string());
+        return Err(result::Error::SyntaxError(
+          "out of index error bool error possible parser bug".to_string(),
+        ));
       }
     }
 
@@ -124,7 +136,7 @@ impl Parsers {
     return Ok(ast::Syntax::Bool(bools));
   }
 
-  pub(crate) fn formula_judge(&mut self) -> Option<Result<ast::Syntax, String>> {
+  pub(crate) fn formula_judge(&mut self) -> Option<Result<ast::Syntax, result::Error>> {
     //judge()で判定するとインクリメントされるため
     match self.get_tokens(self.get_index() + 1) {
       Some(tokens) => {
@@ -174,7 +186,7 @@ impl Parsers {
 
           ast::Syntax::Var(var) => {
             if var.get_is_def() {
-              return Some(Err(format!("syntax error let")));
+              return Some(Err(result::Error::SyntaxError(format!("syntax error let"))));
             }
             return Some(Ok(ast::Syntax::Var(var)));
           }
@@ -184,11 +196,15 @@ impl Parsers {
           }
 
           ast::Syntax::Scope(_) => {
-            return Some(Err(format!("syntax error scope")));
+            return Some(Err(result::Error::SyntaxError(format!(
+              "syntax error scope"
+            ))));
           }
 
           _ => {
-            return Some(Err(format!("syntax error scope")));
+            return Some(Err(result::Error::SyntaxError(format!(
+              "syntax error scope"
+            ))));
           }
         },
         Err(e) => {
