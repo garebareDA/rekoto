@@ -23,19 +23,19 @@ mod tests {
                 panic!();
               }
 
-              match var.get_node_index(0) {
+              match var.get_node_index(0).unwrap() {
                 ast::ast::Syntax::Num(num) => {
                   if num.get_num() != 1 {
                     panic!();
                   }
 
-                  match num.get_node_index(0) {
+                  match num.get_node_index(0).unwrap() {
                     ast::ast::Syntax::Bin(bin) => {
                       if bin.get_bin() != "+" {
                         panic!();
                       }
 
-                      match bin.get_node_index(0) {
+                      match bin.get_node_index(0).unwrap() {
                         ast::ast::Syntax::Num(num) => {
                           if num.get_num() != 1 {
                             panic!();
@@ -88,7 +88,7 @@ mod tests {
                 panic!();
               }
 
-              match var.get_node_index(0) {
+              match var.get_node_index(0).unwrap() {
                 ast::ast::Syntax::Str(strs) => {
                   if strs.get_str() != "string" {
                     panic!();
@@ -128,7 +128,7 @@ mod tests {
                 panic!();
               }
 
-              match var.get_node_index(0) {
+              match var.get_node_index(0).unwrap() {
                 ast::ast::Syntax::Call(call) => {
                   if call.get_name() != "a" {
                     panic!();
@@ -148,13 +148,13 @@ mod tests {
                     }
                   }
 
-                  match call.get_node_index(0) {
+                  match call.get_node_index(0).unwrap() {
                     ast::ast::Syntax::Bin(bin) => {
                       if bin.get_bin() != "+" {
                         panic!();
                       }
 
-                      match bin.get_node_index(0) {
+                      match bin.get_node_index(0).unwrap() {
                         ast::ast::Syntax::Num(num) => {
                           if num.get_num() != 1 {
                             panic!();
@@ -313,13 +313,13 @@ mod tests {
             ast::ast::Syntax::Ifs(ifs) => {
               let judge = ifs.get_judge();
               match &judge {
-                ast::ast::Syntax::Num(num) => match num.get_node_index(0) {
+                ast::ast::Syntax::Num(num) => match num.get_node_index(0).unwrap() {
                   ast::ast::Syntax::Bin(bin) => {
                     if bin.get_bin() != "<" {
                       panic!();
                     }
 
-                    match bin.get_node_index(0) {
+                    match bin.get_node_index(0).unwrap() {
                       ast::ast::Syntax::Num(_) => {}
                       _ => {
                         panic!();
@@ -371,13 +371,13 @@ mod tests {
             ast::ast::Syntax::Elif(ifs) => {
               let judge = ifs.get_judge();
               match &judge {
-                ast::ast::Syntax::Num(num) => match num.get_node_index(0) {
+                ast::ast::Syntax::Num(num) => match num.get_node_index(0).unwrap() {
                   ast::ast::Syntax::Bin(bin) => {
                     if bin.get_bin() != "<" {
                       panic!();
                     }
 
-                    match bin.get_node_index(0) {
+                    match bin.get_node_index(0).unwrap() {
                       ast::ast::Syntax::Num(_) => {}
                       _ => {
                         panic!();
@@ -626,7 +626,7 @@ mod tests {
                   panic!();
                 }
 
-                match var.get_node()[0] {
+                match var.get_node_index(0).unwrap() {
                   ast::ast::Syntax::Str(_) => {}
                   _ => {
                     panic!()
@@ -638,6 +638,60 @@ mod tests {
                 panic!();
               }
             },
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  pub fn boolean() {
+    let mut lex = lexers::lex("let a:bool = true;");
+    let result = lex.run().get_tokens();
+
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Var(var) => {
+              match var.get_type() {
+                Some(t) => {
+                  match t {
+                    ast::ast::Types::Bool => {}
+
+                    _ => {
+                      panic!();
+                    }
+                  }
+                }
+                None => {
+                  panic!();
+                }
+              }
+
+              match var.get_node_index(0).unwrap() {
+                ast::ast::Syntax::Bool(bools) => {
+                  if bools.get_bool() == false {
+                    panic!()
+                  }
+                }
+
+                _ => {
+                  panic!();
+                }
+              }
+            }
+
             _ => {
               panic!();
             }

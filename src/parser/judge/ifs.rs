@@ -1,8 +1,9 @@
-use super::super::ast::{ast, ast::Syntax, ast::Node};
+use super::super::ast::{ast, ast::Node, ast::Syntax};
 use super::super::parsers::Parsers;
+use crate::error::result;
 
 impl Parsers {
-  pub(crate) fn ifs(&mut self) -> Result<ast::Syntax, String> {
+  pub(crate) fn ifs(&mut self) -> Result<ast::Syntax, result::Error> {
     match self.if_judge() {
       Ok(syntax) => {
         let mut ifs_ast = ast::IfsAST::new(syntax);
@@ -24,7 +25,7 @@ impl Parsers {
     }
   }
 
-  pub(crate) fn elses(&mut self) -> Result<ast::Syntax, String> {
+  pub(crate) fn elses(&mut self) -> Result<ast::Syntax, result::Error> {
     match self.if_scope() {
       Ok(syntax) => {
         let mut else_ast = ast::ElseAST::new();
@@ -38,7 +39,7 @@ impl Parsers {
     }
   }
 
-  pub(crate) fn elif(&mut self) -> Result<ast::Syntax, String> {
+  pub(crate) fn elif(&mut self) -> Result<ast::Syntax, result::Error> {
     match self.if_judge() {
       Ok(syntax) => {
         let mut elif_ast = ast::ElifAST::new(syntax);
@@ -60,12 +61,12 @@ impl Parsers {
     }
   }
 
-  fn if_judge(&mut self) -> Result<ast::Syntax, String>{
+  fn if_judge(&mut self) -> Result<ast::Syntax, result::Error> {
     self.index_inc();
     match self.judge() {
       Some(judge) => match judge {
-          Ok(obj) => match obj {
-            Syntax::Str(strs) => {
+        Ok(obj) => match obj {
+          Syntax::Str(strs) => {
             return Ok(Syntax::Str(strs));
           }
 
@@ -74,7 +75,9 @@ impl Parsers {
           }
 
           _ => {
-            return Err("if syntax error".to_string());
+            return Err(result::Error::SyntaxError(
+              "if syntax error must be string or number boolean".to_string(),
+            ));
           }
         },
 
@@ -84,18 +87,23 @@ impl Parsers {
       },
 
       None => {
-        return Err(format!("if syntax error"));
+        return Err(result::Error::SyntaxError(format!(
+          "if syntax error possible parser bug"
+        )));
       }
     }
   }
 
-  fn if_scope(&mut self) -> Result<ast::Syntax, String>{
+  fn if_scope(&mut self) -> Result<ast::Syntax, result::Error> {
     self.index_inc();
     match self.judge() {
       Some(judge) => match judge {
         Ok(obj) => match obj {
           Syntax::Bin(bin) => {
-            return Err( format!("{} syntax error", bin.get_bin()));
+            return Err(result::Error::SyntaxError(format!(
+              "if scope {} syntax error",
+              bin.get_bin()
+            )));
           }
 
           _ => {
@@ -109,7 +117,9 @@ impl Parsers {
       },
 
       None => {
-        return Err("if scope error".to_string());
+        return Err(result::Error::SyntaxError(
+          "if scope error possible parser bug".to_string(),
+        ));
       }
     }
   }

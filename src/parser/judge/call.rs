@@ -1,18 +1,21 @@
 use super::super::ast::{ast, ast::Node};
 use super::super::parsers::Parsers;
+use crate::error::result;
 use crate::lexer::token;
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
-  pub(crate) fn call(&mut self) -> Result<ast::Syntax, String> {
-    let name:String;
+  pub(crate) fn call(&mut self) -> Result<ast::Syntax, result::Error> {
+    let name: String;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         name = tokens.get_value().to_string();
       }
 
       None => {
-        return Err("function call error".to_string());
+        return Err(result::Error::SyntaxError(
+          "function call error".to_string(),
+        ));
       }
     }
 
@@ -22,12 +25,15 @@ impl Parsers {
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         if tokens.get_token() != TOKEN._paren_left {
-          return Err(format!("Error not a function"));
+          return Err(result::Error::SyntaxError(format!(
+            "Error {} not a function",
+            tokens.get_value()
+          )));
         }
       }
 
       None => {
-        return Err("strings error".to_string());
+        return Err(result::Error::SyntaxError("strings error".to_string()));
       }
     }
 
@@ -42,19 +48,18 @@ impl Parsers {
         }
 
         None => {
-          return Err("strings error".to_string());
+          return Err(result::Error::SyntaxError("strings error".to_string()));
         }
       }
 
-
-      let verification_token:i64;
+      let verification_token: i64;
       match self.get_tokens(self.get_index() + 1) {
         Some(tokens) => {
           verification_token = tokens.get_token();
         }
 
         None => {
-          return Err("strings error".to_string());
+          return Err(result::Error::SyntaxError("strings error".to_string()));
         }
       }
 
@@ -67,7 +72,7 @@ impl Parsers {
             } else if verification_token == TOKEN._comma {
               continue;
             } else {
-              return Err(format!("Syntax error {}", name));
+              return Err(result::Error::SyntaxError(format!("syntax error call function {}", name)));
             }
           }
 
@@ -76,7 +81,7 @@ impl Parsers {
           }
         },
         None => {
-          return Err(format!("syntax error call judge"));
+          return Err(result::Error::SyntaxError(format!("syntax error call judge")));
         }
       }
     }

@@ -1,8 +1,8 @@
 use super::super::super::interpreter::Interpreter;
-use crate::parser::ast::ast::{CallAST, Node, Syntax};
+use crate::parser::ast::ast::{CallAST, Node};
 
 impl Interpreter{
-  pub(crate) fn call(&self, call:&CallAST) -> Result<(), String>{
+  pub(crate) fn call(&mut self, call:&CallAST) -> Result<String, String>{
     let node_len = call.get_node_len();
     let argment_len = call.get_argment_len();
     let argment = call.get_argment();
@@ -19,24 +19,12 @@ impl Interpreter{
 
       match argment.get(0){
         Some(argment) => {
-          match argment {
-            Syntax::Str(strs) => {
-              println!("{}", strs.get_str());
-            }
-
-            Syntax::Num(num) => {
-              println!("{}", num.get_num());
-            }
-
-            _ => {}
-          }
+          return self.print(argment);
         }
         None => {
-          return Err("error print".to_string());
+          return Err("error print not argment".to_string());
         }
       }
-
-      return Ok(());
     }
 
     return Err(format!("not found function {}", name));

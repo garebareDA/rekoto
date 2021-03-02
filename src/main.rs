@@ -3,7 +3,7 @@ use rekoto::parser::parsers;
 use rekoto::interpreters::interpreter;
 
 fn main() {
-    let mut lex = lexers::lex("print(\"hello world!\");");
+    let mut lex = lexers::lex("let a = \"hello world!\";\nprint(a);");
     let result = lex.run().get_tokens();
     println!("{:?}", result);
 
@@ -12,7 +12,7 @@ fn main() {
     println!("{:?}", result);
     match result {
         Ok(result) => {
-            let interpreter = interpreter::Interpreter::new();
+            let mut interpreter = interpreter::Interpreter::new();
             match interpreter.run(result) {
                 Ok(_) => {}
                 Err(e) => {

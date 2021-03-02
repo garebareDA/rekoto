@@ -2,31 +2,40 @@ use super::super::interpreter::Interpreter;
 use crate::parser::ast::ast::{Syntax};
 
 impl Interpreter {
-  pub(crate) fn judge(&self, ast: &Syntax) -> Result<(), String> {
+  pub(crate) fn judge(&mut self, ast: &Syntax) -> Option<Result<String, String>> {
     match ast {
       Syntax::Call(call) => {
-        return self.call(call);
+        return Some(self.call(call));
       }
 
       Syntax::Bin(bin) => {
-        return Err(format!("{} error", bin.get_bin()));
+        return Some(Err(format!("{} error", bin.get_bin())));
       }
 
       Syntax::Var(var) => {
-        //下の階層にあればvar_spush
-        return Ok(())
+        //下の階層にあれば計算してvarにpush
+        //なければそのままvar_push
+        match self.variable(var) {
+          Ok(()) => {
+            return None;
+          }
+
+          Err(e) => {
+            return Some(Err(e));
+          }
+        }
       }
 
       Syntax::Str(_) => {
-        return Ok(());
+        return None;
       }
 
       Syntax::Num(_) => {
-        return Ok(());
+        return None;
       }
 
       _ => {
-        return Err("error unimplemented ".to_string());
+        return Some(Err("error unimplemented ".to_string()));
       }
     }
   }

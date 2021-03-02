@@ -2,6 +2,7 @@ extern crate lelex;
 use super::ast;
 use lelex::tokens::Tokens;
 use crate::parser::ast::ast::Node;
+use crate::error::result;
 
 #[derive(PartialEq, Debug)]
 pub enum ParseState {
@@ -25,7 +26,7 @@ impl Parsers {
     Self { tokens, index: 0, state:Vec::new() }
   }
 
-  pub fn run(&mut self) -> Result<ast::ast::RootAST, String> {
+  pub fn run(&mut self) -> Result<ast::ast::RootAST, result::Error> {
     let mut root = ast::ast::RootAST::new();
     let len = self.tokens.len();
     self.push_state(ParseState::Main);

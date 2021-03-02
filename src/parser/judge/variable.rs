@@ -1,10 +1,11 @@
 use super::super::super::lexer::token;
 use super::super::ast::{ast, ast::Node, ast::Type};
 use super::super::parsers::{ParseState, Parsers};
+use crate::error::result;
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
-  pub(crate) fn variable_def(&mut self, is_mutable: bool) -> Result<ast::Syntax, String> {
+  pub(crate) fn variable_def(&mut self, is_mutable: bool) -> Result<ast::Syntax, result::Error> {
     //letまたはconstの変数名を取得
     match self.variable_def_inner() {
       Ok(syn) => match syn {
@@ -67,45 +68,72 @@ impl Parsers {
                   return Ok(ast::Syntax::Var(var));
                 }
 
+                ast::Syntax::Bool(bools) => {
+                  let ast = ast::Syntax::Bool(bools);
+                  var.push_node(ast);
+                  return Ok(ast::Syntax::Var(var));
+                }
+
                 ast::Syntax::Scope(_) => {
-                  return Err(format!("Invalid scope"));
+                  return Err(result::Error::SyntaxError(format!(
+                    "invalid scope variable {}",
+                    var.get_name()
+                  )));
                 }
 
                 _ => {
-                  return Err(format!("syntax error scope"));
+                  return Err(result::Error::SyntaxError(format!(
+                    "syntax error scope {}",
+                    var.get_name()
+                  )));
                 }
               }
             }
 
-            Err(e) => {
-              return Err(e);
+            Err(_) => {
+              return Err(result::Error::SyntaxError(format!(
+                "syntax error variable {}",
+                var.get_name()
+              )));
             }
           }
         }
 
         ast::Syntax::Num(num) => {
-          return Err(format!("{} cannot be used for variables", num.get_num()));
+          return Err(result::Error::SyntaxError(format!(
+            "{} cannot be used for variables",
+            num.get_num()
+          )));
         }
 
         ast::Syntax::Bin(bin) => {
-          return Err(format!("{} cannot be used for variables", bin.get_bin()))
+          return Err(result::Error::SyntaxError(format!(
+            "{} cannot be used for variables",
+            bin.get_bin()
+          )))
         }
 
         ast::Syntax::Str(strs) => {
-          return Err(format!("{} cannot be used for variables", strs.get_str()))
+          return Err(result::Error::SyntaxError(format!(
+            "{} cannot be used for variables",
+            strs.get_str()
+          )))
         }
 
         ast::Syntax::Call(call) => {
-          return Err(format!("{} cannot be used for variables", call.get_name()))
+          return Err(result::Error::SyntaxError(format!(
+            "{} cannot be used for variables",
+            call.get_name()
+          )))
         }
 
         ast::Syntax::Scope(_) => {
-          return Err(format!("`{{` cannot be used for variables"));
+          return Err(result::Error::SyntaxError(format!(
+            "`{{` cannot be used for variables"
+          )))
         }
 
-        _ => {
-          return Err(format!("syntax error scope"));
-        }
+        _ => return Err(result::Error::SyntaxError(format!("syntax error scope"))),
       },
 
       Err(s) => {
@@ -115,23 +143,23 @@ impl Parsers {
   }
 
   //変数を取得
-  fn variable_def_inner(&mut self) -> Result<ast::Syntax, String> {
+  fn variable_def_inner(&mut self) -> Result<ast::Syntax, result::Error> {
     match self.judge() {
       Some(syn) => match syn {
         Ok(obj) => {
           return Ok(obj);
         }
 
-        Err(s) => {
-          return Err(s);
+        Err(e) => {
+          return Err(e);
         }
       },
 
-      None => return Err(format!("syntax error")),
+      None => return Err(result::Error::SyntaxError(format!("syntax error variable"))),
     }
   }
 
-  fn variable_def_inspect(&mut self) -> Result<(), String> {
+  fn variable_def_inspect(&mut self) -> Result<(), result::Error> {
     self.index_inc();
     match self.variable_def_inner() {
       Ok(syn) => match syn {
@@ -140,10 +168,14 @@ impl Parsers {
           if bin == "=" {
             return Ok(());
           }
-          return Err(format!("Only the = operator can be used for assignment"));
+          return Err(result::Error::SyntaxError(format!(
+            "Only the = operator can be used for assignment"
+          )));
         }
         _ => {
-          return Err(format!("Only the = operator can be used for assignment"));
+          return Err(result::Error::SyntaxError(format!(
+            "Only the = operator can be used for assignment"
+          )));
         }
       },
 
@@ -153,7 +185,7 @@ impl Parsers {
     }
   }
 
-  pub(crate) fn variable(&mut self, is_def: bool) -> Result<ast::Syntax, String> {
+  pub(crate) fn variable(&mut self, is_def: bool) -> Result<ast::Syntax, result::Error> {
     let name: &str;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
@@ -161,14 +193,15 @@ impl Parsers {
       }
 
       None => {
-        return Err("syntax error variable".to_string());
+        return Err(result::Error::SyntaxError(
+          "syntax error variable possible parser bug".to_string(),
+        ));
       }
     };
 
     if name != "" {
       let mut ast = ast::VariableAST::new(name, false, is_def);
-      if self.get_last_state() == &ParseState::Var
-      || self.get_last_state() == &ParseState::Function
+      if self.get_last_state() == &ParseState::Var || self.get_last_state() == &ParseState::Function
       {
         return Ok(ast::Syntax::Var(ast));
       }
@@ -188,15 +221,20 @@ impl Parsers {
       return Ok(ast::Syntax::Var(ast));
     }
 
-    return Err(format!("{} variable name error", name));
+    return Err(result::Error::SyntaxError(format!(
+      "{} variable name error",
+      name
+    )));
   }
 
-  pub(crate) fn check_types(&mut self) -> Result<Option<ast::Types>, String> {
+  pub(crate) fn check_types(&mut self) -> Result<Option<ast::Types>, result::Error> {
     match self.get_tokens(self.get_index() + 1) {
       Some(tokens) => {
         if tokens.get_token() != TOKEN._colon {
           if self.get_last_state() == &ParseState::Function {
-            return Err("param not found type".to_string());
+            return Err(result::Error::SyntaxError(
+              "param not found type".to_string(),
+            ));
           }
           return Ok(None);
         }
@@ -209,19 +247,24 @@ impl Parsers {
               return Ok(Some(ast::Types::Number));
             } else if types == "string" {
               return Ok(Some(ast::Types::String));
+            } else if types == "bool" {
+              return Ok(Some(ast::Types::Bool));
             }
 
-            return Err(format!("nofound types {}", types));
+            return Err(result::Error::SyntaxError(format!(
+              "nofound types {}",
+              types
+            )));
           }
 
           None => {
-            return Err("Syntax error type".to_string());
+            return Err(result::Error::SyntaxError("Syntax error type".to_string()));
           }
         }
       }
 
       None => {
-        return Err("Syntax error type".to_string());
+        return Err(result::Error::SyntaxError("Syntax error type".to_string()));
       }
     }
   }
