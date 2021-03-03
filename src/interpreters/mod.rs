@@ -18,9 +18,7 @@ mod tests {
         let mut interpreter = interpreter::Interpreter::new();
         match interpreter.debug_run(result) {
           Ok(result) => {
-            if result[0] != "hello world!" {
-              panic!();
-            }
+            assert_eq!(result[0], "hello world!");
           }
           Err(e) => {
             panic!(e);
@@ -45,9 +43,7 @@ mod tests {
         let mut interpreter = interpreter::Interpreter::new();
         match interpreter.debug_run(result) {
           Ok(result) => {
-            if result[0] != "hello world!" {
-              panic!();
-            }
+            assert_eq!(result[0], "hello world!");
           }
           Err(e) => {
             panic!(e);

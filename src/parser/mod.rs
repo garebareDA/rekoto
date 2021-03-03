@@ -19,27 +19,19 @@ mod tests {
         for obj in result.get_node().iter() {
           match obj {
             ast::ast::Syntax::Var(var) => {
-              if var.get_name() != "a" {
-                panic!();
-              }
+              assert_eq!(var.get_name(), "a");
 
               match var.get_node_index(0).unwrap() {
                 ast::ast::Syntax::Num(num) => {
-                  if num.get_num() != 1 {
-                    panic!();
-                  }
+                  assert_eq!(num.get_num(), 1);
 
                   match num.get_node_index(0).unwrap() {
                     ast::ast::Syntax::Bin(bin) => {
-                      if bin.get_bin() != "+" {
-                        panic!();
-                      }
+                      assert_eq!(bin.get_bin(), "+");
 
                       match bin.get_node_index(0).unwrap() {
                         ast::ast::Syntax::Num(num) => {
-                          if num.get_num() != 1 {
-                            panic!();
-                          }
+                          assert_eq!(num.get_num(), 1)
                         }
 
                         _ => {
@@ -84,15 +76,11 @@ mod tests {
         for obj in result.get_node().iter() {
           match obj {
             ast::ast::Syntax::Var(var) => {
-              if var.get_name() != "a" {
-                panic!();
-              }
+              assert_eq!(var.get_name(), "a");
 
               match var.get_node_index(0).unwrap() {
                 ast::ast::Syntax::Str(strs) => {
-                  if strs.get_str() != "string" {
-                    panic!();
-                  }
+                  assert_eq!(strs.get_str(), "string")
                 }
                 _ => {
                   panic!();
@@ -124,22 +112,16 @@ mod tests {
         for obj in result.get_node() {
           match obj {
             ast::ast::Syntax::Var(var) => {
-              if var.get_name() != "a" {
-                panic!();
-              }
+              assert_eq!(var.get_name(), "a");
 
               match var.get_node_index(0).unwrap() {
                 ast::ast::Syntax::Call(call) => {
-                  if call.get_name() != "a" {
-                    panic!();
-                  }
+                  assert_eq!(call.get_name(), "a");
 
                   for call in call.get_argment().iter() {
                     match call {
                       ast::ast::Syntax::Var(var) => {
-                        if var.get_name() != "a" {
-                          panic!();
-                        }
+                        assert_eq!(var.get_name(), "a");
                       }
 
                       _ => {
@@ -150,15 +132,11 @@ mod tests {
 
                   match call.get_node_index(0).unwrap() {
                     ast::ast::Syntax::Bin(bin) => {
-                      if bin.get_bin() != "+" {
-                        panic!();
-                      }
+                      assert_eq!(bin.get_bin(), "+");
 
                       match bin.get_node_index(0).unwrap() {
                         ast::ast::Syntax::Num(num) => {
-                          if num.get_num() != 1 {
-                            panic!();
-                          }
+                          assert_eq!(num.get_num(), 1);
                         }
                         _ => {
                           panic!();
@@ -202,9 +180,7 @@ mod tests {
         for obj in result.get_node() {
           match obj {
             ast::ast::Syntax::Var(var) => {
-              if var.get_is_mutable() != false {
-                panic!();
-              }
+              assert_eq!(var.get_is_mutable(), false);
             }
 
             _ => {
@@ -232,9 +208,7 @@ mod tests {
         for obj in result.get_node() {
           match obj {
             ast::ast::Syntax::Var(var) => {
-              if var.get_is_mutable() != true {
-                panic!();
-              }
+              assert_eq!(var.get_is_mutable(), true);
             }
 
             _ => {
@@ -315,10 +289,7 @@ mod tests {
               match &judge {
                 ast::ast::Syntax::Num(num) => match num.get_node_index(0).unwrap() {
                   ast::ast::Syntax::Bin(bin) => {
-                    if bin.get_bin() != "<" {
-                      panic!();
-                    }
-
+                    assert_eq!(bin.get_bin(), "<");
                     match bin.get_node_index(0).unwrap() {
                       ast::ast::Syntax::Num(_) => {}
                       _ => {
@@ -373,9 +344,7 @@ mod tests {
               match &judge {
                 ast::ast::Syntax::Num(num) => match num.get_node_index(0).unwrap() {
                   ast::ast::Syntax::Bin(bin) => {
-                    if bin.get_bin() != "<" {
-                      panic!();
-                    }
+                    assert_eq!(bin.get_bin(), "<");
 
                     match bin.get_node_index(0).unwrap() {
                       ast::ast::Syntax::Num(_) => {}
@@ -510,10 +479,7 @@ mod tests {
         for obj in result.get_node() {
           match obj {
             ast::ast::Syntax::Fn(fnc) => {
-              if fnc.get_name() != "a" {
-                panic!();
-              }
-
+              assert_eq!(fnc.get_name(), "a");
               match fnc.get_type() {
                 Some(t) => if t != &ast::ast::Types::Number {},
 
@@ -525,10 +491,7 @@ mod tests {
               for param in fnc.get_param().iter() {
                 match param {
                   ast::ast::Syntax::Var(var) => {
-                    if var.get_name() != "a" {
-                      panic!();
-                    }
-
+                    assert_eq!(var.get_name(), "a");
                     match var.get_type() {
                       Some(t) => {
                         if t != &ast::ast::Types::Number {
@@ -582,9 +545,7 @@ mod tests {
           match obj {
             ast::ast::Syntax::Return(ret) => match &ret.get_node()[0] {
               ast::ast::Syntax::Num(num) => {
-                if 1 != num.get_num() {
-                  panic!();
-                }
+                assert_eq!(num.get_num(), 1);
               }
 
               _ => {
@@ -618,13 +579,8 @@ mod tests {
           match obj {
             ast::ast::Syntax::Var(var) => match var.get_type() {
               Some(t) => {
-                if t != &ast::ast::Types::String {
-                  panic!();
-                }
-
-                if var.get_name() != "a" {
-                  panic!();
-                }
+                assert_eq!(t, &ast::ast::Types::String);
+                assert_eq!(var.get_name(), "a");
 
                 match var.get_node_index(0).unwrap() {
                   ast::ast::Syntax::Str(_) => {}
@@ -665,15 +621,13 @@ mod tests {
           match obj {
             ast::ast::Syntax::Var(var) => {
               match var.get_type() {
-                Some(t) => {
-                  match t {
-                    ast::ast::Types::Bool => {}
+                Some(t) => match t {
+                  ast::ast::Types::Bool => {}
 
-                    _ => {
-                      panic!();
-                    }
+                  _ => {
+                    panic!();
                   }
-                }
+                },
                 None => {
                   panic!();
                 }
@@ -681,9 +635,7 @@ mod tests {
 
               match var.get_node_index(0).unwrap() {
                 ast::ast::Syntax::Bool(bools) => {
-                  if bools.get_bool() == false {
-                    panic!()
-                  }
+                  assert_ne!(bools.get_bool(), false);
                 }
 
                 _ => {

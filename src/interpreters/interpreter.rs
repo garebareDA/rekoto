@@ -58,7 +58,6 @@ impl Functions {
   }
 }
 
-
 pub struct Interpreter {
   var:Variables,
   fun:Functions,

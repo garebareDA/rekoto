@@ -1,8 +1,8 @@
 use super::super::super::interpreter::Interpreter;
-use crate::parser::ast::ast::{VariableAST, Node, Syntax};
 use crate::error::result;
+use crate::parser::ast::ast::{Node, Syntax, VariableAST};
 
-impl Interpreter{
+impl Interpreter {
   pub(crate) fn variable(&mut self, var: &VariableAST) -> Result<(), result::Error> {
     if var.get_node_len() == 0 {
       self.push_var(var);
@@ -13,7 +13,9 @@ impl Interpreter{
       return self.substitution_one_node(var);
     }
 
-    return Ok(());
+    return Err(result::Error::InterpreterError(
+      "variable node error interpreter bug".to_string(),
+    ));
   }
 
   fn substitution_one_node(&mut self, vars: &VariableAST) -> Result<(), result::Error> {
@@ -22,40 +24,54 @@ impl Interpreter{
         match var {
           Syntax::Var(var2) => {
             //変数の検索
-            self.push_var(var2);
+            if self.is_node_index(var2, vars) {}
             return Ok(());
           }
 
-          Syntax::Str(_) => {
-            self.push_var(vars);
+          Syntax::Str(strs) => {
+            if self.is_node_index(strs, vars) {}
             return Ok(());
           }
 
-          Syntax::Bool(_) => {
-            self.push_var(vars);
+          Syntax::Bool(bools) => {
+            if self.is_node_index(bools, vars) {}
             return Ok(());
           }
 
-          Syntax::Call(_) => {
-            self.push_var(vars);
+          Syntax::Call(call) => {
+            if self.is_node_index(call, vars) {}
             return Ok(());
           }
 
-          Syntax::Num(_) => {
-            self.push_var(vars);
+          Syntax::Num(num) => {
+            if self.is_node_index(num, vars) {
+
+            }
             return Ok(());
           }
 
           _ => {
             //error
-            return Err(result::Error::InterpreterError("Cannot assign to variable".to_string()));
+            return Err(result::Error::InterpreterError(
+              "Cannot assign to variable".to_string(),
+            ));
           }
         }
       }
 
       None => {
-        return Err(result::Error::InterpreterError("Cannot assign to variable".to_string()));
+        return Err(result::Error::InterpreterError(
+          "Cannot assign to variable".to_string(),
+        ));
       }
     }
+  }
+
+  fn is_node_index<T: Node>(&mut self, t: &T, vars: &VariableAST) -> bool {
+    let is = 1 < t.get_node_len();
+    if !is {
+      self.push_var(vars);
+    }
+    return is;
   }
 }
