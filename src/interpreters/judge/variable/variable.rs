@@ -24,30 +24,23 @@ impl Interpreter {
         match var {
           Syntax::Var(var2) => {
             //変数の検索
-            if self.is_node_index(var2, vars) {}
-            return Ok(());
+           return self.is_node_index(var2, vars, var);
           }
 
           Syntax::Str(strs) => {
-            if self.is_node_index(strs, vars) {}
-            return Ok(());
+            return self.is_node_index(strs, vars, var);
           }
 
           Syntax::Bool(bools) => {
-            if self.is_node_index(bools, vars) {}
-            return Ok(());
+            return self.is_node_index(bools, vars, var);
           }
 
           Syntax::Call(call) => {
-            if self.is_node_index(call, vars) {}
-            return Ok(());
+            return self.is_node_index(call, vars, var);
           }
 
           Syntax::Num(num) => {
-            if self.is_node_index(num, vars) {
-
-            }
-            return Ok(());
+            return self.is_node_index(num, vars, var);
           }
 
           _ => {
@@ -67,11 +60,23 @@ impl Interpreter {
     }
   }
 
-  fn is_node_index<T: Node>(&mut self, t: &T, vars: &VariableAST) -> bool {
+  fn is_node_index<T: Node>(&mut self, t: &T, vars: &VariableAST, syn: &Syntax) -> Result<(), result::Error> {
     let is = 1 < t.get_node_len();
     if !is {
       self.push_var(vars);
+      return Ok(());
+    } else {
+      match self.formula(syn) {
+        Ok(inner) => {
+          let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
+          var.push_node(inner);
+          return Ok(());
+        }
+
+        Err(e) => {
+          return Err(e);
+        }
+      }
     }
-    return is;
   }
 }

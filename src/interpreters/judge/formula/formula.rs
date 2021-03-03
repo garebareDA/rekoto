@@ -27,31 +27,38 @@ impl Formula {
   }
 
   pub fn push_stack(&mut self, stack: FormulaType) {
-    self.push_stack(stack);
+    self.stack.push(stack);
   }
 
-  pub fn pop_bin(&mut self, index:usize) -> Result<ast::BinaryAST, result::Error> {
+  pub fn pop_bin(&mut self, index: usize) -> Result<ast::BinaryAST, result::Error> {
     if self.bin_stack.len() > index {
-      return Err(result::Error::InterpreterError("pop bin error interpreter bug".to_string()))
-     }
+      return Err(result::Error::InterpreterError(
+        "pop bin error interpreter bug".to_string(),
+      ));
+    }
 
     let bin = self.bin_stack.remove(index);
     return Ok(bin);
   }
 
-  pub fn pop_stack(&mut self, index:usize) -> Result<FormulaType, result::Error> {
-   if self.stack.len() > index {
-    return Err(result::Error::InterpreterError("pop stack error interpreter bug".to_string()))
-   }
+  pub fn pop_stack(&mut self, index: usize) -> Result<FormulaType, result::Error> {
+    if self.stack.len() > index {
+      return Err(result::Error::InterpreterError(
+        "pop stack error interpreter bug".to_string(),
+      ));
+    }
 
-   let formula = self.stack.remove(index);
-   return Ok(formula);
+    let formula = self.stack.remove(index);
+    return Ok(formula);
   }
 }
 
 impl Interpreter {
-  pub(crate) fn formula(&mut self, var: &ast::Syntax) -> Result<(), String> {
+  pub(crate) fn formula(&mut self, formula: &ast::Syntax) -> Result<Syntax, result::Error> {
     let mut formulas = Formula::new();
-    return Ok(());
+
+    return Err(result::Error::InterpreterError(
+      "formula error intepreter bug".to_string(),
+    ));
   }
 }
