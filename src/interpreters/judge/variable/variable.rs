@@ -1,8 +1,9 @@
 use super::super::super::interpreter::Interpreter;
 use crate::parser::ast::ast::{VariableAST, Node, Syntax};
+use crate::error::result;
 
 impl Interpreter{
-  pub(crate) fn variable(&mut self, var: &VariableAST) -> Result<(), String> {
+  pub(crate) fn variable(&mut self, var: &VariableAST) -> Result<(), result::Error> {
     if var.get_node_len() == 0 {
       self.push_var(var);
       return Ok(());
@@ -15,7 +16,7 @@ impl Interpreter{
     return Ok(());
   }
 
-  fn substitution_one_node(&mut self, vars: &VariableAST) -> Result<(), String> {
+  fn substitution_one_node(&mut self, vars: &VariableAST) -> Result<(), result::Error> {
     match vars.get_node_index(0) {
       Some(var) => {
         match var {
@@ -47,13 +48,13 @@ impl Interpreter{
 
           _ => {
             //error
-            return Err("Cannot assign to variable".to_string());
+            return Err(result::Error::InterpreterError("Cannot assign to variable".to_string()));
           }
         }
       }
 
       None => {
-        return Err("Cannot assign to variable".to_string());
+        return Err(result::Error::InterpreterError("Cannot assign to variable".to_string()));
       }
     }
   }
