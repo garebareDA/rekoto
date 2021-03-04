@@ -6,11 +6,11 @@ use crate::parser::ast::ast::{Node, Syntax};
 pub enum FormulaType {
   Bool(bool),
   Strings(String),
-  Bumber(i64),
+  Number(i64),
 }
 
 pub struct Formula {
-  bin_stack: Vec<ast::BinaryAST>,
+  bin_stack: Vec<i64>,
   stack: Vec<FormulaType>,
 }
 
@@ -22,7 +22,7 @@ impl Formula {
     }
   }
 
-  pub fn push_bin(&mut self, bin: ast::BinaryAST) {
+  pub fn push_bin(&mut self, bin: i64) {
     self.bin_stack.push(bin);
   }
 
@@ -30,7 +30,7 @@ impl Formula {
     self.stack.push(stack);
   }
 
-  pub fn pop_bin(&mut self, index: usize) -> Result<ast::BinaryAST, result::Error> {
+  pub fn pop_bin(&mut self, index: usize) -> Result<i64, result::Error> {
     if self.bin_stack.len() > index {
       return Err(result::Error::InterpreterError(
         "pop bin error interpreter bug".to_string(),
@@ -56,9 +56,69 @@ impl Formula {
 impl Interpreter {
   pub(crate) fn formula(&mut self, formula: &ast::Syntax) -> Result<Syntax, result::Error> {
     let mut formulas = Formula::new();
+    match self.formula_push(&mut formulas, formula) {
+      Ok(_) => {}
+      Err(e) => return Err(e),
+    }
 
     return Err(result::Error::InterpreterError(
       "formula error intepreter bug".to_string(),
     ));
+  }
+
+  fn formula_push(
+    &self,
+    formula: &mut Formula,
+    ast: &ast::Syntax,
+  ) -> Result<(), result::Error> {
+    return self.formula_check(formula, ast);
+  }
+
+  fn formula_check(&self, formula: &mut Formula, ast: &Syntax) -> Result<(), result::Error> {
+    match ast {
+      Syntax::Bin(bin) => {
+        formula.push_bin(bin.get_token());
+        return self.formula_continue(bin, formula);
+      }
+      Syntax::Bool(bools) => {
+        formula.push_stack(FormulaType::Bool(bools.get_bool()));
+        return self.formula_continue(bools, formula);
+      }
+      Syntax::Num(num) => {
+        formula.push_stack(FormulaType::Number(num.get_num()));
+        return self.formula_continue(num, formula);
+      }
+      Syntax::Str(strs) => {
+        formula.push_stack(FormulaType::Strings(strs.get_str().into()));
+        return self.formula_continue(strs, formula);
+      }
+      Syntax::Var(vars) => match self.serch_var(vars.get_name()) {
+        Some(inner) => {
+          return self.formula_check(formula, inner);
+        }
+
+        None => {
+          return Err(result::Error::InterpreterError(format!(
+            "{} not a var",
+            vars.get_name()
+          )))
+        }
+      },
+
+      _ => Err(result::Error::InterpreterError("".to_string())),
+    }
+  }
+
+  fn formula_continue<T: Node>(
+    &self,
+    node: &T,
+    formula: &mut Formula,
+  ) -> Result<(), result::Error> {
+    match node.get_node_index(0) {
+      Some(ast) => self.formula_push(formula, ast),
+      None => {
+        return Ok(());
+      }
+    }
   }
 }

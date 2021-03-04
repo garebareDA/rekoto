@@ -316,6 +316,10 @@ impl BinaryAST {
   pub fn get_bin(&self) -> &str {
     &self.bin
   }
+
+  pub fn get_token(&self) -> i64 {
+    self.token
+  }
 }
 
 impl Node for BinaryAST{
