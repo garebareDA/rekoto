@@ -1,28 +1,94 @@
 use super::formula::{Formula, FormulaType};
 use crate::error::result;
 
+enum CalcuType {
+  Strings((String, String)),
+  Nums((i64, i64)),
+  Bools((bool, bool)),
+}
+
 impl Formula {
-  pub fn mul(&self, left: FormulaType, right: FormulaType) -> Result<FormulaType, result::Error> {
-    let num = self.type_equal_number(left, right,"*")?;
-    return Ok(FormulaType::Number(num.0 * num.1));
+  pub(crate) fn mul(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, "*")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Number(num.0 * num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "* oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
   }
 
-  pub fn div(&self, left: FormulaType, right: FormulaType) -> Result<FormulaType, result::Error> {
-    let num = self.type_equal_number(left, right, "/")?;
-    return Ok(FormulaType::Number(num.0 / num.1));
+  pub(crate) fn div(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, "/")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Number(num.0 / num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "/ oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
   }
 
-  pub fn sur(&self, left: FormulaType, right: FormulaType) -> Result<FormulaType, result::Error> {
-    let num = self.type_equal_number(left, right, "%")?;
-    return Ok(FormulaType::Number(num.0 % num.1));
+  pub(crate) fn sur(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, "%")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Number(num.0 % num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "% oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
   }
 
-  pub fn sub(&self, left: FormulaType, right: FormulaType) -> Result<FormulaType, result::Error> {
-    let num = self.type_equal_number(left, right, "-")?;
-    return Ok(FormulaType::Number(num.0 - num.1));
+  pub(crate) fn sub(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, "-")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Number(num.0 - num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "- oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
   }
 
-  pub fn add(&self, left: FormulaType, right: FormulaType) -> Result<FormulaType, result::Error> {
+  pub(crate) fn add(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
     match left {
       FormulaType::Number(num) => match right {
         FormulaType::Number(num2) => return Ok(FormulaType::Number(num + num2)),
@@ -54,30 +120,191 @@ impl Formula {
     }
   }
 
-  pub fn type_equal_number(
+  pub(crate) fn greater_equ(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, ">=")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Bool(num.0 >= num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          ">= oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
+  }
+
+  pub(crate) fn less_equ(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, "<=")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Bool(num.0 <= num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "<= oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
+  }
+
+  pub(crate) fn less(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, "<")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Bool(num.0 < num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "< oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
+  }
+
+  pub(crate) fn grater(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
+    let num = self.type_equal_all(left, right, ">")?;
+    match num {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Bool(num.0 > num.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "> oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
+  }
+
+  pub(crate) fn equal(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+    let all = self.type_equal_all(left, right, "==")?;
+    match all {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Bool(num.0 == num.1));
+      }
+
+      CalcuType::Strings(strs) => {
+        return Ok(FormulaType::Bool(strs.0 == strs.1));
+      }
+
+      CalcuType::Bools(bools) => {
+        return Ok(FormulaType::Bool(bools.0 == bools.1));
+      }
+    }
+  }
+
+  pub(crate) fn not_equal(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+    let all = self.type_equal_all(left, right, "!=")?;
+    match all {
+      CalcuType::Nums(num) => {
+        return Ok(FormulaType::Bool(num.0 == num.1));
+      }
+
+      CalcuType::Strings(strs) => {
+        return Ok(FormulaType::Bool(strs.0 == strs.1));
+      }
+
+      CalcuType::Bools(bools) => {
+        return Ok(FormulaType::Bool(bools.0 == bools.1));
+      }
+    }
+  }
+
+  pub(crate) fn and(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+    let all = self.type_equal_all(left, right, "&&")?;
+    match all {
+      CalcuType::Bools(bools) => {
+        return Ok(FormulaType::Bool(bools.0 && bools.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "&& oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
+  }
+
+  pub(crate) fn or(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+    let all = self.type_equal_all(left, right, "||")?;
+    match all {
+      CalcuType::Bools(bools) => {
+        return Ok(FormulaType::Bool(bools.0 || bools.1));
+      }
+
+      _ => {
+        return Err(result::Error::InterpreterError(
+          "|| oprator missmathced type not a number".to_string(),
+        ));
+      }
+    }
+  }
+
+
+  fn type_equal_all(
     &self,
     left: FormulaType,
     right: FormulaType,
     op: &str,
-  ) -> Result<(i64, i64), result::Error> {
+  ) -> Result<CalcuType, result::Error> {
     match left {
       FormulaType::Number(num) => match right {
         FormulaType::Number(num2) => {
-          return Ok((num, num2));
+          return Ok(CalcuType::Nums((num, num2)));
         }
         _ => {
           return Err(result::Error::InterpreterError(format!(
-            "caluculation {} operator error {}",
+            "caluculation {} operator error {} missmatched type",
             op, num
           )))
         }
       },
-      _ => {
-        return Err(result::Error::InterpreterError(format!(
-          "caluculation {} operator error",
-          op
-        )))
-      }
+
+      FormulaType::Strings(strs) => match right {
+        FormulaType::Strings(strs2) => {
+          return Ok(CalcuType::Strings((strs, strs2)));
+        }
+
+        _ => {
+          return Err(result::Error::InterpreterError(format!(
+            "caluculation {} operator error {} missmatched type",
+            op, strs
+          )))
+        }
+      },
+
+      FormulaType::Bool(bools) => match right {
+        FormulaType::Bool(bools2) => {
+          return Ok(CalcuType::Bools((bools, bools2)));
+        }
+
+        _ => {
+          return Err(result::Error::InterpreterError(format!(
+            "caluculation {} operator error {} missmatched type",
+            op, bools,
+          )))
+        }
+      },
     }
   }
 }

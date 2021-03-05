@@ -31,7 +31,7 @@ impl Formula {
     loop {
       let mut i = 0;
       if self.stack.len() <= 1 {
-          break;
+        break;
       }
 
       'inner: loop {
@@ -40,7 +40,7 @@ impl Formula {
           break 'inner;
         }
 
-        let bin: i64 = self.bin_stack[i];
+       let bin: i64 = self.bin_stack[i];
         if index == 0 {
           //単行演算子
         }
@@ -50,27 +50,21 @@ impl Formula {
           if bin == TOKEN._div {
             let both_side = self.both_side(i)?;
             let result = self.div(both_side.0, both_side.1)?;
-            self.stack.insert(i, result);
-            self.bin_stack.remove(i);
-            i = 0;
+            self.insert_stack(&mut i, result);
             continue;
           }
 
           if bin == TOKEN._mul {
             let both_side = self.both_side(i)?;
             let result = self.mul(both_side.0, both_side.1)?;
-            self.stack.insert(i, result);
-            self.bin_stack.remove(i);
-            i = 0;
+            self.insert_stack(&mut i, result);
             continue;
           }
 
           if bin == TOKEN._sur {
             let both_side = self.both_side(i)?;
             let result = self.sur(both_side.0, both_side.1)?;
-            self.stack.insert(i, result);
-            self.bin_stack.remove(i);
-            i = 0;
+            self.insert_stack(&mut i, result);
             continue;
           }
         }
@@ -80,48 +74,84 @@ impl Formula {
           if bin == TOKEN._add {
             let both_side = self.both_side(i)?;
             let result = self.add(both_side.0, both_side.1)?;
-            self.stack.insert(i, result);
-            self.bin_stack.remove(i);
-            i = 0;
+            self.insert_stack(&mut i, result);
             continue;
           }
 
           if bin == TOKEN._sub {
             let both_side = self.both_side(i)?;
             let result = self.sub(both_side.0, both_side.1)?;
-            self.stack.insert(i, result);
-            self.bin_stack.remove(i);
-            i = 0;
+            self.insert_stack(&mut i, result);
             continue;
           }
         }
 
         if index == 3 {
-          // => =< < >
-          if bin == TOKEN._greater_equ {}
+          // >= <= < >
+          if bin == TOKEN._greater_equ {
+            let both_side = self.both_side(i)?;
+            let result = self.greater_equ(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
 
-          if bin == TOKEN._less_equ {}
+          if bin == TOKEN._less_equ {
+            let both_side = self.both_side(i)?;
+            let result = self.less_equ(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
 
-          if bin == TOKEN._less {}
+          if bin == TOKEN._less {
+            let both_side = self.both_side(i)?;
+            let result = self.less(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
 
-          if bin == TOKEN._greater {}
+          if bin == TOKEN._greater {
+            let both_side = self.both_side(i)?;
+            let result = self.grater(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
         }
 
         if index == 4 {
           // == !=
-          if bin == TOKEN._equal {}
+          if bin == TOKEN._equal {
+            let both_side = self.both_side(i)?;
+            let result = self.equal(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
 
-          if bin == TOKEN._not_equ {}
+          if bin == TOKEN._not_equ {
+            let both_side = self.both_side(i)?;
+            let result = self.not_equal(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
         }
 
         if index == 5 {
           // &&
-          if bin == TOKEN._and {}
+          if bin == TOKEN._and {
+            let both_side = self.both_side(i)?;
+            let result = self.and(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
         }
 
         if index == 6 {
           // ||
-          if bin == TOKEN._or {}
+          if bin == TOKEN._or {
+            let both_side = self.both_side(i)?;
+            let result = self.or(both_side.0, both_side.1)?;
+            self.insert_stack(&mut i, result);
+            continue;
+          }
         }
 
         i += 1;
@@ -129,7 +159,7 @@ impl Formula {
       index += 1;
     }
 
-    println!("{:?}",self);
+    println!("{:?}", self);
     return Err(result::Error::InterpreterError("temp error".to_string()));
   }
 
@@ -170,6 +200,12 @@ impl Formula {
 
     let formula = self.stack.remove(index);
     return Ok(formula);
+  }
+
+  fn insert_stack(&mut self, index: &mut usize, result:FormulaType) {
+    self.stack.insert(*index, result);
+    self.bin_stack.remove(*index);
+    *index = *index - 1;
   }
 }
 

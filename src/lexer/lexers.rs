@@ -18,8 +18,8 @@ pub fn lex(word: &str) -> lelex::lexers::Lexer {
   lex.push_reserved_word(TOKEN._break, "break").unwrap();
   lex.push_reserved_word(TOKEN._true, "true").unwrap();
   lex.push_reserved_word(TOKEN._false, "false").unwrap();
-  lex.push_reserved_word(TOKEN._greater_equ, "=>").unwrap();
-  lex.push_reserved_word(TOKEN._less_equ, "=<").unwrap();
+  lex.push_reserved_word(TOKEN._greater_equ, ">=").unwrap();
+  lex.push_reserved_word(TOKEN._less_equ, "<=").unwrap();
   lex.push_reserved_word(TOKEN._equ, "==").unwrap();
   lex.push_reserved_word(TOKEN._not_equ, "!=").unwrap();
   lex.push_reserved_word(TOKEN._or, "||").unwrap();
