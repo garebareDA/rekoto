@@ -26,7 +26,7 @@ impl Formula {
     }
   }
 
-  pub fn run(&mut self) -> Result<(), result::Error> {
+  pub fn run(&mut self) -> Result<&FormulaType, result::Error> {
     let mut index = 0;
     loop {
       let mut i = 0;
@@ -35,12 +35,16 @@ impl Formula {
       }
 
       'inner: loop {
-        println!("{:?}", self.stack);
         if self.bin_stack.len() <= i {
           break 'inner;
         }
 
-       let bin: i64 = self.bin_stack[i];
+        let bin: i64;
+        match self.bin_stack.get(i) {
+          Some(b) => bin = *b,
+          None => return Err(result::Error::InterpreterError(format!("calclation error"))),
+        }
+
         if index == 0 {
           //単行演算子
         }
@@ -160,7 +164,14 @@ impl Formula {
     }
 
     println!("{:?}", self);
-    return Err(result::Error::InterpreterError("temp error".to_string()));
+    if self.stack.len() != 1 {
+      match self.stack.get(0) {
+        Some(stack) => Ok(stack),
+        None => return Err(result::Error::InterpreterError(format!("calclation error"))),
+      }
+    } else {
+      return Err(result::Error::InterpreterError(format!("calclation error")));
+    }
   }
 
   fn both_side(&mut self, i: usize) -> Result<(FormulaType, FormulaType), result::Error> {
@@ -202,7 +213,7 @@ impl Formula {
     return Ok(formula);
   }
 
-  fn insert_stack(&mut self, index: &mut usize, result:FormulaType) {
+  fn insert_stack(&mut self, index: &mut usize, result: FormulaType) {
     self.stack.insert(*index, result);
     self.bin_stack.remove(*index);
     *index = *index - 1;
@@ -214,11 +225,25 @@ impl Interpreter {
     let mut formulas = Formula::new();
     self.formula_push(&mut formulas, formula)?;
     println!("{:?}", formulas);
-    formulas.run();
+    match formulas.run() {
+      Ok(result) => match result {
+        FormulaType::Number(num) => {
+          return Ok(Syntax::Num(ast::NumberAST::new(*num)));
+        }
 
-    return Err(result::Error::InterpreterError(
-      "formula error intepreter bug".to_string(),
-    ));
+        FormulaType::Strings(strs) => {
+          return Ok(Syntax::Str(ast::StringAST::new(strs)));
+        }
+
+        FormulaType::Bool(bools) => {
+          return Ok(Syntax::Bool(ast::BoolAST::new(*bools)));
+        }
+      },
+
+      Err(e) => {
+        return Err(e);
+      }
+    }
   }
 
   fn formula_push(&self, formula: &mut Formula, ast: &ast::Syntax) -> Result<(), result::Error> {
