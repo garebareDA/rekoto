@@ -26,10 +26,20 @@ impl Formula {
     }
   }
 
-  pub fn run(&mut self) -> Result<(), result::Error>{
+  pub fn run(&mut self) -> Result<(), result::Error> {
     let mut index = 0;
     loop {
-      for i in 0..self.bin_stack.len() {
+      let mut i = 0;
+      if self.stack.len() <= 1 {
+          break;
+      }
+
+      'inner: loop {
+        println!("{:?}", self.stack);
+        if self.bin_stack.len() <= i {
+          break 'inner;
+        }
+
         let bin: i64 = self.bin_stack[i];
         if index == 0 {
           //単行演算子
@@ -38,20 +48,52 @@ impl Formula {
         if index == 1 {
           // * / %
           if bin == TOKEN._div {
-           let both_side = self.both_side(i);
-            println!("{:?}", both_side);
+            let both_side = self.both_side(i)?;
+            let result = self.div(both_side.0, both_side.1)?;
+            self.stack.insert(i, result);
+            self.bin_stack.remove(i);
+            i = 0;
+            continue;
           }
 
-          if bin == TOKEN._mul {}
+          if bin == TOKEN._mul {
+            let both_side = self.both_side(i)?;
+            let result = self.mul(both_side.0, both_side.1)?;
+            self.stack.insert(i, result);
+            self.bin_stack.remove(i);
+            i = 0;
+            continue;
+          }
 
-          if bin == TOKEN._sur {}
+          if bin == TOKEN._sur {
+            let both_side = self.both_side(i)?;
+            let result = self.sur(both_side.0, both_side.1)?;
+            self.stack.insert(i, result);
+            self.bin_stack.remove(i);
+            i = 0;
+            continue;
+          }
         }
 
         if index == 2 {
           // + -
-          if bin == TOKEN._add {}
+          if bin == TOKEN._add {
+            let both_side = self.both_side(i)?;
+            let result = self.add(both_side.0, both_side.1)?;
+            self.stack.insert(i, result);
+            self.bin_stack.remove(i);
+            i = 0;
+            continue;
+          }
 
-          if bin == TOKEN._sub {}
+          if bin == TOKEN._sub {
+            let both_side = self.both_side(i)?;
+            let result = self.sub(both_side.0, both_side.1)?;
+            self.stack.insert(i, result);
+            self.bin_stack.remove(i);
+            i = 0;
+            continue;
+          }
         }
 
         if index == 3 {
@@ -81,23 +123,22 @@ impl Formula {
           // ||
           if bin == TOKEN._or {}
         }
-      }
 
-      index += 1;
-      if self.bin_stack.len() < 1 {
-        break;
+        i += 1;
       }
+      index += 1;
     }
 
+    println!("{:?}",self);
     return Err(result::Error::InterpreterError("temp error".to_string()));
   }
 
-  fn both_side(&mut self, i:usize) -> Result<(FormulaType, FormulaType), result::Error>{
+  fn both_side(&mut self, i: usize) -> Result<(FormulaType, FormulaType), result::Error> {
     if self.stack.len() < i + 1 {
       return Err(result::Error::InterpreterError("temp error".to_string()));
     }
     let left = self.stack.remove(i);
-    let right  = self.stack.remove(i + 1);
+    let right = self.stack.remove(i);
     return Ok((left, right));
   }
 
@@ -135,10 +176,7 @@ impl Formula {
 impl Interpreter {
   pub(crate) fn formula(&mut self, formula: &ast::Syntax) -> Result<Syntax, result::Error> {
     let mut formulas = Formula::new();
-    match self.formula_push(&mut formulas, formula) {
-      Ok(_) => {}
-      Err(e) => return Err(e),
-    }
+    self.formula_push(&mut formulas, formula)?;
     println!("{:?}", formulas);
     formulas.run();
 

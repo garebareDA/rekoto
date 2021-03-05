@@ -3,7 +3,7 @@ use rekoto::parser::parsers;
 use rekoto::interpreters::interpreter;
 
 fn main() {
-    let mut lex = lexers::lex("let a = 1 * 1;\n print(a);");
+    let mut lex = lexers::lex("let a = 5 * 5 - 1 + 1;\n print(a);");
     let result = lex.run().get_tokens();
     println!("{:?}", result);
 
