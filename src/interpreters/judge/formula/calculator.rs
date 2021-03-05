@@ -196,7 +196,11 @@ impl Formula {
     }
   }
 
-  pub(crate) fn equal(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+  pub(crate) fn equal(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
     let all = self.type_equal_all(left, right, "==")?;
     match all {
       CalcuType::Nums(num) => {
@@ -213,7 +217,11 @@ impl Formula {
     }
   }
 
-  pub(crate) fn not_equal(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+  pub(crate) fn not_equal(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
     let all = self.type_equal_all(left, right, "!=")?;
     match all {
       CalcuType::Nums(num) => {
@@ -230,7 +238,11 @@ impl Formula {
     }
   }
 
-  pub(crate) fn and(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+  pub(crate) fn and(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
     let all = self.type_equal_all(left, right, "&&")?;
     match all {
       CalcuType::Bools(bools) => {
@@ -245,7 +257,11 @@ impl Formula {
     }
   }
 
-  pub(crate) fn or(&self, left:FormulaType, right:FormulaType) -> Result<FormulaType, result::Error> {
+  pub(crate) fn or(
+    &self,
+    left: FormulaType,
+    right: FormulaType,
+  ) -> Result<FormulaType, result::Error> {
     let all = self.type_equal_all(left, right, "||")?;
     match all {
       CalcuType::Bools(bools) => {
@@ -259,7 +275,6 @@ impl Formula {
       }
     }
   }
-
 
   fn type_equal_all(
     &self,
