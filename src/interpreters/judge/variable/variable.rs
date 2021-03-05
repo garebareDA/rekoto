@@ -61,7 +61,7 @@ impl Interpreter {
   }
 
   fn is_node_index<T: Node>(&mut self, t: &T, vars: &VariableAST, syn: &Syntax) -> Result<(), result::Error> {
-    let is = 1 < t.get_node_len();
+    let is = 0 < t.get_node_len();
     if !is {
       self.push_var(vars);
       return Ok(());

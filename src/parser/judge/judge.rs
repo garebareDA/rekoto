@@ -95,6 +95,7 @@ impl Parsers {
       || token == TOKEN._div
       || token == TOKEN._mul
       || token == TOKEN._equ
+      || token == TOKEN._sur
       || token == TOKEN._not_equ
       || token == TOKEN._and
       || token == TOKEN._or
