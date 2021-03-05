@@ -30,60 +30,56 @@ impl Formula {
     let mut index = 0;
     loop {
       for i in 0..self.bin_stack.len() {
-        let bin: &i64;
-        match self.bin_stack.get(i) {
-          Some(bn) => bin = bn,
-          None => {
-            return Err(result::Error::InterpreterError("temp error".to_string()));
-          }
-        }
-
+        let bin: i64 = self.bin_stack[i];
         if index == 0 {
           //単行演算子
         }
 
         if index == 1 {
           // * / %
-          if bin == &TOKEN._div {}
+          if bin == TOKEN._div {
+           let both_side = self.both_side(i);
+            println!("{:?}", both_side);
+          }
 
-          if bin == &TOKEN._mul {}
+          if bin == TOKEN._mul {}
 
-          if bin == &TOKEN._sur {}
+          if bin == TOKEN._sur {}
         }
 
         if index == 2 {
           // + -
-          if bin == &TOKEN._add {}
+          if bin == TOKEN._add {}
 
-          if bin == &TOKEN._sub {}
+          if bin == TOKEN._sub {}
         }
 
         if index == 3 {
           // => =< < >
-          if bin == &TOKEN._greater_equ {}
+          if bin == TOKEN._greater_equ {}
 
-          if bin == &TOKEN._less_equ {}
+          if bin == TOKEN._less_equ {}
 
-          if bin == &TOKEN._less {}
+          if bin == TOKEN._less {}
 
-          if bin == &TOKEN._greater {}
+          if bin == TOKEN._greater {}
         }
 
         if index == 4 {
           // == !=
-          if bin == &TOKEN._equal {}
+          if bin == TOKEN._equal {}
 
-          if bin == &TOKEN._not_equ {}
+          if bin == TOKEN._not_equ {}
         }
 
         if index == 5 {
           // &&
-          if bin == &TOKEN._and {}
+          if bin == TOKEN._and {}
         }
 
         if index == 6 {
           // ||
-          if bin == &TOKEN._or {}
+          if bin == TOKEN._or {}
         }
       }
 
@@ -96,17 +92,13 @@ impl Formula {
     return Err(result::Error::InterpreterError("temp error".to_string()));
   }
 
-  fn judge(&mut self, i:usize) -> Result<(), result::Error>{
+  fn both_side(&mut self, i:usize) -> Result<(FormulaType, FormulaType), result::Error>{
     if self.stack.len() < i + 1 {
       return Err(result::Error::InterpreterError("temp error".to_string()));
     }
-
     let left = self.stack.remove(i);
     let right  = self.stack.remove(i + 1);
-
-    
-
-    return Ok(());
+    return Ok((left, right));
   }
 
   pub fn push_bin(&mut self, bin: i64) {
