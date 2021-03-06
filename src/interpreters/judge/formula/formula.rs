@@ -123,7 +123,7 @@ impl Formula {
 
         if index == 4 {
           // == !=
-          if bin == TOKEN._equal {
+          if bin == TOKEN._equ {
             let both_side = self.both_side(i)?;
             let result = self.equal(both_side.0, both_side.1)?;
             self.insert_stack(&mut i, result);
@@ -163,8 +163,7 @@ impl Formula {
       index += 1;
     }
 
-    println!("{:?}", self);
-    if self.stack.len() != 1 {
+    if self.stack.len() == 1 {
       match self.stack.get(0) {
         Some(stack) => Ok(stack),
         None => return Err(result::Error::InterpreterError(format!("calclation error"))),
@@ -216,7 +215,9 @@ impl Formula {
   fn insert_stack(&mut self, index: &mut usize, result: FormulaType) {
     self.stack.insert(*index, result);
     self.bin_stack.remove(*index);
-    *index = *index - 1;
+    if 0 < *index {
+      *index = *index - 1;
+    }
   }
 }
 
@@ -224,7 +225,6 @@ impl Interpreter {
   pub(crate) fn formula(&mut self, formula: &ast::Syntax) -> Result<Syntax, result::Error> {
     let mut formulas = Formula::new();
     self.formula_push(&mut formulas, formula)?;
-    println!("{:?}", formulas);
     match formulas.run() {
       Ok(result) => match result {
         FormulaType::Number(num) => {

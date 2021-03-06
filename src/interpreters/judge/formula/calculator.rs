@@ -225,15 +225,15 @@ impl Formula {
     let all = self.type_equal_all(left, right, "!=")?;
     match all {
       CalcuType::Nums(num) => {
-        return Ok(FormulaType::Bool(num.0 == num.1));
+        return Ok(FormulaType::Bool(num.0 != num.1));
       }
 
       CalcuType::Strings(strs) => {
-        return Ok(FormulaType::Bool(strs.0 == strs.1));
+        return Ok(FormulaType::Bool(strs.0 != strs.1));
       }
 
       CalcuType::Bools(bools) => {
-        return Ok(FormulaType::Bool(bools.0 == bools.1));
+        return Ok(FormulaType::Bool(bools.0 != bools.1));
       }
     }
   }

@@ -41,18 +41,18 @@ impl Interpreter {
 
           _ => {
             return Err(result::Error::InterpreterError(
-              "error print variable".to_string(),
+              "error print argment invalid value".to_string(),
             ))
           }
         },
         None => {
           return Err(result::Error::InterpreterError(
-            "error print variable".to_string(),
+            "error print not initalize variable ".to_string(),
           ))
         }
       },
 
-      _ => return Err(result::Error::InterpreterError("error print".to_string())),
+      _ => return Err(result::Error::InterpreterError("error print argment invalid value".to_string())),
     }
   }
 

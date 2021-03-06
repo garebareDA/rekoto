@@ -19,6 +19,10 @@ impl Parsers {
       }
     };
 
+    if token == TOKEN._empty {
+      return None;
+    }
+
     if token == TOKEN._let {
       self.push_state(ParseState::Var);
       self.index_inc();
@@ -94,36 +98,17 @@ impl Parsers {
       || token == TOKEN._sub
       || token == TOKEN._div
       || token == TOKEN._mul
+      || token == TOKEN._equal
       || token == TOKEN._equ
       || token == TOKEN._sur
-      || token == TOKEN._not_equ
-      || token == TOKEN._and
-      || token == TOKEN._or
+      || token == TOKEN._nega
+      || token == TOKEN._pipe
+      || token == TOKEN._amp
       || token == TOKEN._greater
-      || token == TOKEN._greater_equ
       || token == TOKEN._less
-      || token == TOKEN._less_equ
       || token == TOKEN._dot
     {
       return Some(self.binary());
-    }
-
-    if token == TOKEN._equal {
-      let value: &str;
-      let token: i64;
-      match self.get_tokens(self.get_index()) {
-        Some(tokens) => {
-          value = tokens.get_value();
-          token = tokens.get_token();
-        }
-
-        None => {
-          return Some(Err(result::Error::SyntaxError(
-            "syntax error =".to_string(),
-          )));
-        }
-      };
-      return Some(Ok(ast::Syntax::Bin(ast::BinaryAST::new(value, token))));
     }
 
     if token == TOKEN._variable {

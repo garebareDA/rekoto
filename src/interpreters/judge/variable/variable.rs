@@ -70,6 +70,7 @@ impl Interpreter {
         Ok(inner) => {
           let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
           var.push_node(inner);
+          self.push_var(&var);
           return Ok(());
         }
 

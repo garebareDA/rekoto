@@ -90,10 +90,10 @@ impl Parsers {
               }
             }
 
-            Err(_) => {
+            Err(e) => {
               return Err(result::Error::SyntaxError(format!(
-                "syntax error variable {}",
-                var.get_name()
+                "syntax error variable {} \n {}",
+                var.get_name(), e
               )));
             }
           }
