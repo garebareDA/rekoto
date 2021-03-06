@@ -163,13 +163,19 @@ impl Formula {
       index += 1;
     }
 
+    if self.bin_stack.len() != 0 {
+      return Err(result::Error::InterpreterError(
+        "missing or many operators or not present".to_string(),
+      ));
+    }
+
     if self.stack.len() == 1 {
       match self.stack.get(0) {
         Some(stack) => Ok(stack),
-        None => return Err(result::Error::InterpreterError(format!("calclation error"))),
+        None => return Err(result::Error::InterpreterError(format!("calclation error intepreter bug"))),
       }
     } else {
-      return Err(result::Error::InterpreterError(format!("calclation error")));
+      return Err(result::Error::InterpreterError(format!("missing or many numbers or not present")));
     }
   }
 
