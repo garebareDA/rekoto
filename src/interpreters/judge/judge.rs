@@ -1,15 +1,19 @@
 use super::super::interpreter::Interpreter;
-use crate::parser::ast::ast::{Syntax};
+use crate::error::result;
+use crate::parser::ast::ast::Syntax;
 
 impl Interpreter {
-  pub(crate) fn judge(&mut self, ast: &Syntax) -> Option<Result<String, String>> {
+  pub(crate) fn judge(&mut self, ast: &Syntax) -> Option<Result<String, result::Error>> {
     match ast {
       Syntax::Call(call) => {
         return Some(self.call(call));
       }
 
       Syntax::Bin(bin) => {
-        return Some(Err(format!("{} error", bin.get_bin())));
+        return Some(Err(result::Error::InterpreterError(format!(
+          "{} binary error",
+          bin.get_bin()
+        ))));
       }
 
       Syntax::Var(var) => {
@@ -35,7 +39,9 @@ impl Interpreter {
       }
 
       _ => {
-        return Some(Err("error unimplemented ".to_string()));
+        return Some(Err(result::Error::InterpreterError(
+          "error unimplemented ".to_string(),
+        )));
       }
     }
   }

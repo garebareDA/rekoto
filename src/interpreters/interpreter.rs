@@ -1,5 +1,6 @@
 use crate::parser::ast::ast::{Syntax, RootAST, Node};
 use crate::parser::ast;
+use crate::error::result;
 
 #[derive(Debug, Clone)]
 struct Variables {
@@ -57,7 +58,6 @@ impl Functions {
   }
 }
 
-
 pub struct Interpreter {
   var:Variables,
   fun:Functions,
@@ -71,7 +71,7 @@ impl Interpreter {
     }
   }
 
-  pub fn run(&mut self, root:RootAST) -> Result<(), String>{
+  pub fn run(&mut self, root:RootAST) -> Result<(), result::Error>{
     self.push_scope();
     for ast in root.get_node().iter() {
       match self.judge(ast) {
@@ -90,7 +90,7 @@ impl Interpreter {
     return Ok(());
   }
 
-  pub fn debug_run(&mut self, root:RootAST) -> Result<Vec<String>, String>{
+  pub fn debug_run(&mut self, root:RootAST) -> Result<Vec<String>, result::Error>{
     self.push_scope();
     let mut log:Vec<String> = Vec::new();
     for ast in root.get_node().iter() {

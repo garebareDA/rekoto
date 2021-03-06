@@ -1,10 +1,11 @@
 use super::super::super::interpreter::Interpreter;
+use crate::error::result;
 use crate::parser::ast::ast::Syntax;
 use std::io;
 use std::io::Write;
 
 impl Interpreter {
-  pub(crate) fn print(&mut self, argment: &Syntax) -> Result<String, String> {
+  pub(crate) fn print(&mut self, argment: &Syntax) -> Result<String, result::Error> {
     match argment {
       Syntax::Str(strs) => {
         self.print_out(strs.get_str()).unwrap();
@@ -38,12 +39,20 @@ impl Interpreter {
             return Ok(bools.get_bool().to_string());
           }
 
-          _ => return Err("error print variable".to_string()),
+          _ => {
+            return Err(result::Error::InterpreterError(
+              "error print argment invalid value".to_string(),
+            ))
+          }
         },
-        None => return Err("error print variable".to_string()),
+        None => {
+          return Err(result::Error::InterpreterError(
+            "error print not initalize variable ".to_string(),
+          ))
+        }
       },
 
-      _ => return Err("error print".to_string()),
+      _ => return Err(result::Error::InterpreterError("error print argment invalid value".to_string())),
     }
   }
 

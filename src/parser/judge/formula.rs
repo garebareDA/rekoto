@@ -38,8 +38,8 @@ impl Parsers {
   }
 
   pub(crate) fn binary(&mut self) -> Result<ast::Syntax, result::Error> {
-    let value: &str;
-    let token: i64;
+    let mut value: &str;
+    let mut token: i64;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
         value = tokens.get_value();
@@ -52,8 +52,100 @@ impl Parsers {
         ));
       }
     }
-    let mut ch_ast = ast::BinaryAST::new(value, token);
 
+    if token == TOKEN._less
+      || token == TOKEN._greater
+      || token == TOKEN._nega
+      || token == TOKEN._equal
+    {
+      match self.get_tokens(self.get_index() + 1) {
+        Some(tokens) => {
+          let tokens_is_eq = tokens.get_token();
+          if tokens_is_eq == TOKEN._equal {
+            if token == TOKEN._less {
+              value = ">=";
+              token = TOKEN._less_equ;
+              self.index_inc();
+            } else if token == TOKEN._greater {
+              value = "<=";
+              token = TOKEN._greater_equ;
+              self.index_inc();
+            } else if token == TOKEN._nega {
+              value = "!=";
+              token = TOKEN._not_equ;
+              self.index_inc();
+            } else if token == TOKEN._equal {
+              value = "==";
+              token = TOKEN._equ;
+              self.index_inc();
+            } else {
+              return Err(result::Error::SyntaxError(format!(
+                "oprator error {}{}",
+                value,
+                tokens.get_value()
+              )));
+            }
+          }
+        }
+        None => {}
+      }
+    }
+
+    if token == TOKEN._pipe {
+      match self.get_tokens(self.get_index() + 1) {
+        Some(tokens) => {
+          let tokens_is = tokens.get_token();
+          if tokens_is == TOKEN._pipe {
+            value = "||";
+            token = TOKEN._or;
+            self.index_inc();
+          } else {
+            return Err(result::Error::SyntaxError(format!(
+              "oprator error {}{}",
+              value,
+              tokens.get_value()
+            )));
+          }
+        }
+        None => {
+          return Err(result::Error::SyntaxError(format!(
+            "oprator error {}",
+            value,
+          )));
+        }
+      }
+    }
+
+    if token == TOKEN._amp {
+      match self.get_tokens(self.get_index() + 1) {
+        Some(tokens) => {
+          let tokens_is = tokens.get_token();
+          if tokens_is == TOKEN._amp {
+            value = "&&";
+            token = TOKEN._and;
+            self.index_inc();
+          } else {
+            return Err(result::Error::SyntaxError(format!(
+              "oprator error {}{}",
+              value,
+              tokens.get_value()
+            )));
+          }
+        }
+        None => {
+          return Err(result::Error::SyntaxError(format!(
+            "oprator error {}",
+            value,
+          )));
+        }
+      }
+    }
+
+    if token == TOKEN._equal {
+      return Ok(ast::Syntax::Bin(ast::BinaryAST::new(value, token)));
+    }
+
+    let mut ch_ast = ast::BinaryAST::new(value, token);
     match self.formula_judge() {
       Some(formu) => match formu {
         Ok(objf) => {

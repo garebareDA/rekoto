@@ -10,7 +10,7 @@ pub enum Error {
 impl fmt::Display for Error{
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
-      Error::InterpreterError(i) => writeln!(f, "{}", i),
+      Error::InterpreterError(i) => writeln!(f, "Runtime Error: {}", i),
       Error::SyntaxError(s) => writeln!(f, "Sytax Error: {}", s),
     }
   }

@@ -9,34 +9,53 @@ mod tests {
 
   #[test]
   fn call_print() {
-    let mut lex = lexers::lex("print(\"hello world!\");");
-    let result = lex.run().get_tokens();
-    let mut parse = parsers::Parsers::new(result.to_vec());
-    let result = parse.run();
-    match result {
-      Ok(result) => {
-        let mut interpreter = interpreter::Interpreter::new();
-        match interpreter.debug_run(result) {
-          Ok(result) => {
-            if result[0] != "hello world!" {
-              panic!();
-            }
-          }
-          Err(e) => {
-            panic!(e);
-          }
-        }
-      }
-
-      Err(e) => {
-        panic!(e);
-      }
-    }
+    assert_eq!(result("print(\"hello world!\");"), "hello world!");
   }
 
   #[test]
   fn variable() {
-    let mut lex = lexers::lex("let a = \"hello world!\";\nprint(a);");
+    assert_eq!(
+      result("let a = \"hello world!\";\nprint(a);"),
+      "hello world!"
+    );
+  }
+
+  #[test]
+  fn four_arithmetic() {
+    assert_eq!(result("let a = 1 + 1 - 1 / 1 % 1 * 5;\nprint(a);"), "2");
+  }
+
+  #[test]
+  fn string_concat() {
+    assert_eq!(result("let a = 'hello' + 'world!' + 2;\nprint(a);"), "helloworld!2");
+  }
+
+  #[test]
+  fn comparison_operator() {
+    assert_eq!(result("let a = 1 < 0;\nprint(a);"), "false");
+    assert_eq!(result("let a = 0 < 1;\nprint(a);"), "true");
+    assert_eq!(result("let a = 1 <= 0;\nprint(a);"), "false");
+    assert_eq!(result("let a = 0 <= 0;\nprint(a);"), "true");
+    assert_eq!(result("let a = 1 > 0;\nprint(a);"), "true");
+    assert_eq!(result("let a = 0 > 1;\nprint(a);"), "false");
+    assert_eq!(result("let a = 0 >= 0;\nprint(a);"), "true");
+    assert_eq!(result("let a = 0 >= 1;\nprint(a);"), "false");
+  }
+
+  #[test]
+  fn eq_noeq() {
+    assert_eq!(result("let a = 1 == 1;\nprint(a);"), "true");
+    assert_eq!(result("let a = 0 != 1;\nprint(a);"), "true");
+  }
+
+  #[test]
+  fn or_and() {
+    assert_eq!(result("let a = true || false;\nprint(a);"), "true");
+    assert_eq!(result("let a = true && true;\nprint(a);"), "true");
+  }
+
+  fn result(syn: &str) -> String {
+    let mut lex = lexers::lex(syn);
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -45,9 +64,7 @@ mod tests {
         let mut interpreter = interpreter::Interpreter::new();
         match interpreter.debug_run(result) {
           Ok(result) => {
-            if result[0] != "hello world!" {
-              panic!();
-            }
+            return result[0].to_string();
           }
           Err(e) => {
             panic!(e);
