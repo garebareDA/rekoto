@@ -4,7 +4,7 @@ use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax};
 
 impl Interpreter {
-  pub(crate) fn scope(
+  pub(crate) fn scope_ifs(
     &mut self,
     scope: &ast::ScopeAST,
   ) -> (
@@ -12,7 +12,19 @@ impl Interpreter {
     Option<String>,
   ) {
     self.push_scope();
-    let mut debug:Option<String> = None;
+    let result = self.scope(scope);
+    self.pop_scope();
+    return result;
+  }
+
+  fn scope(
+    &mut self,
+    scope: &ast::ScopeAST,
+  ) -> (
+    Option<Result<Option<Syntax>, result::Error>>,
+    Option<String>,
+  ) {
+    let mut debug: Option<String> = None;
     for ast in scope.get_node().iter() {
       let judge = self.judge(ast);
       debug = judge.1;

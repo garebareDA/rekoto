@@ -16,6 +16,10 @@ impl Variables {
     self.node.push(Vec::new());
   }
 
+  pub fn pop_scope(&mut self) {
+    self.node.remove(self.node.len() - 1);
+  }
+
   pub fn push_node(&mut self, node: &ast::ast::VariableAST) {
     let index = self.node.len() - 1;
     self.node[index].push(node.clone());
@@ -46,6 +50,10 @@ impl Functions {
 
   pub fn push_scope(&mut self) {
     self.node.push(Vec::new());
+  }
+
+  pub fn pop_scope(&mut self) {
+    self.node.remove(self.node.len() - 1);
   }
 
   pub fn push_node(&mut self, node: &ast::ast::FunctionAST) {
@@ -116,6 +124,11 @@ impl Interpreter {
   pub fn push_scope(&mut self) {
     self.var.push_scope();
     self.fun.push_scope();
+  }
+
+  pub fn pop_scope(&mut self) {
+    self.var.pop_scope();
+    self.fun.pop_scope();
   }
 
   pub fn push_var(&mut self, node: &ast::ast::VariableAST) {
