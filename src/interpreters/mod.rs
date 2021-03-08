@@ -57,6 +57,10 @@ mod tests {
   #[test]
   fn ifs() {
     assert_eq!(result("if 0 < 1 {print('ok')}"), "ok");
+    assert_eq!(result("if 0 == 1 {print('ok')} else {print('else')}"), "else");
+    assert_eq!(result("if 0 == 1 {print('ok')} elif 0 == 0 {print('elif')}"), "elif");
+    assert_eq!(result("if 0 == 1 {print('ok')} elif 1 == 0 {print('elif')} else {print('else')}"), "else");
+    assert_eq!(result("if 0 == 1 {print('ok')} elif 1 == 0 {print('elif')} else { } print('ok')"), "ok");
   }
 
   fn result(syn: &str) -> String {

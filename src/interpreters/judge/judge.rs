@@ -11,6 +11,21 @@ impl Interpreter {
     Option<String>,
   ) {
     match ast {
+      Syntax::Elif(_) => {}
+      Syntax::Else(_) => {}
+      _ => {
+        match self.get_last_state() {
+          Some(state) => {
+            if state == &InterpreterState::IfDone {
+              self.pop_state();
+            }
+          }
+          None => {}
+        }
+      }
+    }
+
+    match ast {
       Syntax::Call(call) => {
         self.push_state(InterpreterState::Call);
         let result = self.call(call);
@@ -48,6 +63,14 @@ impl Interpreter {
       Syntax::Ifs(ifs) => {
         self.push_state(InterpreterState::If);
         return self.ifs(ifs);
+      }
+
+      Syntax::Elif(elses) => {
+        return self.elif(elses);
+      }
+
+      Syntax::Else(elses) => {
+        return self.elses(elses);
       }
 
       Syntax::Return(ret) => match ret.get_node_index(0) {

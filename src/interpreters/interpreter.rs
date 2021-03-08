@@ -54,10 +54,11 @@ impl Functions {
   }
 }
 
+#[derive(PartialEq, Debug)]
 pub enum InterpreterState {
+  Main,
   If,
-  Elsif,
-  Else,
+  IfDone,
   For,
   Fun,
   Call,
@@ -80,6 +81,7 @@ impl Interpreter {
 
   pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
     self.push_scope();
+    self.push_state(InterpreterState::Main);
     for ast in root.get_node().iter() {
       match self.judge(ast).0 {
         Some(judge) => match judge {
@@ -98,6 +100,7 @@ impl Interpreter {
 
   pub fn debug_run(&mut self, root: RootAST) -> Result<Vec<String>, result::Error> {
     self.push_scope();
+    self.push_state(InterpreterState::Main);
     let mut log: Vec<String> = Vec::new();
     for ast in root.get_node().iter() {
       match self.judge(ast).1 {
@@ -125,6 +128,10 @@ impl Interpreter {
 
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {
     self.fun.push_node(node);
+  }
+
+  pub fn get_last_state(&self) -> Option<&InterpreterState> {
+    self.state.get(self.state.len() - 1)
   }
 
   pub fn push_state(&mut self, state: InterpreterState) {

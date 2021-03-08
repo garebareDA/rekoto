@@ -1,4 +1,4 @@
-use super::super::super::interpreter::Interpreter;
+use super::super::super::interpreter::{Interpreter, InterpreterState};
 use crate::error::result;
 use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax};
@@ -12,48 +12,78 @@ impl Interpreter {
     Option<String>,
   ) {
     match self.formula(ifs.get_judge()) {
-      Ok(bools) => match bools {
-        Syntax::Bool(bools) => {
-          if bools.get_bool() {
-            self.pop_state();
-            match ifs.get_node_index(0) {
-              Some(scope) => match scope {
-                Syntax::Scope(scope) => {
-                  return self.scope(scope);
-                }
-                _ => {
-                  return (
-                    Some(Err(result::Error::InterpreterError(
-                      "if scope not found error".to_string(),
-                    ))),
-                    None,
-                  );
-                }
-              },
-              None => {
-                return (
-                  Some(Err(result::Error::InterpreterError(
-                    "if scope not found error".to_string(),
-                  ))),
-                  None,
-                );
-              }
-            }
-          } else {
-            return (None, None);
-          }
-        }
+      Ok(bools) => {
+        return self.ifs_judge(bools, ifs, "if");
+      }
+      Err(e) => (Some(Err(e)), None),
+    }
+  }
 
+  pub(crate) fn ifs_judge<T: Node>(
+    &mut self,
+    bools: Syntax,
+    ifs: &Box<T>,
+    message: &str,
+  ) -> (
+    Option<Result<Option<Syntax>, result::Error>>,
+    Option<String>,
+  ) {
+    match bools {
+      Syntax::Bool(bools) => {
+        if bools.get_bool() {
+          self.pop_state();
+          return self.ifs_scope(ifs, message);
+        } else {
+          return (None, None);
+        }
+      }
+
+      _ => {
+        return (
+          Some(Err(result::Error::InterpreterError(format!(
+            "{} is judge not bool",
+            message
+          )))),
+          None,
+        )
+      }
+    }
+  }
+
+  pub(crate) fn ifs_scope<T: Node>(
+    &mut self,
+    ifs: &Box<T>,
+    message: &str,
+  ) -> (
+    Option<Result<Option<Syntax>, result::Error>>,
+    Option<String>,
+  ) {
+    match ifs.get_node_index(0) {
+      Some(scope) => match scope {
+        Syntax::Scope(scope) => {
+          let scope = self.scope(scope);
+          self.push_state(InterpreterState::IfDone);
+          return scope;
+        }
         _ => {
           return (
-            Some(Err(result::Error::InterpreterError(
-              "if is judge not bool".to_string(),
-            ))),
+            Some(Err(result::Error::InterpreterError(format!(
+              "{} scope not found error",
+              message
+            )))),
             None,
-          )
+          );
         }
       },
-      Err(e) => (Some(Err(e)), None),
+      None => {
+        return (
+          Some(Err(result::Error::InterpreterError(format!(
+            "{} scope not found error",
+            message
+          )))),
+          None,
+        );
+      }
     }
   }
 }
