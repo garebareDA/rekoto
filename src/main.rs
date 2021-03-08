@@ -3,7 +3,7 @@ use rekoto::parser::parsers;
 use rekoto::interpreters::interpreter;
 
 fn main() {
-    let mut lex = lexers::lex("let a = true || false;\nprint(a);");
+    let mut lex = lexers::lex("if 1 == 0 {  }");
     let result = lex.run().get_tokens();
     println!("{:?}", result);
 

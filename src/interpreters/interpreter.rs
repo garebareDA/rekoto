@@ -1,17 +1,15 @@
-use crate::parser::ast::ast::{Syntax, RootAST, Node};
-use crate::parser::ast;
 use crate::error::result;
+use crate::parser::ast;
+use crate::parser::ast::ast::{Node, RootAST, Syntax};
 
 #[derive(Debug, Clone)]
 struct Variables {
-  node:Vec<Vec<ast::ast::VariableAST>>,
+  node: Vec<Vec<ast::ast::VariableAST>>,
 }
 
 impl Variables {
   pub fn new() -> Self {
-    Self {
-      node: Vec::new(),
-    }
+    Self { node: Vec::new() }
   }
 
   pub fn push_scope(&mut self) {
@@ -23,11 +21,11 @@ impl Variables {
     self.node[index].push(node.clone());
   }
 
-  pub fn serch(&self, name:&str) -> Option<&Syntax> {
+  pub fn serch(&self, name: &str) -> Option<&Syntax> {
     for i in (0..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
-        if name ==  node.get_name() {
+        if name == node.get_name() {
           return node.get_node_index(0);
         }
       }
@@ -38,14 +36,12 @@ impl Variables {
 
 #[derive(Debug, Clone)]
 struct Functions {
-  node:Vec<Vec<ast::ast::FunctionAST>>,
+  node: Vec<Vec<ast::ast::FunctionAST>>,
 }
 
 impl Functions {
   pub fn new() -> Self {
-    Self {
-      node: Vec::new(),
-    }
+    Self { node: Vec::new() }
   }
 
   pub fn push_scope(&mut self) {
@@ -59,56 +55,45 @@ impl Functions {
 }
 
 pub struct Interpreter {
-  var:Variables,
-  fun:Functions,
+  var: Variables,
+  fun: Functions,
 }
 
 impl Interpreter {
   pub fn new() -> Self {
     Self {
-      var:Variables::new(),
-      fun:Functions::new(),
+      var: Variables::new(),
+      fun: Functions::new(),
     }
   }
 
-  pub fn run(&mut self, root:RootAST) -> Result<(), result::Error>{
+  pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
     self.push_scope();
     for ast in root.get_node().iter() {
-      match self.judge(ast) {
-        Some(judge) => {
-          match judge {
-            Ok(_) => {}
-            Err(e) => {
-              return Err(e);
-            }
+      match self.judge(ast).0 {
+        Some(judge) => match judge {
+          Ok(_) => {}
+          Err(e) => {
+            return Err(e);
           }
-        }
+        },
         None => {}
       }
     }
-
     return Ok(());
   }
 
-  pub fn debug_run(&mut self, root:RootAST) -> Result<Vec<String>, result::Error>{
+  pub fn debug_run(&mut self, root: RootAST) -> Result<Vec<String>, result::Error> {
     self.push_scope();
-    let mut log:Vec<String> = Vec::new();
+    let mut log: Vec<String> = Vec::new();
     for ast in root.get_node().iter() {
-      match self.judge(ast) {
-        Some(judge) => {
-          match judge {
-            Ok(s) => {
-              log.push(s);
-            }
-            Err(e) => {
-              return Err(e);
-            }
-          }
+      match self.judge(ast).1 {
+        Some(s) => {
+          log.push(s);
         }
         None => {}
       }
     }
-
     return Ok(log);
   }
 
@@ -121,7 +106,7 @@ impl Interpreter {
     self.var.push_node(node);
   }
 
-  pub fn serch_var(&self, name:&str) -> Option<&Syntax>{
+  pub fn serch_var(&self, name: &str) -> Option<&Syntax> {
     self.var.serch(name)
   }
 

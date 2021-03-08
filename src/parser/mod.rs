@@ -275,7 +275,7 @@ mod tests {
 
   #[test]
   fn ifs() {
-    let mut lex = lexers::lex("if 1 < 0 {}");
+    let mut lex = lexers::lex("if 1 < 0 {print('hello')}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -330,7 +330,7 @@ mod tests {
 
   #[test]
   fn elif() {
-    let mut lex = lexers::lex("elif 1 < 0 {}");
+    let mut lex = lexers::lex("elif 1 < 0 {print('hello')}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -386,7 +386,7 @@ mod tests {
 
   #[test]
   fn elses() {
-    let mut lex = lexers::lex("else {}");
+    let mut lex = lexers::lex("else {print('hello')}");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();

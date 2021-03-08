@@ -252,11 +252,7 @@ impl Interpreter {
     }
   }
 
-  fn formula_push(&self, formula: &mut Formula, ast: &ast::Syntax) -> Result<(), result::Error> {
-    return self.formula_check(formula, ast);
-  }
-
-  fn formula_check(&self, formula: &mut Formula, ast: &Syntax) -> Result<(), result::Error> {
+  fn formula_push(&self, formula: &mut Formula, ast: &Syntax) -> Result<(), result::Error> {
     match ast {
       Syntax::Bin(bin) => {
         formula.push_bin(bin.get_token());
@@ -276,7 +272,7 @@ impl Interpreter {
       }
       Syntax::Var(vars) => match self.serch_var(vars.get_name()) {
         Some(inner) => {
-          return self.formula_check(formula, inner);
+          return self.formula_push(formula, inner);
         }
 
         None => {
@@ -286,6 +282,7 @@ impl Interpreter {
           )))
         }
       },
+      //TODO callの実装
 
       _ => Err(result::Error::InterpreterError(
         "variable error cannot be assigned".to_string(),

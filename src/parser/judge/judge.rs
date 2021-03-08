@@ -157,9 +157,10 @@ impl Parsers {
     if token == TOKEN._braces_right {
       if self.get_last_state() != &ParseState::Scope {
         return Some(Err(result::Error::SyntaxError(
-          "Scope { is not".to_string(),
+          "scope error { is not found".to_string(),
         )));
       }
+
       self.pop_state();
       return None;
     }
