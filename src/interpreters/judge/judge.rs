@@ -1,17 +1,20 @@
 use super::super::interpreter::Interpreter;
 use crate::error::result;
-use crate::parser::ast::ast::Syntax;
+use crate::parser::ast::ast::{Node, Syntax};
 
 impl Interpreter {
   pub(crate) fn judge(
     &mut self,
     ast: &Syntax,
-  ) -> (Option<Result<Syntax, result::Error>>, Option<String>) {
+  ) -> (
+    Option<Result<Option<Syntax>, result::Error>>,
+    Option<String>,
+  ) {
     match ast {
       Syntax::Call(call) => {
         let result = self.call(call);
         if call.get_name() == "print" {
-          return (None,result.1);
+          return (None, result.1);
         }
         return (result.0, None);
       }
@@ -24,10 +27,6 @@ impl Interpreter {
           )))),
           None,
         );
-      }
-
-      Syntax::Ifs(ifs) => {
-        return (None, None);
       }
 
       Syntax::Var(var) => {
@@ -43,6 +42,20 @@ impl Interpreter {
           }
         }
       }
+
+      Syntax::Ifs(ifs) => {
+        return (None, None);
+      }
+
+      Syntax::Return(ret) => match ret.get_node_index(0) {
+        //TODO formulaを噛ませる
+        Some(syntax) => {
+          return (Some(Ok(Some(syntax.clone()))), None);
+        }
+        None => {
+          return (Some(Ok(None)), None);
+        }
+      },
 
       Syntax::Str(_) => {
         return (None, None);

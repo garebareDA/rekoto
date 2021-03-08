@@ -72,7 +72,9 @@ impl Interpreter {
     for ast in root.get_node().iter() {
       match self.judge(ast).0 {
         Some(judge) => match judge {
-          Ok(_) => {}
+          Ok(_) => {
+            break;
+          }
           Err(e) => {
             return Err(e);
           }
