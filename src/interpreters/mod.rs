@@ -54,6 +54,11 @@ mod tests {
     assert_eq!(result("let a = true && true;\nprint(a);"), "true");
   }
 
+  #[test]
+  fn ifs() {
+    assert_eq!(result("if 0 < 1 {print('ok')}"), "ok");
+  }
+
   fn result(syn: &str) -> String {
     let mut lex = lexers::lex(syn);
     let result = lex.run().get_tokens();
