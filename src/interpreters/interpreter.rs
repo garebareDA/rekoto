@@ -54,9 +54,19 @@ impl Functions {
   }
 }
 
+pub enum InterpreterState {
+  If,
+  Elsif,
+  Else,
+  For,
+  Fun,
+  Call,
+}
+
 pub struct Interpreter {
   var: Variables,
   fun: Functions,
+  state:Vec<InterpreterState>
 }
 
 impl Interpreter {
@@ -64,6 +74,7 @@ impl Interpreter {
     Self {
       var: Variables::new(),
       fun: Functions::new(),
+      state:Vec::new(),
     }
   }
 
@@ -114,5 +125,13 @@ impl Interpreter {
 
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {
     self.fun.push_node(node);
+  }
+
+  pub fn push_state(&mut self, state: InterpreterState) {
+    self.state.push(state);
+  }
+
+  pub fn pop_state(&mut self) -> InterpreterState {
+    self.state.remove(0)
   }
 }

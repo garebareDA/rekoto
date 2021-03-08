@@ -1,4 +1,4 @@
-use super::super::interpreter::Interpreter;
+use super::super::interpreter::{Interpreter, InterpreterState};
 use crate::error::result;
 use crate::parser::ast::ast::{Node, Syntax};
 
@@ -12,10 +12,12 @@ impl Interpreter {
   ) {
     match ast {
       Syntax::Call(call) => {
+        self.push_state(InterpreterState::Call);
         let result = self.call(call);
         if call.get_name() == "print" {
           return (None, result.1);
         }
+        self.pop_state();
         return (result.0, None);
       }
 
@@ -44,7 +46,8 @@ impl Interpreter {
       }
 
       Syntax::Ifs(ifs) => {
-        return (None, None);
+        self.push_state(InterpreterState::If);
+        return self.ifs(ifs);
       }
 
       Syntax::Return(ret) => match ret.get_node_index(0) {
