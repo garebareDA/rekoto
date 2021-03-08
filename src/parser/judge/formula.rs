@@ -232,20 +232,28 @@ impl Parsers {
     //judge()で判定するとインクリメントされるため
     match self.get_tokens(self.get_index() + 1) {
       Some(tokens) => {
-        if (self.get_last_state() == &ParseState::If
-          || self.get_last_state() == &ParseState::For
-          || self.get_last_state() == &ParseState::Function)
-          && tokens.get_token() == TOKEN._braces_left
+        let state = self.get_last_state();
+        let token = tokens.get_token();
+        if (state == &ParseState::Var || state == &ParseState::Call)
+          && token == TOKEN._braces_right
         {
           return None;
         }
 
-        if self.get_last_state() == &ParseState::Function && tokens.get_token() == TOKEN._paren_left
+        if (state == &ParseState::If
+          || state == &ParseState::For
+          || state == &ParseState::Function)
+          && (token == TOKEN._braces_left || token == TOKEN._braces_right)
         {
           return None;
         }
 
-        if self.get_last_state() == &ParseState::Function && tokens.get_token() == TOKEN._colon {
+        if state == &ParseState::Function && token == TOKEN._paren_left
+        {
+          return None;
+        }
+
+        if state == &ParseState::Function && token == TOKEN._colon {
           return None;
         }
       }
