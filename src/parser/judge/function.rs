@@ -170,7 +170,7 @@ impl Parsers {
         Ok(obj) => match obj {
           ast::Syntax::Bin(bin) => {
             return Err(result::Error::SyntaxError(format!(
-              "{} syntax error",
+              "function {} syntax error",
               bin.get_bin()
             )))
           }

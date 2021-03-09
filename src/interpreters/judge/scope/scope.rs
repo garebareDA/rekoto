@@ -17,6 +17,19 @@ impl Interpreter {
     return result;
   }
 
+  pub(crate) fn scopes(
+    &mut self,
+    scope: &ast::ScopeAST,
+  ) -> (
+    Option<Result<Option<Syntax>, result::Error>>,
+    Option<String>,
+  ) {
+    self.push_scope();
+    let result = self.scope(scope);
+    self.pop_scope();
+    return result;
+  }
+
   fn scope(
     &mut self,
     scope: &ast::ScopeAST,

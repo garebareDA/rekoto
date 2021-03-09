@@ -24,18 +24,14 @@ impl Parsers {
     }
 
     if token == TOKEN._let {
-      self.push_state(ParseState::Var);
       self.index_inc();
       let judge = self.variable_def(true, true);
-      self.pop_state();
       return Some(judge);
     }
 
     if token == TOKEN._const {
-      self.push_state(ParseState::Var);
       self.index_inc();
       let judge = self.variable_def(false, true);
-      self.pop_state();
       return Some(judge);
     }
 
