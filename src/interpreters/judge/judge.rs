@@ -73,15 +73,23 @@ impl Interpreter {
         return self.elses(elses);
       }
 
+      Syntax::For(fors) => {
+        return self.fors(fors);
+      }
+
       Syntax::Return(ret) => match ret.get_node_index(0) {
         //TODO formulaを噛ませる
         Some(syntax) => {
           return (Some(Ok(Some(syntax.clone()))), None);
         }
         None => {
-          return (Some(Ok(None)), None);
+          return (Some(Ok(Some(Syntax::Return(ret.clone())))), None);
         }
       },
+
+      Syntax::Break => {
+        return(Some(Ok(None)), None);
+      }
 
       Syntax::Str(_) => {
         return (None, None);

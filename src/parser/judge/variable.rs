@@ -1,16 +1,16 @@
 use super::super::super::lexer::token;
-use super::super::ast::{ast, ast::Node, ast::Type};
+use super::super::ast::{ast, ast::Node, ast::Syntax, ast::Type};
 use super::super::parsers::{ParseState, Parsers};
 use crate::error::result;
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
-  pub(crate) fn variable_def(&mut self, is_mutable: bool) -> Result<ast::Syntax, result::Error> {
+  pub(crate) fn variable_def(&mut self, is_mutable: bool, is_def:bool) -> Result<Syntax, result::Error> {
     //letまたはconstの変数名を取得
     match self.variable_def_inner() {
       Ok(syn) => match syn {
         ast::Syntax::Var(mut var) => {
-          var.set_is_def(true);
+          var.set_is_def(is_def);
           var.set_is_mutable(is_mutable);
 
           /*
@@ -93,7 +93,8 @@ impl Parsers {
             Err(e) => {
               return Err(result::Error::SyntaxError(format!(
                 "syntax error variable {} \n {}",
-                var.get_name(), e
+                var.get_name(),
+                e
               )));
             }
           }
@@ -199,10 +200,32 @@ impl Parsers {
       }
     };
 
+    //関数の呼び出しの判定 ( がるか
+    match self.get_tokens(self.get_index() + 1) {
+      Some(tokens) => {
+        let verification_token = tokens.get_token();
+
+        if verification_token == TOKEN._paren_left {
+          self.push_state(ParseState::Call);
+          let judge = self.call();
+          self.pop_state();
+          return judge;
+        }
+
+        if verification_token == TOKEN._equal && self.get_last_state() != &ParseState::Var && name != ""{
+          self.push_state(ParseState::Var);
+          let judge = self.variable_def(true, false);
+          self.pop_state();
+          return judge;
+        }
+      }
+
+      None => {}
+    };
+
     if name != "" {
       let mut ast = ast::VariableAST::new(name, false, is_def);
-      if self.get_last_state() == &ParseState::Var || self.get_last_state() == &ParseState::Function
-      {
+      if self.get_last_state() == &ParseState::Var {
         return Ok(ast::Syntax::Var(ast));
       }
 
