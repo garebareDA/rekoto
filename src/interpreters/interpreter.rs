@@ -3,7 +3,7 @@ use crate::parser::ast;
 use crate::parser::ast::ast::{Node, RootAST, Syntax};
 
 #[derive(Debug, Clone)]
-struct Variables {
+pub struct Variables {
   node: Vec<Vec<ast::ast::VariableAST>>,
 }
 
@@ -95,7 +95,7 @@ pub enum InterpreterState {
 }
 
 pub struct Interpreter {
-  var: Variables,
+  pub var: Variables,
   fun: Functions,
   state: Vec<InterpreterState>,
 }
