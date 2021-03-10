@@ -5,8 +5,7 @@ use crate::parser::ast::ast::{Node, Syntax, VariableAST};
 impl Interpreter {
   pub(crate) fn variable(&mut self, var: &VariableAST) -> Result<(), result::Error> {
     if var.get_node_len() == 0 {
-      self.push_var(var);
-      return Ok(());
+      return self.push_var(var);
     }
 
     if var.get_node_len() == 1 {
@@ -63,15 +62,13 @@ impl Interpreter {
   fn is_node_index<T: Node>(&mut self, t: &T, vars: &VariableAST, syn: &Syntax) -> Result<(), result::Error> {
     let is = 0 < t.get_node_len();
     if !is {
-      self.push_var(vars);
-      return Ok(());
+      return self.push_var(vars);
     } else {
       match self.formula(syn) {
         Ok(inner) => {
           let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
           var.push_node(inner);
-          self.push_var(&var);
-          return Ok(());
+          return self.push_var(&var);
         }
 
         Err(e) => {

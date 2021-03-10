@@ -3,7 +3,7 @@ use crate::parser::ast;
 use crate::parser::ast::ast::{Node, RootAST, Syntax};
 
 #[derive(Debug, Clone)]
-struct Variables {
+pub struct Variables {
   node: Vec<Vec<ast::ast::VariableAST>>,
 }
 
@@ -16,9 +16,35 @@ impl Variables {
     self.node.push(Vec::new());
   }
 
-  pub fn push_node(&mut self, node: &ast::ast::VariableAST) {
-    let index = self.node.len() - 1;
-    self.node[index].push(node.clone());
+  pub fn pop_scope(&mut self) {
+    self.node.remove(self.node.len() - 1);
+  }
+
+  pub fn push_node(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
+    if node.get_is_def() {
+      let index = self.node.len() - 1;
+      self.node[index].push(node.clone());
+      return Ok(());
+    }
+
+    for i in (0..self.node.len()).rev() {
+      for j in (0..self.node[i].len()).rev() {
+        let nodes = &self.node[i][j];
+        if node.get_name() == nodes.get_name() {
+          if nodes.get_is_mutable() == true {
+            self.node[i][j] = node.clone();
+            return Ok(());
+          }else {
+            return Err(result::Error::InterpreterError(format!("{} is imutable", nodes.get_name())));
+          }
+        }
+      }
+    }
+
+    return Err(result::Error::InterpreterError(format!(
+      "{} is not found variant",
+      node.get_name()
+    )));
   }
 
   pub fn serch(&self, name: &str) -> Option<&Syntax> {
@@ -48,6 +74,10 @@ impl Functions {
     self.node.push(Vec::new());
   }
 
+  pub fn pop_scope(&mut self) {
+    self.node.remove(self.node.len() - 1);
+  }
+
   pub fn push_node(&mut self, node: &ast::ast::FunctionAST) {
     let index = self.node.len() - 1;
     self.node[index].push(node.clone());
@@ -65,9 +95,9 @@ pub enum InterpreterState {
 }
 
 pub struct Interpreter {
-  var: Variables,
+  pub var: Variables,
   fun: Functions,
-  state:Vec<InterpreterState>
+  state: Vec<InterpreterState>,
 }
 
 impl Interpreter {
@@ -75,7 +105,7 @@ impl Interpreter {
     Self {
       var: Variables::new(),
       fun: Functions::new(),
-      state:Vec::new(),
+      state: Vec::new(),
     }
   }
 
@@ -118,8 +148,13 @@ impl Interpreter {
     self.fun.push_scope();
   }
 
-  pub fn push_var(&mut self, node: &ast::ast::VariableAST) {
-    self.var.push_node(node);
+  pub fn pop_scope(&mut self) {
+    self.var.pop_scope();
+    self.fun.pop_scope();
+  }
+
+  pub fn push_var(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
+    self.var.push_node(node)
   }
 
   pub fn serch_var(&self, name: &str) -> Option<&Syntax> {

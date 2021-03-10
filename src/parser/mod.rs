@@ -10,7 +10,7 @@ mod tests {
 
   #[test]
   fn formula() {
-    let mut lex = lexers::lex("let a = 1 + 1;");
+    let mut lex = lexers::lex("let a = a + 1;");
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
@@ -22,10 +22,10 @@ mod tests {
               assert_eq!(var.get_name(), "a");
 
               match var.get_node_index(0).unwrap() {
-                ast::ast::Syntax::Num(num) => {
-                  assert_eq!(num.get_num(), 1);
+                ast::ast::Syntax::Var(var) => {
+                  assert_eq!(var.get_name(), "a");
 
-                  match num.get_node_index(0).unwrap() {
+                  match var.get_node_index(0).unwrap() {
                     ast::ast::Syntax::Bin(bin) => {
                       assert_eq!(bin.get_bin(), "+");
 

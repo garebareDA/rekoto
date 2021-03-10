@@ -61,7 +61,7 @@ impl Interpreter {
     match ifs.get_node_index(0) {
       Some(scope) => match scope {
         Syntax::Scope(scope) => {
-          let scope = self.scope(scope);
+          let scope = self.scope_ifs(scope);
           self.push_state(InterpreterState::IfDone);
           return scope;
         }

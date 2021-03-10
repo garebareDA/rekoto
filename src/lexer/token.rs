@@ -20,6 +20,8 @@ pub struct Token {
   pub _sub: i64,
   pub _mul: i64,
   pub _div: i64,
+  pub _inc: i64,
+  pub _dec:i64,
   pub _sur: i64,
   pub _pipe: i64,
   pub _amp: i64,
@@ -40,6 +42,7 @@ pub struct Token {
   pub _colon: i64,
   pub _dot: i64,
   pub _end: i64,
+  pub _comment:i64
 }
 
 impl Token {
@@ -66,6 +69,9 @@ impl Token {
       _break: -19,
       _true: -20,
       _false: -21,
+      _inc:-22,
+      _dec: -23,
+      _comment: -24,
       _empty: 0,
       _nega: 33,
       _pipe: 124,

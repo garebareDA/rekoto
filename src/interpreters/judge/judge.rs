@@ -13,16 +13,14 @@ impl Interpreter {
     match ast {
       Syntax::Elif(_) => {}
       Syntax::Else(_) => {}
-      _ => {
-        match self.get_last_state() {
-          Some(state) => {
-            if state == &InterpreterState::IfDone {
-              self.pop_state();
-            }
+      _ => match self.get_last_state() {
+        Some(state) => {
+          if state == &InterpreterState::IfDone {
+            self.pop_state();
           }
-          None => {}
         }
-      }
+        None => {}
+      },
     }
 
     match ast {
@@ -73,15 +71,26 @@ impl Interpreter {
         return self.elses(elses);
       }
 
+      Syntax::For(fors) => {
+        self.push_state(InterpreterState::For);
+        let fors = self.fors(fors);
+        self.pop_state();
+        return fors;
+      }
+
       Syntax::Return(ret) => match ret.get_node_index(0) {
         //TODO formulaを噛ませる
         Some(syntax) => {
           return (Some(Ok(Some(syntax.clone()))), None);
         }
         None => {
-          return (Some(Ok(None)), None);
+          return (Some(Ok(Some(Syntax::Return(ret.clone())))), None);
         }
       },
+
+      Syntax::Break => {
+        return (Some(Ok(None)), None);
+      }
 
       Syntax::Str(_) => {
         return (None, None);

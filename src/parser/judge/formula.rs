@@ -38,12 +38,116 @@ impl Parsers {
   }
 
   pub(crate) fn binary(&mut self) -> Result<ast::Syntax, result::Error> {
-    let mut value: &str;
-    let mut token: i64;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
-        value = tokens.get_value();
-        token = tokens.get_token();
+        let mut value = tokens.get_value();
+        let mut token = tokens.get_token();
+
+        if token == TOKEN._less
+          || token == TOKEN._greater
+          || token == TOKEN._nega
+          || token == TOKEN._equal
+        {
+          match self.get_tokens(self.get_index() + 1) {
+            Some(tokens) => {
+              let tokens_is_eq = tokens.get_token();
+              if tokens_is_eq == TOKEN._equal {
+                if token == TOKEN._less {
+                  value = ">=";
+                  token = TOKEN._less_equ;
+                } else if token == TOKEN._greater {
+                  value = "<=";
+                  token = TOKEN._greater_equ;
+                } else if token == TOKEN._nega {
+                  value = "!=";
+                  token = TOKEN._not_equ;
+                } else if token == TOKEN._equal {
+                  value = "==";
+                  token = TOKEN._equ;
+                } else {
+                  return Err(result::Error::SyntaxError(format!(
+                    "oprator error {}{}",
+                    value,
+                    tokens.get_value()
+                  )));
+                }
+
+                self.index_inc();
+              }
+            }
+            None => {}
+          }
+        }
+
+        if token == TOKEN._add {
+          match self.formula_same_check(TOKEN._add, value) {
+            Ok(()) => {
+              self.index_inc();
+              value = "++";
+              token = TOKEN._inc;
+            }
+
+            Err(_) => {}
+          }
+        }
+
+        if token == TOKEN._sub {
+          match self.formula_same_check(TOKEN._sub, value) {
+            Ok(()) => {
+              self.index_inc();
+              value = "--";
+              token = TOKEN._dec;
+            }
+
+            Err(_) => {}
+          }
+        }
+
+        if token == TOKEN._pipe {
+          match self.formula_same_check(TOKEN._pipe, value) {
+            Ok(()) => {
+              self.index_inc();
+              value = "||";
+              token = TOKEN._or;
+            }
+
+            Err(e) => {
+              return Err(e);
+            }
+          }
+        }
+
+        if token == TOKEN._amp {
+          match self.formula_same_check(TOKEN._amp, value) {
+            Ok(()) => {
+              self.index_inc();
+              value = "&&";
+              token = TOKEN._and;
+            }
+
+            Err(e) => {
+              return Err(e);
+            }
+          }
+        }
+
+        if token == TOKEN._equal {
+          return Ok(ast::Syntax::Bin(ast::BinaryAST::new(value, token)));
+        }
+
+        let mut ch_ast = ast::BinaryAST::new(value, token);
+        match self.formula_judge() {
+          Some(formu) => match formu {
+            Ok(objf) => {
+              ch_ast.push_node(objf);
+            }
+            Err(e) => {
+              return Err(e);
+            }
+          },
+          None => {}
+        }
+        return Ok(ast::Syntax::Bin(ch_ast));
       }
 
       None => {
@@ -52,112 +156,6 @@ impl Parsers {
         ));
       }
     }
-
-    if token == TOKEN._less
-      || token == TOKEN._greater
-      || token == TOKEN._nega
-      || token == TOKEN._equal
-    {
-      match self.get_tokens(self.get_index() + 1) {
-        Some(tokens) => {
-          let tokens_is_eq = tokens.get_token();
-          if tokens_is_eq == TOKEN._equal {
-            if token == TOKEN._less {
-              value = ">=";
-              token = TOKEN._less_equ;
-              self.index_inc();
-            } else if token == TOKEN._greater {
-              value = "<=";
-              token = TOKEN._greater_equ;
-              self.index_inc();
-            } else if token == TOKEN._nega {
-              value = "!=";
-              token = TOKEN._not_equ;
-              self.index_inc();
-            } else if token == TOKEN._equal {
-              value = "==";
-              token = TOKEN._equ;
-              self.index_inc();
-            } else {
-              return Err(result::Error::SyntaxError(format!(
-                "oprator error {}{}",
-                value,
-                tokens.get_value()
-              )));
-            }
-          }
-        }
-        None => {}
-      }
-    }
-
-    if token == TOKEN._pipe {
-      match self.get_tokens(self.get_index() + 1) {
-        Some(tokens) => {
-          let tokens_is = tokens.get_token();
-          if tokens_is == TOKEN._pipe {
-            value = "||";
-            token = TOKEN._or;
-            self.index_inc();
-          } else {
-            return Err(result::Error::SyntaxError(format!(
-              "oprator error {}{}",
-              value,
-              tokens.get_value()
-            )));
-          }
-        }
-        None => {
-          return Err(result::Error::SyntaxError(format!(
-            "oprator error {}",
-            value,
-          )));
-        }
-      }
-    }
-
-    if token == TOKEN._amp {
-      match self.get_tokens(self.get_index() + 1) {
-        Some(tokens) => {
-          let tokens_is = tokens.get_token();
-          if tokens_is == TOKEN._amp {
-            value = "&&";
-            token = TOKEN._and;
-            self.index_inc();
-          } else {
-            return Err(result::Error::SyntaxError(format!(
-              "oprator error {}{}",
-              value,
-              tokens.get_value()
-            )));
-          }
-        }
-        None => {
-          return Err(result::Error::SyntaxError(format!(
-            "oprator error {}",
-            value,
-          )));
-        }
-      }
-    }
-
-    if token == TOKEN._equal {
-      return Ok(ast::Syntax::Bin(ast::BinaryAST::new(value, token)));
-    }
-
-    let mut ch_ast = ast::BinaryAST::new(value, token);
-    match self.formula_judge() {
-      Some(formu) => match formu {
-        Ok(objf) => {
-          ch_ast.push_node(objf);
-        }
-        Err(e) => {
-          return Err(e);
-        }
-      },
-      None => {}
-    }
-    return Ok(ast::Syntax::Bin(ch_ast));
   }
 
   pub(crate) fn strings(&mut self) -> Result<ast::Syntax, result::Error> {
@@ -234,22 +232,18 @@ impl Parsers {
       Some(tokens) => {
         let state = self.get_last_state();
         let token = tokens.get_token();
-        if (state == &ParseState::Var || state == &ParseState::Call)
-          && token == TOKEN._braces_right
+        if (state == &ParseState::Var || state == &ParseState::Call) && token == TOKEN._braces_right
         {
           return None;
         }
 
-        if (state == &ParseState::If
-          || state == &ParseState::For
-          || state == &ParseState::Function)
+        if (state == &ParseState::If || state == &ParseState::For || state == &ParseState::Function)
           && (token == TOKEN._braces_left || token == TOKEN._braces_right)
         {
           return None;
         }
 
-        if state == &ParseState::Function && token == TOKEN._paren_left
-        {
+        if state == &ParseState::Function && token == TOKEN._paren_left {
           return None;
         }
 
@@ -313,6 +307,29 @@ impl Parsers {
       },
       None => {
         return None;
+      }
+    }
+  }
+
+  pub(crate) fn formula_same_check(&self, check: i64, value: &str) -> Result<(), result::Error> {
+    match self.get_tokens(self.get_index() + 1) {
+      Some(tokens) => {
+        let tokens_is = tokens.get_token();
+        if tokens_is == check {
+          return Ok(());
+        } else {
+          return Err(result::Error::SyntaxError(format!(
+            "oprator error {}{}",
+            value,
+            tokens.get_value()
+          )));
+        }
+      }
+      None => {
+        return Err(result::Error::SyntaxError(format!(
+          "oprator error {}",
+          value,
+        )));
       }
     }
   }

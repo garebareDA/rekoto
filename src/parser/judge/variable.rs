@@ -1,16 +1,21 @@
 use super::super::super::lexer::token;
-use super::super::ast::{ast, ast::Node, ast::Type};
+use super::super::ast::{ast, ast::Node, ast::Syntax, ast::Type};
 use super::super::parsers::{ParseState, Parsers};
 use crate::error::result;
 static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
-  pub(crate) fn variable_def(&mut self, is_mutable: bool) -> Result<ast::Syntax, result::Error> {
+  pub(crate) fn variable_def(
+    &mut self,
+    is_mutable: bool,
+    is_def: bool,
+  ) -> Result<Syntax, result::Error> {
     //letまたはconstの変数名を取得
+    self.push_state(ParseState::Var);
     match self.variable_def_inner() {
       Ok(syn) => match syn {
         ast::Syntax::Var(mut var) => {
-          var.set_is_def(true);
+          var.set_is_def(is_def);
           var.set_is_mutable(is_mutable);
 
           /*
@@ -29,11 +34,14 @@ impl Parsers {
 
           //let const キーワードの次が = かどうか
           match self.variable_def_inspect() {
-            Ok(()) => {}
+            Ok(()) => {
+              self.index_inc();
+            }
             Err(_) => return Ok(ast::Syntax::Var(var)),
           }
 
-          self.index_inc();
+          self.pop_state();
+
           match self.variable_def_inner() {
             Ok(syn) => {
               //変数の中身を入れる
@@ -93,7 +101,8 @@ impl Parsers {
             Err(e) => {
               return Err(result::Error::SyntaxError(format!(
                 "syntax error variable {} \n {}",
-                var.get_name(), e
+                var.get_name(),
+                e
               )));
             }
           }
@@ -189,7 +198,12 @@ impl Parsers {
     let name: &str;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
-        name = tokens.get_value();
+        name = tokens.get_value();    if name == "" {
+      return Err(result::Error::SyntaxError(format!(
+        "{} variable name error",
+        name
+      )));
+    }
       }
 
       None => {
@@ -199,32 +213,47 @@ impl Parsers {
       }
     };
 
-    if name != "" {
-      let mut ast = ast::VariableAST::new(name, false, is_def);
-      if self.get_last_state() == &ParseState::Var || self.get_last_state() == &ParseState::Function
-      {
-        return Ok(ast::Syntax::Var(ast));
+
+
+    let mut ast = ast::VariableAST::new(name, false, is_def);
+
+    //関数の呼び出しの判定 ( がるか
+    match self.get_tokens(self.get_index() + 1) {
+      Some(tokens) => {
+        let verification_token = tokens.get_token();
+
+        if verification_token == TOKEN._paren_left && self.get_last_state() != &ParseState::Function{
+          self.push_state(ParseState::Call);
+          let judge = self.call();
+          self.pop_state();
+          return judge;
+        }
+
+        if verification_token == TOKEN._equal && self.get_last_state() != &ParseState::Var {
+          return self.variable_def(true, false);
+        }
       }
 
-      match self.formula_judge() {
-        Some(formu) => match formu {
-          Ok(obj) => {
-            ast.push_node(obj);
-          }
-          Err(e) => {
-            return Err(e);
-          }
-        },
-        None => {}
-      }
+      None => {}
+    };
 
+    if self.get_last_state() == &ParseState::Var {
       return Ok(ast::Syntax::Var(ast));
     }
 
-    return Err(result::Error::SyntaxError(format!(
-      "{} variable name error",
-      name
-    )));
+    match self.formula_judge() {
+      Some(formu) => match formu {
+        Ok(obj) => {
+          ast.push_node(obj);
+        }
+        Err(e) => {
+          return Err(e);
+        }
+      },
+      None => {}
+    }
+
+    return Ok(ast::Syntax::Var(ast));
   }
 
   pub(crate) fn check_types(&mut self) -> Result<Option<ast::Types>, result::Error> {

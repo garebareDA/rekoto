@@ -74,9 +74,13 @@ impl Parsers {
             return Ok(Syntax::Num(num));
           }
 
+          Syntax::Var(var) => {
+            return Ok(Syntax::Var(var));
+          }
+
           _ => {
             return Err(result::Error::SyntaxError(
-              "if syntax error must be string or number boolean".to_string(),
+              "if syntax error must be string number boolean variable".to_string(),
             ));
           }
         },

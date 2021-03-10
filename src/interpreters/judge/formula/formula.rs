@@ -172,10 +172,16 @@ impl Formula {
     if self.stack.len() == 1 {
       match self.stack.get(0) {
         Some(stack) => Ok(stack),
-        None => return Err(result::Error::InterpreterError(format!("calclation error intepreter bug"))),
+        None => {
+          return Err(result::Error::InterpreterError(format!(
+            "calclation error intepreter bug"
+          )))
+        }
       }
     } else {
-      return Err(result::Error::InterpreterError(format!("missing or many numbers or not present")));
+      return Err(result::Error::InterpreterError(format!(
+        "missing or many numbers or not present"
+      )));
     }
   }
 
@@ -272,7 +278,13 @@ impl Interpreter {
       }
       Syntax::Var(vars) => match self.serch_var(vars.get_name()) {
         Some(inner) => {
-          return self.formula_push(formula, inner);
+          match self.formula_push(formula, inner) {
+            Ok(_) => {}
+            Err(e) => {
+              return Err(e);
+            }
+          }
+          return self.formula_continue(vars, formula);
         }
 
         None => {
@@ -283,7 +295,6 @@ impl Interpreter {
         }
       },
       //TODO callの実装
-
       _ => Err(result::Error::InterpreterError(
         "variable error cannot be assigned".to_string(),
       )),
