@@ -51,9 +51,8 @@ impl Parsers {
       },
 
       None => {
-        return Err(result::Error::SyntaxError(
-          "return syntax error possible parser bug".to_string(),
-        ));
+        let return_ast = ast::ReturnAST::new();
+        return Ok(ast::Syntax::Return(Box::new(return_ast)));
       }
     }
   }

@@ -153,7 +153,7 @@ impl Parsers {
       }
     }
 
-    if token == TOKEN._end {
+    if token == TOKEN._end || token == TOKEN._comment{
       return None;
     }
 

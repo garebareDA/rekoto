@@ -6,6 +6,7 @@ static TOKEN: token::Token = token::Token::new();
 
 pub fn lex(word: &str) -> lelex::lexers::Lexer {
   let mut lex = lelex::lexers::Lexer::new(word);
+  lex.push_one_word(TOKEN._comment, "#").unwrap();
   lex.push_reserved_word(TOKEN._let, "let").unwrap();
   lex.push_reserved_word(TOKEN._const, "const").unwrap();
   lex.push_reserved_word(TOKEN._if, "if").unwrap();

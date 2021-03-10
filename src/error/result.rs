@@ -5,6 +5,7 @@ use std::fmt;
 pub enum Error {
   InterpreterError(String),
   SyntaxError(String),
+  FileReadError(String),
 }
 
 impl fmt::Display for Error{
@@ -12,6 +13,7 @@ impl fmt::Display for Error{
     match self {
       Error::InterpreterError(i) => writeln!(f, "Runtime Error: {}", i),
       Error::SyntaxError(s) => writeln!(f, "Sytax Error: {}", s),
+      Error::FileReadError(e) => writeln!(f, "File Read Error: {}", e),
     }
   }
 }
