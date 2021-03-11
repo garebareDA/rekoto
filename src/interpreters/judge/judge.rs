@@ -78,6 +78,13 @@ impl Interpreter {
         return fors;
       }
 
+      Syntax::Scope(scope) => {
+        self.push_scope();
+        let result = self.scope(scope);
+        self.pop_scope();
+        return result;
+      }
+
       Syntax::Return(ret) => match ret.get_node_index(0) {
         //TODO formulaを噛ませる
         Some(syntax) => {

@@ -41,11 +41,9 @@ pub fn read_file() -> Result<(), result::Error> {
 
     let mut lex = lexers::lex(&contents);
     let result = lex.run().get_tokens();
-    println!("{:?}", result);
 
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
-    println!("{:?}", result);
 
     match result {
       Ok(result) => {
