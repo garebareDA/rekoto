@@ -34,8 +34,11 @@ impl Variables {
           if nodes.get_is_mutable() == true {
             self.node[i][j] = node.clone();
             return Ok(());
-          }else {
-            return Err(result::Error::InterpreterError(format!("{} is imutable", nodes.get_name())));
+          } else {
+            return Err(result::Error::InterpreterError(format!(
+              "{} is imutable",
+              nodes.get_name()
+            )));
           }
         }
       }
@@ -79,8 +82,29 @@ impl Functions {
   }
 
   pub fn push_node(&mut self, node: &ast::ast::FunctionAST) {
+    for i in (0..self.node.len()).rev() {
+      for j in (0..self.node[i].len()).rev() {
+        let nodes = &self.node[i][j];
+        if node.get_name() == nodes.get_name() {
+          self.node[i][j] = node.clone();
+        }
+      }
+    }
+
     let index = self.node.len() - 1;
     self.node[index].push(node.clone());
+  }
+
+  pub fn serch(&self, name: &str) -> Option<&ast::ast::FunctionAST> {
+    for i in (0..self.node.len()).rev() {
+      for j in (0..self.node[i].len()).rev() {
+        let node = &self.node[i][j];
+        if name == node.get_name() {
+          return Some(node);
+        }
+      }
+    }
+    return None;
   }
 }
 
@@ -111,20 +135,39 @@ impl Interpreter {
 
   pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
     self.push_scope();
-    self.push_state(InterpreterState::Main);
-    for ast in root.get_node().iter() {
-      match self.judge(ast).0 {
-        Some(judge) => match judge {
-          Ok(_) => {
-            break;
-          }
-          Err(e) => {
-            return Err(e);
-          }
-        },
-        None => {}
+    match self.function_init(&root) {
+      Ok(()) => {}
+
+      Err(e) => {
+        return Err(e);
       }
     }
+
+    self.push_scope();
+    self.push_state(InterpreterState::Main);
+    match self.serch_fun("main") {
+      Some(main) => {
+        for ast in main.clone().get_node().iter() {
+          match self.judge(ast).0 {
+            Some(judge) => match judge {
+              Ok(_) => {
+                break;
+              }
+              Err(e) => {
+                return Err(e);
+              }
+            },
+            None => {}
+          }
+        }
+      }
+      None => {
+        return Err(result::Error::InterpreterError(
+          "not found main fucntion".to_string(),
+        ));
+      }
+    }
+
     return Ok(());
   }
 
@@ -159,6 +202,10 @@ impl Interpreter {
 
   pub fn serch_var(&self, name: &str) -> Option<&Syntax> {
     self.var.serch(name)
+  }
+
+  pub fn serch_fun(&self, name: &str) -> Option<&ast::ast::FunctionAST> {
+    self.fun.serch(name)
   }
 
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {

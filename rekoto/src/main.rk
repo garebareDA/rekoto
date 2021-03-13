@@ -1,13 +1,15 @@
-let a = 1 + 1;
-print(a);
+fn main() {
+  let a = 1 + 1;
+  print(a);
 
-if a < 3 {
-  print("a");
+  if a < 3 {
+    print("a");
+  }
+
+  for let i = 0; i < 5; i = i + 1; {
+    print(i);
+  }
+
+  return;
+  print("hello"); # dont display
 }
-
-for let i = 0; i < 5; i = i + 1; {
-  print(i);
-}
-
-return;
-print("hello"); # dont display
