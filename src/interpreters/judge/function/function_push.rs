@@ -4,7 +4,9 @@ use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax};
 
 impl Interpreter {
-  pub(crate) fn function_run(&mut self, fun: &ast::FunctionAST) {}
+  pub(crate) fn function_run(&mut self, fun: &ast::FunctionAST, call:&ast::CallAST) {
+    
+  }
 
   pub(crate) fn function_init(&mut self, root: &ast::RootAST) -> Result<(), result::Error> {
     for ast in root.get_node().iter() {
