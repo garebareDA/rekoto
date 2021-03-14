@@ -50,8 +50,8 @@ impl Variables {
     )));
   }
 
-  pub fn serch(&self, name: &str) -> Option<&Syntax> {
-    for i in (0..self.node.len()).rev() {
+  pub fn serch(&self, name: &str, index:usize) -> Option<&Syntax> {
+    for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
         if name == node.get_name() {
@@ -95,12 +95,13 @@ impl Functions {
     self.node[index].push(node.clone());
   }
 
-  pub fn serch(&self, name: &str) -> Option<&ast::ast::FunctionAST> {
-    for i in (0..self.node.len()).rev() {
+  pub fn serch(&self, name: &str, index:usize) -> Option<ast::ast::FunctionAST> {
+    //TODO main関数の外にアクセスできないようにする
+    for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
         if name == node.get_name() {
-          return Some(node);
+          return Some(node.clone());
         }
       }
     }
@@ -147,8 +148,9 @@ impl Interpreter {
     self.push_state(InterpreterState::Main);
     match self.serch_fun("main") {
       Some(main) => {
-        for ast in main.clone().get_node().iter() {
-          match self.judge(ast).0 {
+        for ast in main.get_node().iter() {
+          let result = self.judge(ast);
+          match result.0 {
             Some(judge) => match judge {
               Ok(_) => {
                 break;
@@ -172,17 +174,52 @@ impl Interpreter {
   }
 
   pub fn debug_run(&mut self, root: RootAST) -> Result<Vec<String>, result::Error> {
+    let mut log:Vec<String> = Vec::new();
+
     self.push_scope();
-    self.push_state(InterpreterState::Main);
-    let mut log: Vec<String> = Vec::new();
-    for ast in root.get_node().iter() {
-      match self.judge(ast).1 {
-        Some(s) => {
-          log.push(s);
-        }
-        None => {}
+    match self.function_init(&root) {
+      Ok(()) => {}
+
+      Err(e) => {
+        return Err(e);
       }
     }
+
+    self.push_scope();
+    self.push_state(InterpreterState::Main);
+    match self.serch_fun("main") {
+      Some(main) => {
+        for ast in main.get_node().iter() {
+          let result = self.judge(ast);
+
+          match result.1 {
+            Some(lo) => {
+              log.push(lo);
+            }
+
+            None => {}
+          }
+
+          match result.0 {
+            Some(judge) => match judge {
+              Ok(_) => {
+                break;
+              }
+              Err(e) => {
+                return Err(e);
+              }
+            },
+            None => {}
+          }
+        }
+      }
+      None => {
+        return Err(result::Error::InterpreterError(
+          "not found main fucntion".to_string(),
+        ));
+      }
+    }
+
     return Ok(log);
   }
 
@@ -201,11 +238,23 @@ impl Interpreter {
   }
 
   pub fn serch_var(&self, name: &str) -> Option<&Syntax> {
-    self.var.serch(name)
+    let mut index = 0;
+    for state in self.state.iter() {
+      if state == &InterpreterState::Call {
+        index += 1;
+      }
+    }
+    self.var.serch(name, index)
   }
 
-  pub fn serch_fun(&self, name: &str) -> Option<&ast::ast::FunctionAST> {
-    self.fun.serch(name)
+  pub fn serch_fun(&self, name: &str) -> Option<ast::ast::FunctionAST> {
+    let mut index = 0;
+    for state in self.state.iter() {
+      if state == &InterpreterState::Call {
+        index += 1;
+      }
+    }
+    self.fun.serch(name, index)
   }
 
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {
@@ -221,6 +270,6 @@ impl Interpreter {
   }
 
   pub fn pop_state(&mut self) -> InterpreterState {
-    self.state.remove(0)
+    self.state.remove(self.state.len() - 1)
   }
 }

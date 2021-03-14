@@ -27,11 +27,8 @@ impl Interpreter {
       Syntax::Call(call) => {
         self.push_state(InterpreterState::Call);
         let result = self.call(call);
-        if call.get_name() == "print" {
-          return (None, result.1);
-        }
         self.pop_state();
-        return (result.0, None);
+        return result;
       }
 
       Syntax::Bin(bin) => {
