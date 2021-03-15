@@ -1,8 +1,4 @@
 fn main() {
-  let s = 1;
-  test(1);
-}
-
-fn test(a:number) :number {
+  let a = 1 < 0;
   print(a);
 }

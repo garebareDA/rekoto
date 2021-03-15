@@ -234,10 +234,11 @@ impl Interpreter {
         index += 1;
       }
     }
+
     let serched = self.var.serch(name, index);
     match serched {
       Some(var) => match var {
-        Syntax::Bin(_) => (Some(var), Ok(Some(Types::Bool))),
+        Syntax::Bool(_) => {(Some(var), Ok(Some(Types::Bool)))},
 
         Syntax::Num(_) => (Some(var), Ok(Some(Types::Number))),
 
