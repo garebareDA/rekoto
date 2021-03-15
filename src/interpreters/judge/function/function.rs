@@ -12,6 +12,7 @@ impl Interpreter {
     let argments = call.get_argment();
     let params = fun.get_param();
 
+    //argmentsにformula
     if argments.len() != params.len() {
       return Err(result::Error::InterpreterError(format!(
         "function argments error {} {} paramas",

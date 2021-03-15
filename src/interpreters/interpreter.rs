@@ -82,21 +82,12 @@ impl Functions {
   }
 
   pub fn push_node(&mut self, node: &ast::ast::FunctionAST) {
-    for i in (0..self.node.len()).rev() {
-      for j in (0..self.node[i].len()).rev() {
-        let nodes = &self.node[i][j];
-        if node.get_name() == nodes.get_name() {
-          self.node[i][j] = node.clone();
-        }
-      }
-    }
-
     let index = self.node.len() - 1;
     self.node[index].push(node.clone());
   }
 
-  pub fn serch(&self, name: &str, index: usize) -> Option<ast::ast::FunctionAST> {
-    for i in (index..self.node.len()).rev() {
+  pub fn serch(&self, name: &str) -> Option<ast::ast::FunctionAST> {
+    for i in (0..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
         if name == node.get_name() {
@@ -269,13 +260,7 @@ impl Interpreter {
   }
 
   pub fn serch_fun(&self, name: &str) -> Option<ast::ast::FunctionAST> {
-    let mut index = 0;
-    for state in self.state.iter() {
-      if state == &InterpreterState::Call {
-        index += 1;
-      }
-    }
-    self.fun.serch(name, index)
+    self.fun.serch(name)
   }
 
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {

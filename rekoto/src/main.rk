@@ -1,7 +1,7 @@
 fn main() {
-  test();
+  test(1);
 }
 
-fn test() {
-  print("test");
+fn test(a:number) {
+  print(a);
 }
