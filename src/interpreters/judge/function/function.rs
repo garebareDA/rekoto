@@ -161,7 +161,8 @@ impl Interpreter {
                 },
                 None => {
                   return Err(result::Error::InterpreterError(format!(
-                    "cannot be specified as a return value",
+                    "break cannot be used in the scope of the function {} function",
+                    fun.get_name()
                   )));
                 }
               },
@@ -171,10 +172,13 @@ impl Interpreter {
             },
 
             None => {
-              return Err(result::Error::InterpreterError(format!(
-                "break cannot be used in the scope of the function {} function",
-                fun.get_name()
-              )));
+              if fun.get_type() != &None {
+                return Err(result::Error::InterpreterError(format!(
+                  "{} is return value missmatched type",
+                  fun.get_name()
+                )));
+              }
+              return Ok(None);
             }
           }
         }
