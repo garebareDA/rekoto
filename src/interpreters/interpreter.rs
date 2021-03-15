@@ -96,7 +96,6 @@ impl Functions {
   }
 
   pub fn serch(&self, name: &str, index: usize) -> Option<ast::ast::FunctionAST> {
-    //TODO main関数の外にアクセスできないようにする
     for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];

@@ -17,9 +17,12 @@ impl Interpreter {
       debug = judge.1;
       match judge.0 {
         Some(judge) => match judge {
-          Ok(ret) => {
-            return (Some(Ok(ret)), debug);
-          }
+          Ok(ret) => match ret {
+            Some(_) => {
+              return (Some(Ok(ret)), debug);
+            }
+            None => {}
+          },
           Err(e) => {
             return (Some(Err(e)), None);
           }

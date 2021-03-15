@@ -8,7 +8,7 @@ impl Interpreter {
     &mut self,
     fun: &ast::FunctionAST,
     call: &ast::CallAST,
-  ) -> Result<(), result::Error> {
+  ) -> Result<Option<Syntax>, result::Error> {
     let argments = call.get_argment();
     let params = fun.get_param();
 
@@ -65,9 +65,133 @@ impl Interpreter {
       }
     }
 
-    
+    match fun.get_node_index(0) {
+      Some(scope) => match scope {
+        Syntax::Scope(_) => {
+          let scopes = self.judge(scope);
+          match scopes.0 {
+            Some(is_ok) => match is_ok {
+              Ok(returns) => match returns {
+                Some(some_returns) => match some_returns {
+                  Syntax::Num(_) => {
+                    if fun.get_type() != &Some(Types::Number) {
+                      return Err(result::Error::InterpreterError(format!(
+                        "{} is return value missmatched type",
+                        fun.get_name()
+                      )));
+                    }
 
-    return Ok(());
+                    return Ok(Some(some_returns));
+                  }
+                  Syntax::Str(_) => {
+                    if fun.get_type() != &Some(Types::String) {
+                      return Err(result::Error::InterpreterError(format!(
+                        "{} is return value missmatched type",
+                        fun.get_name()
+                      )));
+                    }
+
+                    return Ok(Some(some_returns));
+                  }
+                  Syntax::Bool(_) => {
+                    if fun.get_type() != &Some(Types::Bool) {
+                      return Err(result::Error::InterpreterError(format!(
+                        "{} is return value missmatched type",
+                        fun.get_name()
+                      )));
+                    }
+
+                    return Ok(Some(some_returns));
+                  }
+
+                  Syntax::Var(var) => {
+                    let serch_var = self.serch_var(var.get_name());
+                    match serch_var.1 {
+                      Ok(serch_type) => match serch_type {
+                        Some(types) => {
+                          if fun.get_type() != &Some(types) {
+                            return Err(result::Error::InterpreterError(format!(
+                              "{} is return value missmatched type",
+                              fun.get_name()
+                            )));
+                          }
+
+                          match serch_var.0 {
+                            Some(var) => {
+                              return Ok(Some(var.clone()));
+                            }
+
+                            None => {
+                              return Err(result::Error::InterpreterError(format!(
+                                "{} is return value variable not found",
+                                var.get_name()
+                              )));
+                            }
+                          }
+                        }
+                        None => {
+                          return Err(result::Error::InterpreterError(format!(
+                            "{} is return value variable not found",
+                            var.get_name()
+                          )));
+                        }
+                      },
+
+                      Err(e) => {
+                        return Err(e);
+                      }
+                    }
+                  }
+
+                  Syntax::Return(_) => {
+                    if fun.get_type() != &None {
+                      return Err(result::Error::InterpreterError(format!(
+                        "{} is return value missmatched type",
+                        fun.get_name()
+                      )));
+                    }
+                    return Ok(None);
+                  }
+                  _ => {
+                    return Err(result::Error::InterpreterError(format!(
+                      "cannot be specified as a return value",
+                    )));
+                  }
+                },
+                None => {
+                  return Err(result::Error::InterpreterError(format!(
+                    "cannot be specified as a return value",
+                  )));
+                }
+              },
+              Err(e) => {
+                return Err(e);
+              }
+            },
+
+            None => {
+              return Err(result::Error::InterpreterError(format!(
+                "break cannot be used in the scope of the function {} function",
+                fun.get_name()
+              )));
+            }
+          }
+        }
+
+        _ => {
+          return Err(result::Error::InterpreterError(format!(
+            "{} function not found scope",
+            fun.get_name()
+          )))
+        }
+      },
+      None => {
+        return Err(result::Error::InterpreterError(format!(
+          "{} function not found scope",
+          fun.get_name()
+        )))
+      }
+    }
   }
 
   fn function_type_check(
@@ -134,7 +258,6 @@ impl Interpreter {
         }
       }
 
-      //TODO serch_verでTypesを返すようにする
       Syntax::Var(var) => {
         let serched = self.serch_var(var.get_name());
         match serched.1 {

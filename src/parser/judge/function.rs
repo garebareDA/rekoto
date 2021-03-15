@@ -155,8 +155,6 @@ impl Parsers {
       }
     }
 
-    println!("QAAAAA");
-
     match self.check_types() {
       Ok(types) => {
         fn_ast.set_type(types);
@@ -171,7 +169,6 @@ impl Parsers {
       Some(judge) => match judge {
         Ok(obj) => match obj {
           ast::Syntax::Scope(_) => {
-            println!("sadfadfaf {:?}", obj);
             fn_ast.push_node(obj)
           }
           _ => return Err(result::Error::SyntaxError(format!("{} is scope not found", fn_ast.get_name()))),

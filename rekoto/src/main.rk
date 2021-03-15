@@ -1,4 +1,7 @@
 fn main() {
-  let a = "hello world!";
-  print(a);
+  test();
+}
+
+fn test() {
+  print("test");
 }

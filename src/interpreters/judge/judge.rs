@@ -1,5 +1,6 @@
 use super::super::interpreter::{Interpreter, InterpreterState};
 use crate::error::result;
+use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax};
 
 impl Interpreter {
@@ -83,12 +84,15 @@ impl Interpreter {
       }
 
       Syntax::Return(ret) => match ret.get_node_index(0) {
-        //TODO formulaを噛ませる
         Some(syntax) => {
+          //TODO formulaを噛ませる
           return (Some(Ok(Some(syntax.clone()))), None);
         }
         None => {
-          return (Some(Ok(Some(Syntax::Return(ret.clone())))), None);
+          return (
+            Some(Ok(Some(Syntax::Return(Box::new(ast::ReturnAST::new()))))),
+            None,
+          );
         }
       },
 
