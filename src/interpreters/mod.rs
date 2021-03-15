@@ -74,7 +74,8 @@ mod tests {
   }
 
   fn result(syn: &str) -> String {
-    let mut lex = lexers::lex(syn);
+    let run = format!("fn main() {{ {} }}", syn);
+    let mut lex = lexers::lex(&run);
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();

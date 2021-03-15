@@ -6,7 +6,10 @@ impl Interpreter {
   pub(crate) fn call(
     &mut self,
     call: &CallAST,
-  ) -> (Option<Result<Option<Syntax>, result::Error>>, Option<String>) {
+  ) -> (
+    Option<Result<Option<Syntax>, result::Error>>,
+    Option<String>,
+  ) {
     let node_len = call.get_node_len();
     let argment_len = call.get_argment_len();
     let argment = call.get_argment();
@@ -50,6 +53,14 @@ impl Interpreter {
           );
         }
       }
+    }
+
+    match self.serch_fun(call.get_name()) {
+      Some(fun) => {
+        let result = self.function_run(&fun, call);
+        return (Some(result), None);
+      }
+      None => {}
     }
 
     return (

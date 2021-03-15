@@ -52,8 +52,8 @@ impl Interpreter {
 
       match fors.get_node_index(0) {
         Some(scope) => match scope {
-          Syntax::Scope(sc) => {
-            let scopes = self.scopes(sc);
+          Syntax::Scope(_) => {
+            let scopes = self.judge(scope);
             match scopes.0 {
               Some(is_ok) => {
                 return (Some(is_ok), scopes.1);

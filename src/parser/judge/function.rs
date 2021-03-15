@@ -89,7 +89,7 @@ impl Parsers {
       }
 
       if paren_right_token == TOKEN._paren_right {
-        return Ok(ast::Syntax::Fn(fn_ast));
+        break;
       }
 
       match self.judge() {
@@ -168,13 +168,10 @@ impl Parsers {
     match self.judge() {
       Some(judge) => match judge {
         Ok(obj) => match obj {
-          ast::Syntax::Bin(bin) => {
-            return Err(result::Error::SyntaxError(format!(
-              "function {} syntax error",
-              bin.get_bin()
-            )))
+          ast::Syntax::Scope(_) => {
+            fn_ast.push_node(obj)
           }
-          _ => fn_ast.push_node(obj),
+          _ => return Err(result::Error::SyntaxError(format!("{} is scope not found", fn_ast.get_name()))),
         },
 
         Err(e) => {

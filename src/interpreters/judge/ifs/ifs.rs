@@ -59,9 +59,9 @@ impl Interpreter {
     Option<String>,
   ) {
     match ifs.get_node_index(0) {
-      Some(scope) => match scope {
-        Syntax::Scope(scope) => {
-          let scope = self.scope_ifs(scope);
+      Some(scopes) => match scopes {
+        Syntax::Scope(_) => {
+          let scope = self.judge(scopes);
           self.push_state(InterpreterState::IfDone);
           return scope;
         }

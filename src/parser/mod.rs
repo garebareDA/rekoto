@@ -118,7 +118,7 @@ mod tests {
                 ast::ast::Syntax::Call(call) => {
                   assert_eq!(call.get_name(), "a");
 
-                  for call in call.get_argment().iter() {
+                  for call in call.get_argment() {
                     match call {
                       ast::ast::Syntax::Var(var) => {
                         assert_eq!(var.get_name(), "a");

@@ -276,7 +276,7 @@ impl Interpreter {
         formula.push_stack(FormulaType::Strings(strs.get_str().into()));
         return self.formula_continue(strs, formula);
       }
-      Syntax::Var(vars) => match self.serch_var(vars.get_name()) {
+      Syntax::Var(vars) => match self.serch_var(vars.get_name()).0 {
         Some(inner) => {
           match self.formula_push(formula, inner) {
             Ok(_) => {}
