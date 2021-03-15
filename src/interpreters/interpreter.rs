@@ -1,6 +1,6 @@
 use crate::error::result;
 use crate::parser::ast;
-use crate::parser::ast::ast::{Node, RootAST, Syntax};
+use crate::parser::ast::ast::{Node, RootAST, Syntax, Types};
 
 #[derive(Debug, Clone)]
 pub struct Variables {
@@ -50,7 +50,7 @@ impl Variables {
     )));
   }
 
-  pub fn serch(&self, name: &str, index:usize) -> Option<&Syntax> {
+  pub fn serch(&self, name: &str, index: usize) -> Option<&Syntax> {
     for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
@@ -95,7 +95,7 @@ impl Functions {
     self.node[index].push(node.clone());
   }
 
-  pub fn serch(&self, name: &str, index:usize) -> Option<ast::ast::FunctionAST> {
+  pub fn serch(&self, name: &str, index: usize) -> Option<ast::ast::FunctionAST> {
     //TODO main関数の外にアクセスできないようにする
     for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
@@ -174,7 +174,7 @@ impl Interpreter {
   }
 
   pub fn debug_run(&mut self, root: RootAST) -> Result<Vec<String>, result::Error> {
-    let mut log:Vec<String> = Vec::new();
+    let mut log: Vec<String> = Vec::new();
 
     self.push_scope();
     match self.function_init(&root) {
@@ -237,14 +237,36 @@ impl Interpreter {
     self.var.push_node(node)
   }
 
-  pub fn serch_var(&self, name: &str) -> Option<&Syntax> {
+  pub fn serch_var(&self, name: &str) -> (Option<&Syntax>, Result<Option<Types>, result::Error>) {
     let mut index = 0;
     for state in self.state.iter() {
       if state == &InterpreterState::Call {
         index += 1;
       }
     }
-    self.var.serch(name, index)
+    let serched = self.var.serch(name, index);
+    match serched {
+      Some(var) => match var {
+        Syntax::Bin(_) => (Some(var), Ok(Some(Types::Bool))),
+
+        Syntax::Num(_) => (Some(var), Ok(Some(Types::Number))),
+
+        Syntax::Str(_) => (Some(var), Ok(Some(Types::String))),
+
+        _ => {
+          return (
+            None,
+            Err(result::Error::InterpreterError(format!(
+              "not found variable {}",
+              name
+            ))),
+          );
+        }
+      },
+      None => {
+        return (None, Ok(None));
+      }
+    }
   }
 
   pub fn serch_fun(&self, name: &str) -> Option<ast::ast::FunctionAST> {

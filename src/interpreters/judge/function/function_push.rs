@@ -65,6 +65,8 @@ impl Interpreter {
       }
     }
 
+    
+
     return Ok(());
   }
 
@@ -133,73 +135,40 @@ impl Interpreter {
       }
 
       //TODO serch_verでTypesを返すようにする
-      Syntax::Var(var) => match self.serch_var(var.get_name()) {
-        Some(vars) => match vars {
-          Syntax::Bool(_) => {
-            if types != &Types::Bool {
-              return Err(result::Error::InterpreterError(format!(
-                "function {} argment {} th miss matched type",
-                call.get_name(),
-                index,
-              )));
-            }
+      Syntax::Var(var) => {
+        let serched = self.serch_var(var.get_name());
+        match serched.1 {
+          Ok(serch) => match serch {
+            Some(serch_type) => {
+              if &serch_type != types {
+                return Err(result::Error::InterpreterError(format!(
+                  "function {} argment {} th miss matched type",
+                  call.get_name(),
+                  index,
+                )));
+              }
 
-            let mut var = ast::VariableAST::new(name, false, true);
-            var.push_node(vars.clone());
-            match self.push_var(&var) {
-              Ok(()) => {}
-              Err(e) => {
-                return Err(e);
+              match serched.0 {
+                Some(serch_var) => {
+                  let mut var = ast::VariableAST::new(name, false, true);
+                  var.push_node(serch_var.clone());
+                  match self.push_var(&var) {
+                    Ok(()) => {}
+                    Err(e) => {
+                      return Err(e);
+                    }
+                  }
+                }
+                None => {}
               }
             }
-          }
 
-          Syntax::Str(_) => {
-            if types != &Types::String {
-              return Err(result::Error::InterpreterError(format!(
-                "function {} argment {} th miss matched type",
-                call.get_name(),
-                index,
-              )));
-            }
-            let mut var = ast::VariableAST::new(name, false, true);
-            var.push_node(args.clone());
-            match self.push_var(&var) {
-              Ok(()) => {}
-              Err(e) => {
-                return Err(e);
-              }
-            }
-          }
+            None => {}
+          },
 
-          Syntax::Num(_) => {
-            if types != &Types::Number {
-              return Err(result::Error::InterpreterError(format!(
-                "function {} argment {} th miss matched type",
-                call.get_name(),
-                index,
-              )));
-            }
-            let mut var = ast::VariableAST::new(name, false, true);
-            var.push_node(args.clone());
-            match self.push_var(&var) {
-              Ok(()) => {}
-              Err(e) => {
-                return Err(e);
-              }
-            }
-          }
-
-          _ => {}
-        },
-        None => {
-          return Err(result::Error::InterpreterError(format!(
-            "function {} argment {} th miss matched type",
-            call.get_name(),
-            index,
-          )));
+          Err(e) => return Err(e),
         }
-      },
+      }
 
       _ => {
         return Err(result::Error::InterpreterError(format!(
@@ -209,7 +178,6 @@ impl Interpreter {
         )));
       }
     }
-
     return Ok(());
   }
 

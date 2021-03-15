@@ -22,7 +22,7 @@ impl Interpreter {
         return Ok(bools.get_bool().to_string());
       }
 
-      Syntax::Var(var) => match self.serch_var(var.get_name()) {
+      Syntax::Var(var) => match self.serch_var(var.get_name()).0 {
         Some(vars) => match vars {
           Syntax::Str(strs) => {
             self.print_out(strs.get_str()).unwrap();
