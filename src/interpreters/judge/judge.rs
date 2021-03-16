@@ -26,9 +26,7 @@ impl Interpreter {
 
     match ast {
       Syntax::Call(call) => {
-        self.push_state(InterpreterState::Call);
         let result = self.call(call);
-        self.pop_state();
         return result;
       }
 

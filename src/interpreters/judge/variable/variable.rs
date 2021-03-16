@@ -21,25 +21,25 @@ impl Interpreter {
     match vars.get_node_index(0) {
       Some(var) => {
         match var {
-          Syntax::Var(var2) => {
+          Syntax::Var(_) => {
             //変数の検索
-           return self.is_node_index(var2, vars, var);
+            return self.is_node_index(vars, var);
           }
 
-          Syntax::Str(strs) => {
-            return self.is_node_index(strs, vars, var);
+          Syntax::Str(_) => {
+            return self.is_node_index(vars, var);
           }
 
-          Syntax::Bool(bools) => {
-            return self.is_node_index(bools, vars, var);
+          Syntax::Bool(_) => {
+            return self.is_node_index(vars, var);
           }
 
-          Syntax::Call(call) => {
-            return self.is_node_index(call, vars, var);
+          Syntax::Call(_) => {
+            return self.is_node_index(vars, var);
           }
 
-          Syntax::Num(num) => {
-            return self.is_node_index(num, vars, var);
+          Syntax::Num(_) => {
+            return self.is_node_index(vars, var);
           }
 
           _ => {
@@ -59,21 +59,16 @@ impl Interpreter {
     }
   }
 
-  fn is_node_index<T: Node>(&mut self, t: &T, vars: &VariableAST, syn: &Syntax) -> Result<(), result::Error> {
-    let is = 0 < t.get_node_len();
-    if !is {
-      return self.push_var(vars);
-    } else {
-      match self.formula(syn) {
-        Ok(inner) => {
-          let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
-          var.push_node(inner);
-          return self.push_var(&var);
-        }
+  fn is_node_index(&mut self, vars: &VariableAST, syn: &Syntax) -> Result<(), result::Error> {
+    match self.formula(syn) {
+      Ok(inner) => {
+        let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
+        var.push_node(inner);
+        return self.push_var(&var);
+      }
 
-        Err(e) => {
-          return Err(e);
-        }
+      Err(e) => {
+        return Err(e);
       }
     }
   }

@@ -1,4 +1,4 @@
-use super::super::super::interpreter::Interpreter;
+use super::super::super::interpreter::{Interpreter, InterpreterState};
 use crate::error::result;
 use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax, Type, Types};
@@ -66,10 +66,12 @@ impl Interpreter {
       }
     }
 
+    self.push_state(InterpreterState::Call);
     match fun.get_node_index(0) {
       Some(scope) => match scope {
         Syntax::Scope(_) => {
           let scopes = self.judge(scope);
+          self.pop_state();
           match scopes.0 {
             Some(is_ok) => match is_ok {
               Ok(returns) => match returns {
@@ -81,7 +83,6 @@ impl Interpreter {
                         fun.get_name()
                       )));
                     }
-
                     return Ok(Some(some_returns));
                   }
                   Syntax::Str(_) => {
@@ -91,7 +92,6 @@ impl Interpreter {
                         fun.get_name()
                       )));
                     }
-
                     return Ok(Some(some_returns));
                   }
                   Syntax::Bool(_) => {
@@ -101,7 +101,6 @@ impl Interpreter {
                         fun.get_name()
                       )));
                     }
-
                     return Ok(Some(some_returns));
                   }
 

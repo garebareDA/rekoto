@@ -258,7 +258,7 @@ impl Interpreter {
     }
   }
 
-  fn formula_push(&self, formula: &mut Formula, ast: &Syntax) -> Result<(), result::Error> {
+  fn formula_push(&mut self, formula: &mut Formula, ast: &Syntax) -> Result<(), result::Error> {
     match ast {
       Syntax::Bin(bin) => {
         formula.push_bin(bin.get_token());
@@ -278,7 +278,7 @@ impl Interpreter {
       }
       Syntax::Var(vars) => match self.serch_var(vars.get_name()).0 {
         Some(inner) => {
-          match self.formula_push(formula, inner) {
+          match self.formula_push(formula, &inner) {
             Ok(_) => {}
             Err(e) => {
               return Err(e);
@@ -294,7 +294,38 @@ impl Interpreter {
           )))
         }
       },
-      //TODO callの実装
+
+      Syntax::Call(call) => match self.serch_fun(call.get_name()) {
+        Some(inner) => match self.function_run(&inner, call) {
+          Ok(result) => match result {
+            Some(returns) => {
+              match self.formula_push(formula, &returns) {
+                Ok(_) => {}
+                Err(e) => {
+                  return Err(e);
+                }
+              }
+              return self.formula_continue(call, formula);
+            }
+            None => {
+              return Err(result::Error::InterpreterError(format!(
+                "{} not a return value",
+                call.get_name()
+              )))
+            }
+          },
+          Err(e) => {
+            return Err(e);
+          }
+        },
+
+        None => {
+          return Err(result::Error::InterpreterError(format!(
+            "{} function not found",
+            call.get_name()
+          )))
+        }
+      },
       _ => Err(result::Error::InterpreterError(
         "variable error cannot be assigned".to_string(),
       )),
@@ -302,7 +333,7 @@ impl Interpreter {
   }
 
   fn formula_continue<T: Node>(
-    &self,
+    &mut self,
     node: &T,
     formula: &mut Formula,
   ) -> Result<(), result::Error> {

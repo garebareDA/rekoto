@@ -50,12 +50,20 @@ impl Variables {
     )));
   }
 
-  pub fn serch(&self, name: &str, index: usize) -> Option<&Syntax> {
+  pub fn serch(&self, name: &str, index: usize) -> Option<Syntax> {
     for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
         if name == node.get_name() {
-          return node.get_node_index(0);
+          match node.get_node_index(0) {
+            Some(node) => {
+              return Some(node.clone());
+            }
+
+            None => {
+              return None;
+            }
+          }
         }
       }
     }
@@ -134,8 +142,7 @@ impl Interpreter {
       }
     }
 
-    self.push_scope();
-    self.push_state(InterpreterState::Main);
+    self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
@@ -176,7 +183,7 @@ impl Interpreter {
     }
 
     self.push_scope();
-    self.push_state(InterpreterState::Main);
+    self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
@@ -227,7 +234,7 @@ impl Interpreter {
     self.var.push_node(node)
   }
 
-  pub fn serch_var(&self, name: &str) -> (Option<&Syntax>, Result<Option<Types>, result::Error>) {
+  pub fn serch_var(&self, name: &str) -> (Option<Syntax>, Result<Option<Types>, result::Error>) {
     let mut index = 0;
     for state in self.state.iter() {
       if state == &InterpreterState::Call {
