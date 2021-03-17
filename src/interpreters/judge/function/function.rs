@@ -12,7 +12,6 @@ impl Interpreter {
     let argments = call.get_argment();
     let params = fun.get_param();
 
-    //argmentsにformula
     if argments.len() != params.len() {
       return Err(result::Error::InterpreterError(format!(
         "function argments error {} {} paramas",
@@ -72,8 +71,16 @@ impl Interpreter {
       Some(scope) => match scope {
         Syntax::Scope(s) => {
           let scopes = self.scope(s);
-          self.pop_scope();
-          self.pop_state();
+
+          match self.get_last_state() {
+            Some(state) => {
+              if state == &InterpreterState::IfDone {
+                self.pop_state();
+              }
+            }
+            None => {}
+          }
+
           match scopes.0 {
             Some(is_ok) => match is_ok {
               Ok(returns) => match returns {
@@ -85,6 +92,8 @@ impl Interpreter {
                         fun.get_name()
                       )));
                     }
+                    self.pop_scope();
+                    self.pop_state();
                     return Ok(Some(some_returns));
                   }
                   Syntax::Str(_) => {
@@ -94,6 +103,9 @@ impl Interpreter {
                         fun.get_name()
                       )));
                     }
+
+                    self.pop_scope();
+                    self.pop_state();
                     return Ok(Some(some_returns));
                   }
                   Syntax::Bool(_) => {
@@ -103,6 +115,9 @@ impl Interpreter {
                         fun.get_name()
                       )));
                     }
+
+                    self.pop_scope();
+                    self.pop_state();
                     return Ok(Some(some_returns));
                   }
 
@@ -120,6 +135,8 @@ impl Interpreter {
 
                           match serch_var.0 {
                             Some(var) => {
+                              self.pop_scope();
+                              self.pop_state();
                               return Ok(Some(var.clone()));
                             }
 
@@ -152,6 +169,9 @@ impl Interpreter {
                         fun.get_name()
                       )));
                     }
+
+                    self.pop_scope();
+                    self.pop_state();
                     return Ok(None);
                   }
                   _ => {
@@ -208,103 +228,108 @@ impl Interpreter {
     name: &str,
     call: &ast::CallAST,
   ) -> Result<(), result::Error> {
-    match args {
-      Syntax::Bool(_) => {
-        if types != &Types::Bool {
-          return Err(result::Error::InterpreterError(format!(
-            "function {} argment {} th miss matched type",
-            call.get_name(),
-            index,
-          )));
-        }
+    match self.formula(args) {
+      Ok(inner) => match inner {
+        Syntax::Bool(_) => {
+          if types != &Types::Bool {
+            return Err(result::Error::InterpreterError(format!(
+              "function {} argment {} th miss matched type",
+              call.get_name(),
+              index,
+            )));
+          }
 
-        let mut var = ast::VariableAST::new(name, false, true);
-        var.push_node(args.clone());
-        match self.push_var(&var) {
-          Ok(()) => {}
-          Err(e) => {
-            return Err(e);
+          let mut var = ast::VariableAST::new(name, false, true);
+          var.push_node(args.clone());
+          match self.push_var(&var) {
+            Ok(()) => {}
+            Err(e) => {
+              return Err(e);
+            }
           }
         }
-      }
-      Syntax::Str(_) => {
-        if types != &Types::String {
-          return Err(result::Error::InterpreterError(format!(
-            "function {} argment {} th miss matched type",
-            call.get_name(),
-            index,
-          )));
-        }
+        Syntax::Str(_) => {
+          if types != &Types::String {
+            return Err(result::Error::InterpreterError(format!(
+              "function {} argment {} th miss matched type",
+              call.get_name(),
+              index,
+            )));
+          }
 
-        let mut var = ast::VariableAST::new(name, false, true);
-        var.push_node(args.clone());
-        match self.push_var(&var) {
-          Ok(()) => {}
-          Err(e) => {
-            return Err(e);
+          let mut var = ast::VariableAST::new(name, false, true);
+          var.push_node(args.clone());
+          match self.push_var(&var) {
+            Ok(()) => {}
+            Err(e) => {
+              return Err(e);
+            }
           }
         }
-      }
-      Syntax::Num(_) => {
-        if types != &Types::Number {
-          return Err(result::Error::InterpreterError(format!(
-            "function {} argment {} th miss matched type",
-            call.get_name(),
-            index,
-          )));
-        }
+        Syntax::Num(_) => {
+          if types != &Types::Number {
+            return Err(result::Error::InterpreterError(format!(
+              "function {} argment {} th miss matched type",
+              call.get_name(),
+              index,
+            )));
+          }
 
-        let mut var = ast::VariableAST::new(name, false, true);
-        var.push_node(args.clone());
-        match self.push_var(&var) {
-          Ok(()) => {}
-          Err(e) => {
-            return Err(e);
+          let mut var = ast::VariableAST::new(name, false, true);
+          var.push_node(args.clone());
+          match self.push_var(&var) {
+            Ok(()) => {}
+            Err(e) => {
+              return Err(e);
+            }
           }
         }
-      }
 
-      Syntax::Var(var) => {
-        let serched = self.serch_var(var.get_name());
-        match serched.1 {
-          Ok(serch) => match serch {
-            Some(serch_type) => {
-              if &serch_type != types {
-                return Err(result::Error::InterpreterError(format!(
-                  "function {} argment {} th miss matched type",
-                  call.get_name(),
-                  index,
-                )));
-              }
+        Syntax::Var(var) => {
+          let serched = self.serch_var(var.get_name());
+          match serched.1 {
+            Ok(serch) => match serch {
+              Some(serch_type) => {
+                if &serch_type != types {
+                  return Err(result::Error::InterpreterError(format!(
+                    "function {} argment {} th miss matched type",
+                    call.get_name(),
+                    index,
+                  )));
+                }
 
-              match serched.0 {
-                Some(serch_var) => {
-                  let mut var = ast::VariableAST::new(name, false, true);
-                  var.push_node(serch_var.clone());
-                  match self.push_var(&var) {
-                    Ok(()) => {}
-                    Err(e) => {
-                      return Err(e);
+                match serched.0 {
+                  Some(serch_var) => {
+                    let mut var = ast::VariableAST::new(name, false, true);
+                    var.push_node(serch_var.clone());
+                    match self.push_var(&var) {
+                      Ok(()) => {}
+                      Err(e) => {
+                        return Err(e);
+                      }
                     }
                   }
+                  None => {}
                 }
-                None => {}
               }
-            }
 
-            None => {}
-          },
+              None => {}
+            },
 
-          Err(e) => return Err(e),
+            Err(e) => return Err(e),
+          }
         }
-      }
 
-      _ => {
-        return Err(result::Error::InterpreterError(format!(
-          "function {} argment {} th not found type impossible interpreter bug",
-          call.get_name(),
-          index,
-        )));
+        _ => {
+          return Err(result::Error::InterpreterError(format!(
+            "function {} argment {} th not found type impossible interpreter bug",
+            call.get_name(),
+            index,
+          )));
+        }
+      },
+      Err(e) => {
+        return Err(e);
       }
     }
     return Ok(());

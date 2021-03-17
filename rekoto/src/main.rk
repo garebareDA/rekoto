@@ -1,10 +1,13 @@
 fn main() {
-  let a = test(1, 1);
+  let a = test(1 + 1, 1) + 1;
   print(a);
 }
 
 fn test(a:number, b:number):number {
   let c = a + b;
   print(c);
-  return a;
+  if 1 == 1 {
+    return c + 2;
+  }
+  return c + 1;
 }

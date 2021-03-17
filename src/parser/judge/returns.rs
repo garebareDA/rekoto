@@ -10,14 +10,8 @@ impl Parsers {
         Ok(obj) => match obj {
           ast::Syntax::Var(var) => {
             let mut return_ast = ast::ReturnAST::new();
-            if var.get_node_len() < 1 {
-              return_ast.push_node(ast::Syntax::Var(var));
-              return Ok(ast::Syntax::Return(Box::new(return_ast)));
-            }
-            return Err(result::Error::SyntaxError(format!(
-              "return error not a variable {}",
-              var.get_name()
-            )));
+            return_ast.push_node(ast::Syntax::Var(var));
+            return Ok(ast::Syntax::Return(Box::new(return_ast)));
           }
 
           ast::Syntax::Num(num) => {

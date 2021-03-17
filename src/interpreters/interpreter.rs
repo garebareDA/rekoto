@@ -118,9 +118,9 @@ pub enum InterpreterState {
 }
 
 pub struct Interpreter {
-  pub var: Variables,
+  var: Variables,
   fun: Functions,
-  state: Vec<InterpreterState>,
+  pub state: Vec<InterpreterState>,
 }
 
 impl Interpreter {
@@ -231,7 +231,8 @@ impl Interpreter {
   }
 
   pub fn push_var(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
-    self.var.push_node(node)
+    let a = self.var.push_node(node);
+    return a;
   }
 
   pub fn serch_var(&self, name: &str) -> (Option<Syntax>, Result<Option<Types>, result::Error>) {
@@ -284,6 +285,6 @@ impl Interpreter {
   }
 
   pub fn pop_state(&mut self) -> InterpreterState {
-    self.state.remove(self.state.len() - 1)
+    return self.state.remove(self.state.len() - 1);
   }
 }

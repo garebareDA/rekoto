@@ -27,7 +27,10 @@ mod tests {
 
   #[test]
   fn string_concat() {
-    assert_eq!(result("let a = 'hello' + 'world!' + 2;\nprint(a);"), "helloworld!2");
+    assert_eq!(
+      result("let a = 'hello' + 'world!' + 2;\nprint(a);"),
+      "helloworld!2"
+    );
   }
 
   #[test]
@@ -57,10 +60,22 @@ mod tests {
   #[test]
   fn ifs() {
     assert_eq!(result("if 0 < 1 {print('ok')}"), "ok");
-    assert_eq!(result("if 0 == 1 {print('ok')} else {print('else')}"), "else");
-    assert_eq!(result("if 0 == 1 {print('ok')} elif 0 == 0 {print('elif')}"), "elif");
-    assert_eq!(result("if 0 == 1 {print('ok')} elif 1 == 0 {print('elif')} else {print('else')}"), "else");
-    assert_eq!(result("if 0 == 1 {print('ok')} elif 1 == 0 {print('elif')} else { } print('ok')"), "ok");
+    assert_eq!(
+      result("if 0 == 1 {print('ok')} else {print('else')}"),
+      "else"
+    );
+    assert_eq!(
+      result("if 0 == 1 {print('ok')} elif 0 == 0 {print('elif')}"),
+      "elif"
+    );
+    assert_eq!(
+      result("if 0 == 1 {print('ok')} elif 1 == 0 {print('elif')} else {print('else')}"),
+      "else"
+    );
+    assert_eq!(
+      result("if 0 == 1 {print('ok')} elif 1 == 0 {print('elif')} else { } print('ok')"),
+      "ok"
+    );
   }
 
   #[test]
@@ -70,12 +85,79 @@ mod tests {
 
   #[test]
   fn fors() {
-    assert_eq!(result("for let i = 0; i < 5; i = i + 1; {print('for')}"), "for");
+    assert_eq!(
+      result("for let i = 0; i < 5; i = i + 1; {print('for')}"),
+      "for"
+    );
+  }
+
+  #[test]
+  fn function_call() {
+    assert_eq!(
+      result_not_main(
+        "fn main() {
+      let a = test(1 + 1, 1) + 1;
+      print(a);
+    }
+    fn test(a:number, b:number):number {
+      let c = a + b;
+      print(c);
+      return c + 1;
+    }"
+      ),
+      "5"
+    );
+  }
+
+  #[test]
+  fn function_call_if() {
+    assert_eq!(
+      result_not_main(
+        "fn main() {
+          let a = test(1 + 1, 1) + 1;
+          print(a);
+        }
+        
+        fn test(a:number, b:number):number {
+          let c = a + b;
+          print(c);
+          if 1 == 1 {
+            return c + 2;
+          }
+          return c + 1;
+        }"
+      ),
+      "6"
+    );
   }
 
   fn result(syn: &str) -> String {
     let run = format!("fn main() {{ {} }}", syn);
     let mut lex = lexers::lex(&run);
+    let result = lex.run().get_tokens();
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+    match result {
+      Ok(result) => {
+        let mut interpreter = interpreter::Interpreter::new();
+        match interpreter.debug_run(result) {
+          Ok(result) => {
+            return result[0].to_string();
+          }
+          Err(e) => {
+            panic!(e);
+          }
+        }
+      }
+
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  fn result_not_main(syn: &str) -> String {
+    let mut lex = lexers::lex(&syn);
     let result = lex.run().get_tokens();
     let mut parse = parsers::Parsers::new(result.to_vec());
     let result = parse.run();
