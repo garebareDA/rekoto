@@ -50,12 +50,20 @@ impl Variables {
     )));
   }
 
-  pub fn serch(&self, name: &str, index: usize) -> Option<&Syntax> {
+  pub fn serch(&self, name: &str, index: usize) -> Option<Syntax> {
     for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
         if name == node.get_name() {
-          return node.get_node_index(0);
+          match node.get_node_index(0) {
+            Some(node) => {
+              return Some(node.clone());
+            }
+
+            None => {
+              return None;
+            }
+          }
         }
       }
     }
@@ -110,9 +118,9 @@ pub enum InterpreterState {
 }
 
 pub struct Interpreter {
-  pub var: Variables,
+  var: Variables,
   fun: Functions,
-  state: Vec<InterpreterState>,
+  pub state: Vec<InterpreterState>,
 }
 
 impl Interpreter {
@@ -134,8 +142,7 @@ impl Interpreter {
       }
     }
 
-    self.push_scope();
-    self.push_state(InterpreterState::Main);
+    self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
@@ -176,7 +183,7 @@ impl Interpreter {
     }
 
     self.push_scope();
-    self.push_state(InterpreterState::Main);
+    self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
@@ -224,10 +231,11 @@ impl Interpreter {
   }
 
   pub fn push_var(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
-    self.var.push_node(node)
+    let a = self.var.push_node(node);
+    return a;
   }
 
-  pub fn serch_var(&self, name: &str) -> (Option<&Syntax>, Result<Option<Types>, result::Error>) {
+  pub fn serch_var(&self, name: &str) -> (Option<Syntax>, Result<Option<Types>, result::Error>) {
     let mut index = 0;
     for state in self.state.iter() {
       if state == &InterpreterState::Call {
@@ -277,6 +285,6 @@ impl Interpreter {
   }
 
   pub fn pop_state(&mut self) -> InterpreterState {
-    self.state.remove(self.state.len() - 1)
+    return self.state.remove(self.state.len() - 1);
   }
 }

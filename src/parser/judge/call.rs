@@ -43,19 +43,8 @@ impl Parsers {
       match self.get_tokens(self.get_index()) {
         Some(tokens) => {
           if tokens.get_token() == TOKEN._paren_right {
-            return Ok(ast::Syntax::Call(call_ast));
+            break;
           }
-        }
-
-        None => {
-          return Err(result::Error::SyntaxError("strings error".to_string()));
-        }
-      }
-
-      let verification_token: i64;
-      match self.get_tokens(self.get_index() + 1) {
-        Some(tokens) => {
-          verification_token = tokens.get_token();
         }
 
         None => {
@@ -66,13 +55,23 @@ impl Parsers {
       match self.judge() {
         Some(judge) => match judge {
           Ok(obj) => {
+            let verification_token: i64;
+            match self.get_tokens(self.get_index()) {
+              Some(tokens) => {
+                verification_token = tokens.get_token();
+              }
+              None => {
+                return Err(result::Error::SyntaxError("strings error".to_string()));
+              }
+            }
+
             call_ast.push_argment(&obj);
             if verification_token == TOKEN._paren_right {
               break;
             } else if verification_token == TOKEN._comma {
               continue;
             } else {
-              return Err(result::Error::SyntaxError(format!("syntax error call function {}", name)));
+              return Err(result::Error::SyntaxError(format!("syntax error  call function {} argments", name)));
             }
           }
 

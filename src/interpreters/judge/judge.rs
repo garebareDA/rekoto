@@ -26,9 +26,7 @@ impl Interpreter {
 
     match ast {
       Syntax::Call(call) => {
-        self.push_state(InterpreterState::Call);
         let result = self.call(call);
-        self.pop_state();
         return result;
       }
 
@@ -84,10 +82,14 @@ impl Interpreter {
       }
 
       Syntax::Return(ret) => match ret.get_node_index(0) {
-        Some(syntax) => {
-          //TODO formulaを噛ませる
-          return (Some(Ok(Some(syntax.clone()))), None);
-        }
+        Some(syntax) => match self.formula(syntax) {
+          Ok(inner) => {
+            return (Some(Ok(Some(inner))), None);
+          }
+          Err(e) => {
+            return (Some(Err(e)), None);
+          }
+        },
         None => {
           return (
             Some(Ok(Some(Syntax::Return(Box::new(ast::ReturnAST::new()))))),
