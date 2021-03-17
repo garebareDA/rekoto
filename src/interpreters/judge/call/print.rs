@@ -22,36 +22,6 @@ impl Interpreter {
         return Ok(bools.get_bool().to_string());
       }
 
-      Syntax::Var(var) => match self.serch_var(var.get_name()).0 {
-        Some(vars) => match vars {
-          Syntax::Str(strs) => {
-            self.print_out(strs.get_str()).unwrap();
-            return Ok(strs.get_str().to_string());
-          }
-
-          Syntax::Num(num) => {
-            self.print_out(&num.get_num().to_string()).unwrap();
-            return Ok(num.get_num().to_string());
-          }
-
-          Syntax::Bool(bools) => {
-            self.print_out(&bools.get_bool().to_string()).unwrap();
-            return Ok(bools.get_bool().to_string());
-          }
-
-          _ => {
-            return Err(result::Error::InterpreterError(
-              "error print argment invalid value".to_string(),
-            ))
-          }
-        },
-        None => {
-          return Err(result::Error::InterpreterError(
-            "error print not initalize variable ".to_string(),
-          ))
-        }
-      },
-
       _ => return Err(result::Error::InterpreterError("error print argment invalid value".to_string())),
     }
   }

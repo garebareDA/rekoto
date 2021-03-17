@@ -35,15 +35,23 @@ impl Interpreter {
       }
 
       match argment.get(0) {
-        Some(argment) => match self.print(argment) {
-          Ok(ret) => {
-            return (None, Some(ret));
-          }
+        Some(argment) => {
+          let result = self.formula(argment);
+          match result {
+            Ok(result) => match self.print(&result) {
+              Ok(ret) => {
+                return (None, Some(ret));
+              }
 
-          Err(e) => {
-            return (Some(Err(e)), None);
+              Err(e) => {
+                return (Some(Err(e)), None);
+              }
+            },
+            Err(e) => {
+              return (Some(Err(e)), None);
+            }
           }
-        },
+        }
         None => {
           return (
             Some(Err(result::Error::InterpreterError(
