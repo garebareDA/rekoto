@@ -86,7 +86,7 @@ mod tests {
   #[test]
   fn fors() {
     assert_eq!(
-      result("for let i = 0; i < 5; i = i + 1; {print('for')}"),
+      result("for let i = 0; i < 5; i++; {print('for')}"),
       "for"
     );
   }
@@ -117,7 +117,6 @@ mod tests {
           let a = test(1 + 1, 1) + 1;
           print(a);
         }
-        
         fn test(a:number, b:number):number {
           let c = a + b;
           print(c);

@@ -47,6 +47,17 @@ impl Formula {
 
         if index == 0 {
           //単行演算子
+          if bin == TOKEN._inc {
+            return Err(result::Error::InterpreterError(format!(
+              "caluculation error inclement oprator"
+            )));
+          }
+
+          if bin == TOKEN._dec {
+            return Err(result::Error::InterpreterError(format!(
+              "caluculation error declement oprator"
+            )));
+          }
         }
 
         if index == 1 {
@@ -289,7 +300,7 @@ impl Interpreter {
 
         None => {
           return Err(result::Error::InterpreterError(format!(
-            "{} not a var",
+            "{} is not init",
             vars.get_name()
           )))
         }

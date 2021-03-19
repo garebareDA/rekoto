@@ -1,5 +1,6 @@
 fn main() {
   let a = test(1 + 1, 1) + 1;
+  a++;
   print(a);
 }
 

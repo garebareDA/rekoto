@@ -86,14 +86,17 @@ impl Interpreter {
 
       let formula = self.judge(fors.get_add());
       match formula.0 {
-        Some(_) => {
-          return (
-            Some(Err(result::Error::InterpreterError(
-              "for error formula".to_string(),
-            ))),
-            formula.1,
-          );
-        }
+        Some(s) => match s {
+          Ok(_) => {}
+          Err(e) => {
+            return (
+              Some(Err(result::Error::InterpreterError(
+                format!("for error formula \n {}", e),
+              ))),
+              formula.1,
+            );
+          }
+        },
         None => {}
       }
     }
