@@ -1,5 +1,5 @@
-use super::super::parsers::{Parsers, ParseState};
-use super::super::ast::{ast, ast::Syntax, ast::Node};
+use super::super::ast::{ast, ast::Node, ast::Syntax};
+use super::super::parsers::{ParseState, Parsers};
 use crate::error::result;
 
 impl Parsers {
@@ -16,19 +16,8 @@ impl Parsers {
       }
 
       self.index_inc();
-
       match self.judge() {
-        Some(judge) => {
-          match judge {
-            Ok(obj) => {
-              scope_ast.push_node(obj);
-            }
-
-            Err(e) => {
-              return Err(e);
-            }
-          }
-        }
+        Some(judge) => scope_ast.push_node(judge?),
         None => {}
       }
     }

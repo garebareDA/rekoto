@@ -21,19 +21,10 @@ impl Parsers {
     }
 
     let mut num_ast = ast::NumberAST::new(num);
-
     match self.formula_judge() {
-      Some(formu) => match formu {
-        Ok(objf) => {
-          num_ast.push_node(objf);
-        }
-        Err(e) => {
-          return Err(e);
-        }
-      },
+      Some(formu) => num_ast.push_node(formu?),
       None => {}
     }
-
     return Ok(ast::Syntax::Num(num_ast));
   }
 
@@ -104,31 +95,17 @@ impl Parsers {
         }
 
         if token == TOKEN._pipe {
-          match self.formula_same_check(TOKEN._pipe, value) {
-            Ok(()) => {
-              self.index_inc();
-              value = "||";
-              token = TOKEN._or;
-            }
-
-            Err(e) => {
-              return Err(e);
-            }
-          }
+          self.formula_same_check(TOKEN._pipe, value)?;
+          self.index_inc();
+          value = "||";
+          token = TOKEN._or;
         }
 
         if token == TOKEN._amp {
-          match self.formula_same_check(TOKEN._amp, value) {
-            Ok(()) => {
-              self.index_inc();
-              value = "&&";
-              token = TOKEN._and;
-            }
-
-            Err(e) => {
-              return Err(e);
-            }
-          }
+          self.formula_same_check(TOKEN._amp, value)?;
+          self.index_inc();
+          value = "&&";
+          token = TOKEN._and;
         }
 
         if token == TOKEN._equal {
@@ -137,14 +114,7 @@ impl Parsers {
 
         let mut ch_ast = ast::BinaryAST::new(value, token);
         match self.formula_judge() {
-          Some(formu) => match formu {
-            Ok(objf) => {
-              ch_ast.push_node(objf);
-            }
-            Err(e) => {
-              return Err(e);
-            }
-          },
+          Some(formu) => ch_ast.push_node(formu?),
           None => {}
         }
         return Ok(ast::Syntax::Bin(ch_ast));
@@ -175,16 +145,10 @@ impl Parsers {
     let mut str_ast = ast::StringAST::new(strs);
 
     match self.formula_judge() {
-      Some(formu) => match formu {
-        Ok(obj) => {
-          str_ast.push_node(obj);
-        }
-        Err(e) => {
-          return Err(e);
-        }
-      },
+      Some(formu) => str_ast.push_node(formu?),
       None => {}
     }
+
     return Ok(ast::Syntax::Str(str_ast));
   }
 
@@ -213,14 +177,7 @@ impl Parsers {
     }
 
     match self.formula_judge() {
-      Some(formu) => match formu {
-        Ok(obj) => {
-          bools.push_node(obj);
-        }
-        Err(e) => {
-          return Err(e);
-        }
-      },
+      Some(formu) => bools.push_node(formu?),
       None => {}
     }
     return Ok(ast::Syntax::Bool(bools));

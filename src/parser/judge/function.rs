@@ -10,26 +10,20 @@ impl Parsers {
     let mut fn_ast: ast::FunctionAST;
     self.index_inc();
     match self.judge() {
-      Some(judge) => match judge {
-        Ok(obj) => match obj {
-          Syntax::Var(var) => {
-            if var.get_node_len() < 1 {
-              fn_ast = ast::FunctionAST::new(var.get_name());
-            } else {
-              return Err(result::Error::SyntaxError(
-                "fucntion name error possible parser bug".to_string(),
-              ));
-            }
-          }
-          _ => {
+      Some(judge) => match judge? {
+        Syntax::Var(var) => {
+          if var.get_node_len() < 1 {
+            fn_ast = ast::FunctionAST::new(var.get_name());
+          } else {
             return Err(result::Error::SyntaxError(
               "fucntion name error possible parser bug".to_string(),
             ));
           }
-        },
-
-        Err(e) => {
-          return Err(e);
+        }
+        _ => {
+          return Err(result::Error::SyntaxError(
+            "fucntion name error possible parser bug".to_string(),
+          ));
         }
       },
 
@@ -43,10 +37,7 @@ impl Parsers {
     self.index_inc();
     let paren_left_token: i64;
     match self.get_tokens(self.get_index()) {
-      Some(tokens) => {
-        paren_left_token = tokens.get_token();
-      }
-
+      Some(tokens) => paren_left_token = tokens.get_token(),
       None => {
         return Err(result::Error::SyntaxError(
           "out of index fucntion name error possible parser bug".to_string(),
@@ -65,10 +56,7 @@ impl Parsers {
       let verification_token: i64;
 
       match self.get_tokens(self.get_index()) {
-        Some(tokens) => {
-          paren_right_token = tokens.get_token();
-        }
-
+        Some(tokens) => paren_right_token = tokens.get_token(),
         None => {
           return Err(result::Error::SyntaxError(
             "out of index fucntion param error possible parser bug".to_string(),
@@ -77,10 +65,7 @@ impl Parsers {
       }
 
       match self.get_tokens(self.get_index() + 1) {
-        Some(tokens) => {
-          verification_token = tokens.get_token();
-        }
-
+        Some(tokens) => verification_token = tokens.get_token(),
         None => {
           return Err(result::Error::SyntaxError(
             "out of index fucntion param error possible parser bug".to_string(),
@@ -93,57 +78,47 @@ impl Parsers {
       }
 
       match self.judge() {
-        Some(judge) => match judge {
-          Ok(obj) => match obj {
-            Syntax::Var(mut var) => {
-              if verification_token != TOKEN._colon {
-                return Err(result::Error::SyntaxError(format!(
-                  "fucntion {} param type error",
-                  fn_ast.get_name()
-                )));
-              }
-
-              match self.check_types() {
-                Ok(types) => {
-                  var.set_type(types);
-                  fn_ast.push_param(Syntax::Var(var));
-                }
-                Err(e) => {
-                  return Err(e);
-                }
-              }
-
-              self.index_inc();
-              match self.get_tokens(self.get_index()) {
-                Some(tokens) => {
-                  if tokens.get_token() == TOKEN._paren_right {
-                    break;
-                  } else if tokens.get_token() == TOKEN._comma {
-                    continue;
-                  } else {
-                    return Err(result::Error::SyntaxError(format!("function ) or , not found {}", fn_ast.get_name())));
-                  }
-                }
-
-                None => {
-                  return Err(result::Error::SyntaxError(format!(
-                    "function ) not found {}",
-                    fn_ast.get_name()
-                  )));
-                }
-              }
-            }
-
-            _ => {
+        Some(judge) => match judge? {
+          Syntax::Var(mut var) => {
+            if verification_token != TOKEN._colon {
               return Err(result::Error::SyntaxError(format!(
                 "fucntion {} param type error",
                 fn_ast.get_name()
               )));
             }
-          },
 
-          Err(e) => {
-            return Err(e);
+            var.set_type(self.check_types()?);
+            fn_ast.push_param(Syntax::Var(var));
+            self.index_inc();
+
+            match self.get_tokens(self.get_index()) {
+              Some(tokens) => {
+                if tokens.get_token() == TOKEN._paren_right {
+                  break;
+                } else if tokens.get_token() == TOKEN._comma {
+                  continue;
+                } else {
+                  return Err(result::Error::SyntaxError(format!(
+                    "function ) or , not found {}",
+                    fn_ast.get_name()
+                  )));
+                }
+              }
+
+              None => {
+                return Err(result::Error::SyntaxError(format!(
+                  "function ) not found {}",
+                  fn_ast.get_name()
+                )));
+              }
+            }
+          }
+
+          _ => {
+            return Err(result::Error::SyntaxError(format!(
+              "fucntion {} param type error",
+              fn_ast.get_name()
+            )));
           }
         },
         None => {
@@ -156,9 +131,7 @@ impl Parsers {
     }
 
     match self.check_types() {
-      Ok(types) => {
-        fn_ast.set_type(types);
-      }
+      Ok(types) => fn_ast.set_type(types),
       Err(_) => {
         //返り値がなくても良いため
       }
@@ -168,10 +141,13 @@ impl Parsers {
     match self.judge() {
       Some(judge) => match judge {
         Ok(obj) => match obj {
-          ast::Syntax::Scope(_) => {
-            fn_ast.push_node(obj)
+          ast::Syntax::Scope(_) => fn_ast.push_node(obj),
+          _ => {
+            return Err(result::Error::SyntaxError(format!(
+              "{} is scope not found",
+              fn_ast.get_name()
+            )))
           }
-          _ => return Err(result::Error::SyntaxError(format!("{} is scope not found", fn_ast.get_name()))),
         },
 
         Err(e) => {

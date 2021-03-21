@@ -44,19 +44,11 @@ pub fn read_file() -> Result<(), result::Error> {
     println!("{:?}", result);
 
     let mut parse = parsers::Parsers::new(result.to_vec());
-    let result = parse.run();
+    let result = parse.run()?;
     println!("{:?}", result);
 
-    match result {
-      Ok(result) => {
-        let mut interpreter = interpreter::Interpreter::new();
-        return interpreter.run(result);
-      }
-
-      Err(e) => {
-        return Err(e);
-      }
-    }
+    let mut interpreter = interpreter::Interpreter::new();
+    return interpreter.run(result);
   }
 
   return Err(result::Error::FileReadError(format!(

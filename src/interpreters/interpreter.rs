@@ -134,14 +134,7 @@ impl Interpreter {
 
   pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
     self.push_scope();
-    match self.function_init(&root) {
-      Ok(()) => {}
-
-      Err(e) => {
-        return Err(e);
-      }
-    }
-
+    self.function_init(&root)?;
     self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {
       Some(main) => {
@@ -174,14 +167,7 @@ impl Interpreter {
     let mut log: Vec<String> = Vec::new();
 
     self.push_scope();
-    match self.function_init(&root) {
-      Ok(()) => {}
-
-      Err(e) => {
-        return Err(e);
-      }
-    }
-
+    self.function_init(&root)?;
     self.push_scope();
     self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {

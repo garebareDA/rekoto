@@ -10,25 +10,20 @@ impl Parsers {
 
     self.index_inc();
     match self.judge() {
-      Some(judge) => match judge {
-        Ok(obj) => match obj {
-          Syntax::Var(var) => {
-            if var.get_node_len() > 0 {
-              init = Syntax::Var(var);
-            } else {
-              return Err(result::Error::SyntaxError(format!(
-                "var {} initlize error",
-                var.get_name()
-              )));
-            }
+      Some(judge) => match judge? {
+        Syntax::Var(var) => {
+          if var.get_node_len() > 0 {
+            init = Syntax::Var(var);
+          } else {
+            return Err(result::Error::SyntaxError(format!(
+              "var {} initlize error",
+              var.get_name()
+            )));
           }
+        }
 
-          _ => {
-            return Err(result::Error::SyntaxError("for initlize error".to_string()));
-          }
-        },
-        Err(e) => {
-          return Err(e);
+        _ => {
+          return Err(result::Error::SyntaxError("for initlize error".to_string()));
         }
       },
       None => {
@@ -38,33 +33,27 @@ impl Parsers {
 
     self.index_inc();
     match self.judge() {
-      Some(judge) => match judge {
-        Ok(obj) => match obj {
-          Syntax::Num(num) => {
-            judges = Syntax::Num(num);
-          }
+      Some(judge) => match judge? {
+        Syntax::Num(num) => {
+          judges = Syntax::Num(num);
+        }
 
-          Syntax::Str(strs) => {
-            judges = Syntax::Str(strs);
-          }
+        Syntax::Str(strs) => {
+          judges = Syntax::Str(strs);
+        }
 
-          Syntax::Call(call) => {
-            judges = Syntax::Call(call);
-          }
+        Syntax::Call(call) => {
+          judges = Syntax::Call(call);
+        }
 
-          Syntax::Var(var) => {
-            judges = Syntax::Var(var);
-          }
+        Syntax::Var(var) => {
+          judges = Syntax::Var(var);
+        }
 
-          _ => {
-            return Err(result::Error::SyntaxError(
-              "for initlize errorjdugement error".to_string(),
-            ));
-          }
-        },
-
-        Err(e) => {
-          return Err(e);
+        _ => {
+          return Err(result::Error::SyntaxError(
+            "for initlize errorjdugement error".to_string(),
+          ));
         }
       },
 
@@ -77,31 +66,25 @@ impl Parsers {
 
     self.index_inc();
     match self.judge() {
-      Some(judge) => match judge {
-        Ok(obj) => match obj {
-          Syntax::Num(num) => {
-            add = Syntax::Num(num);
-          }
+      Some(judge) => match judge? {
+        Syntax::Num(num) => {
+          add = Syntax::Num(num);
+        }
 
-          Syntax::Str(strs) => {
-            add = Syntax::Str(strs);
-          }
+        Syntax::Str(strs) => {
+          add = Syntax::Str(strs);
+        }
 
-          Syntax::Call(call) => {
-            add = Syntax::Call(call);
-          }
+        Syntax::Call(call) => {
+          add = Syntax::Call(call);
+        }
 
-          Syntax::Var(var) => {
-            add = Syntax::Var(var);
-          }
+        Syntax::Var(var) => {
+          add = Syntax::Var(var);
+        }
 
-          _ => {
-            return Err(result::Error::SyntaxError("for formula error".to_string()));
-          }
-        },
-
-        Err(e) => {
-          return Err(e);
+        _ => {
+          return Err(result::Error::SyntaxError("for formula error".to_string()));
         }
       },
 

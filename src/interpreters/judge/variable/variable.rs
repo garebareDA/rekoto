@@ -51,11 +51,7 @@ impl Interpreter {
               Some(serched) => match serched {
                 Syntax::Num(num) => {
                   let mut result = num.get_num();
-                  let mut var_ast = ast::VariableAST::new(
-                    vars.get_name(),
-                    true,
-                    false,
-                  );
+                  let mut var_ast = ast::VariableAST::new(vars.get_name(), true, false);
 
                   if TOKEN._inc == bin.get_token() {
                     result = result + 1;
@@ -71,7 +67,10 @@ impl Interpreter {
                     return Ok(());
                   }
 
-                  return Err(result::Error::InterpreterError(format!("{} only increment and decrement operators are supported.", vars.get_name())));
+                  return Err(result::Error::InterpreterError(format!(
+                    "{} only increment and decrement operators are supported.",
+                    vars.get_name()
+                  )));
                 }
                 _ => {
                   return Err(result::Error::InterpreterError(format!(
@@ -107,16 +106,8 @@ impl Interpreter {
   }
 
   fn is_node_index(&mut self, vars: &VariableAST, syn: &Syntax) -> Result<(), result::Error> {
-    match self.formula(syn) {
-      Ok(inner) => {
-        let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
-        var.push_node(inner);
-        return self.push_var(&var);
-      }
-
-      Err(e) => {
-        return Err(e);
-      }
-    }
+    let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
+    var.push_node(self.formula(syn)?);
+    return self.push_var(&var);
   }
 }

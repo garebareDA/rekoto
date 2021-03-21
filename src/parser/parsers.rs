@@ -33,14 +33,7 @@ impl Parsers {
 
     loop {
       match self.judge() {
-        Some(result) => match result {
-          Ok(ast) => {
-            root.push_node(ast);
-          }
-          Err(e) => {
-            return Err(e);
-          }
-        },
+        Some(result) => root.push_node(result?),
         None => {}
       }
 
