@@ -1,7 +1,6 @@
 pub mod ast;
 pub mod judge;
 pub mod parsers;
-
 #[cfg(test)]
 mod tests {
   use crate::lexer::lexers;
@@ -608,7 +607,7 @@ mod tests {
   }
 
   #[test]
-  pub fn boolean() {
+  fn boolean() {
     let mut lex = lexers::lex("let a:bool = true;");
     let result = lex.run().get_tokens();
 
@@ -651,6 +650,47 @@ mod tests {
         }
       }
 
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn import() {
+    let mut lex = lexers::lex("import './url/test';");
+    let result = lex.run().get_tokens();
+
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Import(import) => {
+              match import.get_node_index(0) {
+                Some(inner) => {
+                  match inner {
+                    ast::ast::Syntax::Str(strs) => {
+                      assert_eq!(strs.get_str(), "./url/test");
+                    }
+
+                    _ => {
+                      panic!();
+                    }
+                  }
+                }
+                None => {
+                  panic!();
+                }
+              }
+            }
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
       Err(e) => {
         panic!(e);
       }
