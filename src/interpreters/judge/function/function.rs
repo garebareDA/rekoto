@@ -300,6 +300,24 @@ impl Interpreter {
           self.variable(var)?;
         }
 
+        Syntax::Import(import) => match import.get_node_index(0) {
+          Some(inner) => match inner {
+            Syntax::Str(strs) => {
+              //TODO import
+              self.import(strs.get_str())?;
+            }
+
+            _ => {
+              return Err(result::Error::InterpreterError(
+                "please specify import as a string ".to_string(),
+              ));
+            }
+          },
+          None => {
+            return Err(result::Error::InterpreterError(format!("import error")));
+          }
+        },
+
         _ => {
           return Err(result::Error::InterpreterError(
             "the syntax is not written inside the function".to_string(),
