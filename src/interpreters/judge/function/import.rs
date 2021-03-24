@@ -7,11 +7,30 @@ use crate::error::result;
 use crate::lexer::lexers;
 use crate::parser::parsers;
 
+use std::path::{Path, PathBuf};
+
 impl Interpreter {
-  pub(crate) fn import(&mut self, url:&str) -> Result<(), result::Error> {
-    //TODO URLの参照位置を調整する
+  pub(crate) fn import(&mut self, path: &str) -> Result<(), result::Error> {
+    let my_path = Path::new(self.get_path());
+    let parent = my_path.parent();
+    let join_path:PathBuf;
+
+    match parent {
+      Some(p) => {
+        join_path = p.join(path);
+        println!("join_path {}", join_path.display());
+      }
+
+      None => {
+        return Err(result::Error::InterpreterError(format!(
+          "{} is not found",
+          my_path.display()
+        )))
+      }
+    }
+
     let mut f: File;
-    match File::open(url) {
+    match File::open(join_path) {
       Ok(file) => {
         f = file;
       }

@@ -47,7 +47,7 @@ pub fn read_file() -> Result<(), result::Error> {
     let result = parse.run()?;
     println!("{:?}", result);
 
-    let mut interpreter = interpreter::Interpreter::new();
+    let mut interpreter = interpreter::Interpreter::new(filename);
     return interpreter.run(result);
   }
 

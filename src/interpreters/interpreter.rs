@@ -120,15 +120,17 @@ pub enum InterpreterState {
 pub struct Interpreter {
   var: Variables,
   fun: Functions,
-  pub state: Vec<InterpreterState>,
+  state: Vec<InterpreterState>,
+  path: String,
 }
 
 impl Interpreter {
-  pub fn new() -> Self {
+  pub fn new(path:impl Into<String>) -> Self {
     Self {
       var: Variables::new(),
       fun: Functions::new(),
       state: Vec::new(),
+      path:path.into(),
     }
   }
 
@@ -232,7 +234,7 @@ impl Interpreter {
     let serched = self.var.serch(name, index);
     match serched {
       Some(var) => match var {
-        Syntax::Bool(_) => {(Some(var), Ok(Some(Types::Bool)))},
+        Syntax::Bool(_) => (Some(var), Ok(Some(Types::Bool))),
 
         Syntax::Num(_) => (Some(var), Ok(Some(Types::Number))),
 
@@ -252,6 +254,10 @@ impl Interpreter {
         return (None, Ok(None));
       }
     }
+  }
+
+  pub fn get_path(&self) -> &str{
+    &self.path
   }
 
   pub fn serch_fun(&self, name: &str) -> Option<ast::ast::FunctionAST> {
