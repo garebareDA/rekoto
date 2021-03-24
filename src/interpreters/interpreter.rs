@@ -120,28 +120,23 @@ pub enum InterpreterState {
 pub struct Interpreter {
   var: Variables,
   fun: Functions,
-  pub state: Vec<InterpreterState>,
+  state: Vec<InterpreterState>,
+  path: String,
 }
 
 impl Interpreter {
-  pub fn new() -> Self {
+  pub fn new(path:impl Into<String>) -> Self {
     Self {
       var: Variables::new(),
       fun: Functions::new(),
       state: Vec::new(),
+      path:path.into(),
     }
   }
 
   pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
     self.push_scope();
-    match self.function_init(&root) {
-      Ok(()) => {}
-
-      Err(e) => {
-        return Err(e);
-      }
-    }
-
+    self.function_init(&root)?;
     self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {
       Some(main) => {
@@ -174,14 +169,7 @@ impl Interpreter {
     let mut log: Vec<String> = Vec::new();
 
     self.push_scope();
-    match self.function_init(&root) {
-      Ok(()) => {}
-
-      Err(e) => {
-        return Err(e);
-      }
-    }
-
+    self.function_init(&root)?;
     self.push_scope();
     self.push_state(InterpreterState::Call);
     match self.serch_fun("main") {
@@ -246,7 +234,7 @@ impl Interpreter {
     let serched = self.var.serch(name, index);
     match serched {
       Some(var) => match var {
-        Syntax::Bool(_) => {(Some(var), Ok(Some(Types::Bool)))},
+        Syntax::Bool(_) => (Some(var), Ok(Some(Types::Bool))),
 
         Syntax::Num(_) => (Some(var), Ok(Some(Types::Number))),
 
@@ -266,6 +254,10 @@ impl Interpreter {
         return (None, Ok(None));
       }
     }
+  }
+
+  pub fn get_path(&self) -> &str{
+    &self.path
   }
 
   pub fn serch_fun(&self, name: &str) -> Option<ast::ast::FunctionAST> {

@@ -153,6 +153,10 @@ impl Parsers {
       }
     }
 
+    if token == TOKEN._import {
+      return Some(self.import());
+    }
+
     if token == TOKEN._end || token == TOKEN._comment{
       return None;
     }

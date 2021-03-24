@@ -53,47 +53,38 @@ impl Parsers {
       }
 
       match self.judge() {
-        Some(judge) => match judge {
-          Ok(obj) => {
-            let verification_token: i64;
-            match self.get_tokens(self.get_index()) {
-              Some(tokens) => {
-                verification_token = tokens.get_token();
-              }
-              None => {
-                return Err(result::Error::SyntaxError("strings error".to_string()));
-              }
+        Some(judge) => {
+          let verification_token: i64;
+          match self.get_tokens(self.get_index()) {
+            Some(tokens) => {
+              verification_token = tokens.get_token();
             }
-
-            call_ast.push_argment(&obj);
-            if verification_token == TOKEN._paren_right {
-              break;
-            } else if verification_token == TOKEN._comma {
-              continue;
-            } else {
-              return Err(result::Error::SyntaxError(format!("syntax error  call function {} argments", name)));
+            None => {
+              return Err(result::Error::SyntaxError("strings error".to_string()));
             }
           }
-
-          Err(e) => {
-            return Err(e);
+          call_ast.push_argment(&judge?);
+          if verification_token == TOKEN._paren_right {
+            break;
+          } else if verification_token == TOKEN._comma {
+            continue;
+          } else {
+            return Err(result::Error::SyntaxError(format!(
+              "syntax error  call function {} argments",
+              name
+            )));
           }
-        },
+        }
         None => {
-          return Err(result::Error::SyntaxError(format!("syntax error call judge")));
+          return Err(result::Error::SyntaxError(format!(
+            "syntax error call judge"
+          )));
         }
       }
     }
 
     match self.formula_judge() {
-      Some(formu) => match formu {
-        Ok(obj) => {
-          call_ast.push_node(obj);
-        }
-        Err(e) => {
-          return Err(e);
-        }
-      },
+      Some(formu) => call_ast.push_node(formu?),
       None => {}
     }
 

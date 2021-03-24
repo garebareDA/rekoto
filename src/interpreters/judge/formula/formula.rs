@@ -248,23 +248,17 @@ impl Interpreter {
   pub(crate) fn formula(&mut self, formula: &ast::Syntax) -> Result<Syntax, result::Error> {
     let mut formulas = Formula::new();
     self.formula_push(&mut formulas, formula)?;
-    match formulas.run() {
-      Ok(result) => match result {
-        FormulaType::Number(num) => {
-          return Ok(Syntax::Num(ast::NumberAST::new(*num)));
-        }
+    match formulas.run()? {
+      FormulaType::Number(num) => {
+        return Ok(Syntax::Num(ast::NumberAST::new(*num)));
+      }
 
-        FormulaType::Strings(strs) => {
-          return Ok(Syntax::Str(ast::StringAST::new(strs)));
-        }
+      FormulaType::Strings(strs) => {
+        return Ok(Syntax::Str(ast::StringAST::new(strs)));
+      }
 
-        FormulaType::Bool(bools) => {
-          return Ok(Syntax::Bool(ast::BoolAST::new(*bools)));
-        }
-      },
-
-      Err(e) => {
-        return Err(e);
+      FormulaType::Bool(bools) => {
+        return Ok(Syntax::Bool(ast::BoolAST::new(*bools)));
       }
     }
   }
@@ -289,12 +283,7 @@ impl Interpreter {
       }
       Syntax::Var(vars) => match self.serch_var(vars.get_name()).0 {
         Some(inner) => {
-          match self.formula_push(formula, &inner) {
-            Ok(_) => {}
-            Err(e) => {
-              return Err(e);
-            }
-          }
+          self.formula_push(formula, &inner)?;
           return self.formula_continue(vars, formula);
         }
 
@@ -307,26 +296,16 @@ impl Interpreter {
       },
 
       Syntax::Call(call) => match self.serch_fun(call.get_name()) {
-        Some(inner) => match self.function_run(&inner, call) {
-          Ok(result) => match result {
-            Some(returns) => {
-              match self.formula_push(formula, &returns) {
-                Ok(_) => {}
-                Err(e) => {
-                  return Err(e);
-                }
-              }
-              return self.formula_continue(call, formula);
-            }
-            None => {
-              return Err(result::Error::InterpreterError(format!(
-                "{} not a return value",
-                call.get_name()
-              )))
-            }
-          },
-          Err(e) => {
-            return Err(e);
+        Some(inner) => match self.function_run(&inner, call)? {
+          Some(returns) => {
+            self.formula_push(formula, &returns)?;
+            return self.formula_continue(call, formula);
+          }
+          None => {
+            return Err(result::Error::InterpreterError(format!(
+              "{} not a return value",
+              call.get_name()
+            )))
           }
         },
 
