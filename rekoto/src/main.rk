@@ -1,14 +1,7 @@
+import "./test.rk";
+
 fn main() {
   let a = test(1 + 1, 1) + 1;
   a++;
   print(a);
-}
-
-fn test(a:number, b:number):number {
-  let c = a + b;
-  print(c);
-  if 1 == 1 {
-    return c + 2;
-  }
-  return c + 1;
 }
