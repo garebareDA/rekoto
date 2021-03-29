@@ -48,12 +48,11 @@ pub fn read_file() -> Result<(), result::Error> {
     let result = parse.run()?;
     println!("{:?}", result);
 
-    let mut interpreter = interpreter::Interpreter::new();
-    return interpreter.run(
-      result,
+    let mut interpreter = interpreter::Interpreter::new(
       filename.to_str().unwrap(),
       filename.file_stem().unwrap().to_str().unwrap(),
     );
+    return interpreter.run(result);
   }
 
   return Err(result::Error::FileReadError(format!(

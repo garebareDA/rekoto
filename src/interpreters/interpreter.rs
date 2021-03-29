@@ -2,8 +2,8 @@ use crate::error::result;
 use crate::parser::ast;
 use crate::parser::ast::ast::{Node, RootAST, Syntax, Types};
 
-use super::variables::Variables;
 use super::functions::Functions;
+use super::variables::Variables;
 
 #[derive(PartialEq, Debug)]
 pub enum InterpreterState {
@@ -15,22 +15,21 @@ pub enum InterpreterState {
   Call,
 }
 
-pub struct InterpreterData {
-  pub var: Variables,
-  pub fun: Functions,
-  pub path: String,
-  pub name: String,
-}
-
 pub struct Interpreter {
-  data: Vec<InterpreterData>,
+  var: Variables,
+  fun: Functions,
+  path: String,
+  name: String,
   state: Vec<InterpreterState>,
 }
 
 impl Interpreter {
-  pub fn new() -> Self {
+  pub fn new(path: impl Into<String>, name: impl Into<String>) -> Self {
     Self {
-      data: Vec::new(),
+      var: Variables::new(),
+      fun: Functions::new(),
+      path:path.into(),
+      name:name.into(),
       state: Vec::new(),
     }
   }
@@ -38,10 +37,7 @@ impl Interpreter {
   pub fn run(
     &mut self,
     root: RootAST,
-    path: impl Into<String>,
-    name: impl Into<String>,
   ) -> Result<(), result::Error> {
-    self.push_data(path, name);
     self.push_scope();
     self.function_init(&root)?;
     self.push_state(InterpreterState::Call);
@@ -74,7 +70,6 @@ impl Interpreter {
 
   pub fn debug_run(&mut self, root: RootAST) -> Result<Vec<String>, result::Error> {
     let mut log: Vec<String> = Vec::new();
-    self.push_data("", "");
     self.push_scope();
     self.function_init(&root)?;
     self.push_scope();
@@ -115,28 +110,18 @@ impl Interpreter {
     return Ok(log);
   }
 
-  pub fn push_data(&mut self, path: impl Into<String>, name: impl Into<String>) {
-    let data = InterpreterData {
-      fun: Functions::new(),
-      var: Variables::new(),
-      path: path.into(),
-      name: name.into(),
-    };
-    self.data.push(data);
-  }
-
   pub fn push_scope(&mut self) {
-    self.data[0].var.push_scope();
-    self.data[0].fun.push_scope();
+    self.var.push_scope();
+    self.fun.push_scope();
   }
 
   pub fn pop_scope(&mut self) {
-    self.data[0].var.pop_scope();
-    self.data[0].fun.pop_scope();
+    self.var.pop_scope();
+    self.fun.pop_scope();
   }
 
   pub fn push_var(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
-    let a = self.data[0].var.push_node(node);
+    let a = self.var.push_node(node);
     return a;
   }
 
@@ -148,7 +133,7 @@ impl Interpreter {
       }
     }
 
-    let serched = self.data[0].var.serch(name, index);
+    let serched = self.var.serch(name, index);
     match serched {
       Some(var) => match var {
         Syntax::Bool(_) => (Some(var), Ok(Some(Types::Bool))),
@@ -174,15 +159,19 @@ impl Interpreter {
   }
 
   pub fn get_path(&self) -> &str {
-    &self.data[0].path
+    &self.path
+  }
+
+  pub fn get_name(&self) -> &str {
+    &self.name
   }
 
   pub fn serch_fun(&self, name: &str) -> Option<ast::ast::FunctionAST> {
-    self.data[0].fun.serch(name)
+    self.fun.serch(name)
   }
 
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {
-    self.data[0].fun.push_node(node);
+    self.fun.push_node(node);
   }
 
   pub fn get_last_state(&self) -> Option<&InterpreterState> {

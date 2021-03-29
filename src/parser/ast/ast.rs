@@ -125,6 +125,7 @@ pub struct VariableAST {
   defined: bool,
   types: Option<Types>,
   node: Vec<Syntax>,
+  functions: Vec<FunctionAST>,
 }
 
 impl VariableAST {
@@ -135,7 +136,16 @@ impl VariableAST {
       defined: is_def,
       types: None,
       node: Vec::new(),
+      functions:Vec::new(),
     }
+  }
+
+  pub fn get_function_index(&self, index:usize) -> Option<&FunctionAST> {
+    self.functions.get(index)
+  }
+
+  pub fn push_function_index(&mut self, func:FunctionAST) {
+    self.functions.push(func);
   }
 
   pub fn get_name(&self) -> &str {
