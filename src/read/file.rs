@@ -1,6 +1,7 @@
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
 
 use crate::error::result;
 use crate::interpreters::interpreter;
@@ -15,8 +16,8 @@ pub fn read_file() -> Result<(), result::Error> {
 
   let query = &args[1];
   if query == "run" {
-    let filename = &args[2];
-    if filename == "" {
+    let filename = Path::new(&args[2]);
+    if filename == Path::new("") {
       return Err(result::Error::FileReadError("file is empty".to_string()));
     }
 
@@ -47,8 +48,12 @@ pub fn read_file() -> Result<(), result::Error> {
     let result = parse.run()?;
     println!("{:?}", result);
 
-    let mut interpreter = interpreter::Interpreter::new(filename);
-    return interpreter.run(result);
+    let mut interpreter = interpreter::Interpreter::new();
+    return interpreter.run(
+      result,
+      filename.to_str().unwrap(),
+      filename.file_stem().unwrap().to_str().unwrap(),
+    );
   }
 
   return Err(result::Error::FileReadError(format!(
