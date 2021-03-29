@@ -251,7 +251,7 @@ impl Formula {
 
       _ => {
         return Err(result::Error::InterpreterError(
-          "&& oprator missmathced type not a number".to_string(),
+          "&& oprator missmathced type not a number".into(),
         ));
       }
     }
@@ -270,7 +270,7 @@ impl Formula {
 
       _ => {
         return Err(result::Error::InterpreterError(
-          "|| oprator missmathced type not a number".to_string(),
+          "|| oprator missmathced type not a number".into(),
         ));
       }
     }
@@ -320,6 +320,10 @@ impl Formula {
           )))
         }
       },
+
+      _ => {
+        return Err(result::Error::InterpreterError("caluclation opetor error possible interprter error".into()))
+      }
     }
   }
 }

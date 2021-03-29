@@ -55,6 +55,14 @@ impl Variables {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
         if name == node.get_name() {
+          if node.get_varibale_len() > 0 {
+            return Some(Syntax::Var(node.clone()));
+          }
+
+          if node.get_function_len() > 0 {
+            return Some(Syntax::Var(node.clone()));
+          }
+
           match node.get_node_index(0) {
             Some(node) => {
               return Some(node.clone());

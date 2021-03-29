@@ -142,6 +142,8 @@ impl Interpreter {
 
         Syntax::Str(_) => (Some(var), Ok(Some(Types::String))),
 
+        Syntax::Var(_) => (Some(var), Ok(None)),
+
         _ => {
           return (
             None,

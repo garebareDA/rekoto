@@ -10,6 +10,7 @@ pub enum FormulaType {
   Bool(bool),
   Strings(String),
   Number(i64),
+  Var(ast::VariableAST),
 }
 
 #[derive(Debug, Clone)]
@@ -47,6 +48,10 @@ impl Formula {
 
         if index == 0 {
           //単行演算子
+          if bin == TOKEN._dot {
+            
+          }
+
           if bin == TOKEN._inc {
             return Err(result::Error::InterpreterError(format!(
               "caluculation error inclement oprator"
@@ -200,6 +205,21 @@ impl Formula {
     if self.stack.len() < i + 1 {
       return Err(result::Error::InterpreterError("temp error".to_string()));
     }
+
+    /*
+    match self.serch_var(vars.get_name()).0 {
+      Some(inner) => {
+      }
+
+      None => {
+        return Err(result::Error::InterpreterError(format!(
+          "{} is not init",
+          vars.get_name()
+        )))
+      }
+    }
+    */
+
     let left = self.stack.remove(i);
     let right = self.stack.remove(i);
     return Ok((left, right));
@@ -260,6 +280,10 @@ impl Interpreter {
       FormulaType::Bool(bools) => {
         return Ok(Syntax::Bool(ast::BoolAST::new(*bools)));
       }
+
+      _ => {
+        return Err(result::Error::InterpreterError(format!("formula return error possible interpreter error")))
+      }
     }
   }
 
@@ -281,18 +305,9 @@ impl Interpreter {
         formula.push_stack(FormulaType::Strings(strs.get_str().into()));
         return self.formula_continue(strs, formula);
       }
-      Syntax::Var(vars) => match self.serch_var(vars.get_name()).0 {
-        Some(inner) => {
-          self.formula_push(formula, &inner)?;
-          return self.formula_continue(vars, formula);
-        }
-
-        None => {
-          return Err(result::Error::InterpreterError(format!(
-            "{} is not init",
-            vars.get_name()
-          )))
-        }
+      Syntax::Var(vars) =>{
+        formula.push_stack(FormulaType::Var(vars.clone()));
+        return self.formula_continue(vars, formula);
       },
 
       Syntax::Call(call) => match self.serch_fun(call.get_name()) {

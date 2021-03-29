@@ -126,6 +126,7 @@ pub struct VariableAST {
   types: Option<Types>,
   node: Vec<Syntax>,
   functions: Vec<FunctionAST>,
+  variables: Vec<VariableAST>,
 }
 
 impl VariableAST {
@@ -137,6 +138,7 @@ impl VariableAST {
       types: None,
       node: Vec::new(),
       functions:Vec::new(),
+      variables:Vec::new(),
     }
   }
 
@@ -144,8 +146,24 @@ impl VariableAST {
     self.functions.get(index)
   }
 
-  pub fn push_function_index(&mut self, func:FunctionAST) {
+  pub fn push_function(&mut self, func:FunctionAST) {
     self.functions.push(func);
+  }
+
+  pub fn get_function_len(&self) -> usize {
+    self.functions.len()
+  }
+
+  pub fn get_variable_index(&self, index: usize) -> Option<&VariableAST> {
+    self.variables.get(index)
+  }
+
+  pub fn push_variable(&mut self, var:VariableAST) {
+    self.variables.push(var);
+  }
+
+  pub fn get_varibale_len(&self) -> usize {
+    self.variables.len()
   }
 
   pub fn get_name(&self) -> &str {
