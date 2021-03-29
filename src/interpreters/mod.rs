@@ -1,5 +1,7 @@
 pub mod interpreter;
 pub mod judge;
+pub mod variables;
+pub mod functions;
 
 #[cfg(test)]
 mod tests {
