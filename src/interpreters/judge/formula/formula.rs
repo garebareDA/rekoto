@@ -11,6 +11,7 @@ pub enum FormulaType {
   Strings(String),
   Number(i64),
   Var(ast::VariableAST),
+  Call(ast::CallAST),
 }
 
 #[derive(Debug, Clone)]
@@ -49,7 +50,7 @@ impl Formula {
         if index == 0 {
           //単行演算子
           if bin == TOKEN._dot {
-            
+            //TODO 再帰処理で下に潜りながら最後に実行して返す
           }
 
           if bin == TOKEN._inc {
@@ -205,21 +206,6 @@ impl Formula {
     if self.stack.len() < i + 1 {
       return Err(result::Error::InterpreterError("temp error".to_string()));
     }
-
-    /*
-    match self.serch_var(vars.get_name()).0 {
-      Some(inner) => {
-      }
-
-      None => {
-        return Err(result::Error::InterpreterError(format!(
-          "{} is not init",
-          vars.get_name()
-        )))
-      }
-    }
-    */
-
     let left = self.stack.remove(i);
     let right = self.stack.remove(i);
     return Ok((left, right));
@@ -264,10 +250,17 @@ impl Formula {
   }
 }
 
+#[derive(PartialEq)]
+enum FormulaBeforeState {
+  Dot,
+  Nega,
+  None,
+}
+
 impl Interpreter {
   pub(crate) fn formula(&mut self, formula: &ast::Syntax) -> Result<Syntax, result::Error> {
     let mut formulas = Formula::new();
-    self.formula_push(&mut formulas, formula)?;
+    self.formula_push(&mut formulas, formula, FormulaBeforeState::None)?;
     match formulas.run()? {
       FormulaType::Number(num) => {
         return Ok(Syntax::Num(ast::NumberAST::new(*num)));
@@ -282,39 +275,79 @@ impl Interpreter {
       }
 
       _ => {
-        return Err(result::Error::InterpreterError(format!("formula return error possible interpreter error")))
+        return Err(result::Error::InterpreterError(format!(
+          "formula return error possible interpreter error"
+        )))
       }
     }
   }
 
-  fn formula_push(&mut self, formula: &mut Formula, ast: &Syntax) -> Result<(), result::Error> {
+  fn formula_push(
+    &mut self,
+    formula: &mut Formula,
+    ast: &Syntax,
+    state: FormulaBeforeState,
+  ) -> Result<(), result::Error> {
     match ast {
       Syntax::Bin(bin) => {
+        if bin.get_token() == TOKEN._sub {
+          return self.formula_continue(bin, formula, FormulaBeforeState::Nega);
+        }
+
+        if bin.get_token() == TOKEN._dot {
+          return self.formula_continue(bin, formula, FormulaBeforeState::Dot);
+        }
+
         formula.push_bin(bin.get_token());
-        return self.formula_continue(bin, formula);
+        return self.formula_continue(bin, formula, FormulaBeforeState::None);
       }
       Syntax::Bool(bools) => {
         formula.push_stack(FormulaType::Bool(bools.get_bool()));
-        return self.formula_continue(bools, formula);
+        return self.formula_continue(bools, formula, FormulaBeforeState::None);
       }
       Syntax::Num(num) => {
-        formula.push_stack(FormulaType::Number(num.get_num()));
-        return self.formula_continue(num, formula);
+        let mut result = num.get_num();
+        if state == FormulaBeforeState::Nega {
+          result = result * -1;
+        }
+        formula.push_stack(FormulaType::Number(result));
+        return self.formula_continue(num, formula, FormulaBeforeState::None);
       }
       Syntax::Str(strs) => {
         formula.push_stack(FormulaType::Strings(strs.get_str().into()));
-        return self.formula_continue(strs, formula);
+        return self.formula_continue(strs, formula, FormulaBeforeState::None);
       }
-      Syntax::Var(vars) =>{
-        formula.push_stack(FormulaType::Var(vars.clone()));
-        return self.formula_continue(vars, formula);
-      },
+
+      Syntax::Var(vars) => {
+        let (serch, types) = self.serch_var(vars.get_name());
+
+        match serch {
+          Some(inner) => {
+            match types? {
+              Some(_) => {}
+              None => {
+                
+              }
+            }
+
+            self.formula_push(formula, &inner, FormulaBeforeState::None)?;
+            return self.formula_continue(vars, formula, FormulaBeforeState::None);
+          }
+
+          None => {
+            return Err(result::Error::InterpreterError(format!(
+              "{} is not init",
+              vars.get_name()
+            )))
+          }
+        }
+      }
 
       Syntax::Call(call) => match self.serch_fun(call.get_name()) {
         Some(inner) => match self.function_run(&inner, call)? {
           Some(returns) => {
-            self.formula_push(formula, &returns)?;
-            return self.formula_continue(call, formula);
+            self.formula_push(formula, &returns, FormulaBeforeState::None)?;
+            return self.formula_continue(call, formula, FormulaBeforeState::None);
           }
           None => {
             return Err(result::Error::InterpreterError(format!(
@@ -341,9 +374,10 @@ impl Interpreter {
     &mut self,
     node: &T,
     formula: &mut Formula,
+    state: FormulaBeforeState,
   ) -> Result<(), result::Error> {
     match node.get_node_index(0) {
-      Some(ast) => self.formula_push(formula, ast),
+      Some(ast) => self.formula_push(formula, ast, state),
       None => {
         return Ok(());
       }
