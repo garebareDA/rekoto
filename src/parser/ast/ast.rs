@@ -142,6 +142,10 @@ impl VariableAST {
     }
   }
 
+  pub fn get_functions(&self) -> &Vec<FunctionAST> {
+    &self.functions
+  }
+
   pub fn get_function_index(&self, index: usize) -> Option<&FunctionAST> {
     self.functions.get(index)
   }
@@ -162,6 +166,10 @@ impl VariableAST {
       }
     }
     return None;
+  }
+
+  pub fn get_variables(&self) -> &Vec<VariableAST> {
+    &self.variables
   }
 
   pub fn get_variable_index(&self, index: usize) -> Option<&VariableAST> {

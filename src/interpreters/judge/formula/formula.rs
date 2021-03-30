@@ -50,7 +50,9 @@ impl Formula {
         if index == 0 {
           //単行演算子
           if bin == TOKEN._dot {
-            //TODO 再帰処理で下に潜りながら最後に実行して返す
+            return Err(result::Error::InterpreterError(format!(
+              "caluculation error dot oprator"
+            )));
           }
 
           if bin == TOKEN._inc {
@@ -346,7 +348,7 @@ impl Interpreter {
       }
 
       Syntax::Call(call) => match self.serch_fun(call.get_name()) {
-        Some(inner) => match self.function_run(&inner, call)? {
+        Some(inner) => match self.function_run(&inner, call, None)? {
           Some(returns) => {
             self.formula_push(formula, &returns, FormulaBeforeState::None)?;
             return self.formula_continue(call, formula, FormulaBeforeState::None);
@@ -386,7 +388,7 @@ impl Interpreter {
     }
   }
 
-  fn formula_object<T: Node + std::fmt::Debug>(
+  fn formula_object<T: Node>(
     &mut self,
     node: &T,
     inner: &ast::VariableAST,
@@ -426,7 +428,7 @@ impl Interpreter {
                   let function = inner.serch_functions(call.get_name());
                   match function {
                     Some(fun) => {
-                      let result = self.function_run(&fun, call)?;
+                      let result = self.function_run(&fun, call, Some(inner))?;
                       match result {
                         Some(returns) => {
                           self.formula_push(formula, &returns, FormulaBeforeState::None)?;
