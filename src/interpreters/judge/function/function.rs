@@ -303,8 +303,7 @@ impl Interpreter {
         Syntax::Import(import) => match import.get_node_index(0) {
           Some(inner) => match inner {
             Syntax::Str(strs) => {
-              //TODO import
-              self.import(strs.get_str())?;
+              self.push_var(&self.import(strs.get_str())?)?;
             }
 
             _ => {

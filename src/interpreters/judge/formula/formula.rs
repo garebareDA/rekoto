@@ -252,7 +252,7 @@ impl Formula {
 
 #[derive(PartialEq)]
 enum FormulaBeforeState {
-  Dot,
+  Bin,
   Nega,
   None,
 }
@@ -290,16 +290,12 @@ impl Interpreter {
   ) -> Result<(), result::Error> {
     match ast {
       Syntax::Bin(bin) => {
-        if bin.get_token() == TOKEN._sub {
+        if bin.get_token() == TOKEN._sub && state == FormulaBeforeState::Bin {
           return self.formula_continue(bin, formula, FormulaBeforeState::Nega);
         }
 
-        if bin.get_token() == TOKEN._dot {
-          return self.formula_continue(bin, formula, FormulaBeforeState::Dot);
-        }
-
         formula.push_bin(bin.get_token());
-        return self.formula_continue(bin, formula, FormulaBeforeState::None);
+        return self.formula_continue(bin, formula, FormulaBeforeState::Bin);
       }
       Syntax::Bool(bools) => {
         formula.push_stack(FormulaType::Bool(bools.get_bool()));
@@ -320,16 +316,22 @@ impl Interpreter {
 
       Syntax::Var(vars) => {
         let (serch, types) = self.serch_var(vars.get_name());
-
         match serch {
           Some(inner) => {
             match types? {
               Some(_) => {}
-              None => {
-                
-              }
+              None => match &inner {
+                Syntax::Var(vars2) => {
+                  return self.formula_object(vars, vars2, formula);
+                }
+                _ => {
+                  return Err(result::Error::InterpreterError(format!(
+                    "{} is not found",
+                    vars.get_name()
+                  )));
+                }
+              },
             }
-
             self.formula_push(formula, &inner, FormulaBeforeState::None)?;
             return self.formula_continue(vars, formula, FormulaBeforeState::None);
           }
@@ -380,6 +382,102 @@ impl Interpreter {
       Some(ast) => self.formula_push(formula, ast, state),
       None => {
         return Ok(());
+      }
+    }
+  }
+
+  fn formula_object<T: Node + std::fmt::Debug>(
+    &mut self,
+    node: &T,
+    inner: &ast::VariableAST,
+    formula: &mut Formula,
+  ) -> Result<(), result::Error> {
+    match node.get_node_index(0) {
+      Some(var) => match var {
+        Syntax::Bin(bin) => {
+          if bin.get_token() == TOKEN._dot {
+            match bin.get_node_index(0) {
+              Some(ast) => match ast {
+                Syntax::Var(var) => {
+                  let serch = inner.serch_variable(var.get_name());
+                  match serch {
+                    Some(inner) => match inner {
+                      Syntax::Var(vars) => {
+                        return Err(result::Error::InterpreterError(format!(
+                          "{} can't access this",
+                          vars.get_name()
+                        )))
+                      }
+                      _ => {
+                        self.formula_push(formula, &inner, FormulaBeforeState::None)?;
+                        return self.formula_continue(var, formula, FormulaBeforeState::None);
+                      }
+                    },
+                    None => {
+                      return Err(result::Error::InterpreterError(format!(
+                        "{} is notfound",
+                        var.get_name()
+                      )))
+                    }
+                  }
+                }
+
+                Syntax::Call(call) => {
+                  let function = inner.serch_functions(call.get_name());
+                  match function {
+                    Some(fun) => {
+                      let result = self.function_run(&fun, call)?;
+                      match result {
+                        Some(returns) => {
+                          self.formula_push(formula, &returns, FormulaBeforeState::None)?;
+                          return self.formula_continue(call, formula, FormulaBeforeState::None);
+                        }
+                        None => {
+                          return Err(result::Error::InterpreterError(format!(
+                            "{} is notfound return value",
+                            call.get_name(),
+                          )))
+                        }
+                      }
+                    }
+                    None => {
+                      return Err(result::Error::InterpreterError(format!(
+                        "{} is notfound function",
+                        call.get_name()
+                      )))
+                    }
+                  }
+                }
+
+                _ => {
+                  return Err(result::Error::InterpreterError(format!(
+                    "no member specified to access"
+                  )))
+                }
+              },
+              None => {
+                return Err(result::Error::InterpreterError(format!(
+                  "no member specified to access"
+                )))
+              }
+            }
+          } else {
+            return Err(result::Error::InterpreterError(format!(
+              "the import value error"
+            )));
+          }
+        }
+        _ => {
+          return Err(result::Error::InterpreterError(format!(
+            "the import value error"
+          )))
+        }
+      },
+
+      None => {
+        return Err(result::Error::InterpreterError(format!(
+          "the import value error"
+        )))
       }
     }
   }

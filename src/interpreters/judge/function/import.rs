@@ -5,20 +5,21 @@ use super::super::super::interpreter::Interpreter;
 use crate::error::result;
 
 use crate::lexer::lexers;
+use crate::parser::ast::ast;
+use crate::parser::ast::ast::{Node, Syntax};
 use crate::parser::parsers;
 
 use std::path::{Path, PathBuf};
 
 impl Interpreter {
-  pub(crate) fn import(&mut self, path: &str) -> Result<(), result::Error> {
+  pub(crate) fn import(&self, path: &str) -> Result<ast::VariableAST, result::Error> {
     let my_path = Path::new(self.get_path());
     let parent = my_path.parent();
-    let join_path:PathBuf;
+    let join_path: PathBuf;
 
     match parent {
       Some(p) => {
         join_path = p.join(path);
-        println!("join_path {}", join_path.display());
       }
 
       None => {
@@ -56,9 +57,45 @@ impl Interpreter {
     let result = parse.run()?;
     println!("{:?}", result);
 
-    self.push_scope();
-    self.function_init(&result)?;
+    let name = Path::new(path);
+    let mut var_ast =
+      ast::VariableAST::new(name.file_stem().unwrap().to_str().unwrap(), false, true);
 
-    return Ok(());
+    for ast in result.get_node().iter() {
+      match ast {
+        Syntax::Fn(fun) => {
+          var_ast.push_function(fun.clone());
+        }
+
+        Syntax::Var(var) => {
+          var_ast.push_variable(var.clone());
+        }
+
+        Syntax::Import(import) => match import.get_node_index(0) {
+          Some(inner) => match inner {
+            Syntax::Str(strs) => {
+              var_ast.push_variable(self.import(strs.get_str())?);
+            }
+
+            _ => {
+              return Err(result::Error::InterpreterError(
+                "please specify import as a string ".to_string(),
+              ));
+            }
+          },
+          None => {
+            return Err(result::Error::InterpreterError(format!("import error")));
+          }
+        },
+
+        _ => {
+          return Err(result::Error::InterpreterError(
+            "the syntax is not written inside the function".to_string(),
+          ));
+        }
+      }
+    }
+
+    return Ok(var_ast);
   }
 }

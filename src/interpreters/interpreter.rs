@@ -40,7 +40,7 @@ impl Interpreter {
   ) -> Result<(), result::Error> {
     self.push_scope();
     self.function_init(&root)?;
-    self.push_state(InterpreterState::Call);
+    self.push_state(InterpreterState::Main);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
@@ -73,7 +73,7 @@ impl Interpreter {
     self.push_scope();
     self.function_init(&root)?;
     self.push_scope();
-    self.push_state(InterpreterState::Call);
+    self.push_state(InterpreterState::Main);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
