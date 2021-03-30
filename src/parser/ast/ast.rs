@@ -125,6 +125,8 @@ pub struct VariableAST {
   defined: bool,
   types: Option<Types>,
   node: Vec<Syntax>,
+  functions: Vec<FunctionAST>,
+  variables: Vec<VariableAST>,
 }
 
 impl VariableAST {
@@ -135,7 +137,77 @@ impl VariableAST {
       defined: is_def,
       types: None,
       node: Vec::new(),
+      functions: Vec::new(),
+      variables: Vec::new(),
     }
+  }
+
+  pub fn get_functions(&self) -> &Vec<FunctionAST> {
+    &self.functions
+  }
+
+  pub fn get_function_index(&self, index: usize) -> Option<&FunctionAST> {
+    self.functions.get(index)
+  }
+
+  pub fn push_function(&mut self, func: FunctionAST) {
+    self.functions.push(func);
+  }
+
+  pub fn get_function_len(&self) -> usize {
+    self.functions.len()
+  }
+
+  pub fn serch_functions(&self, name:&str) -> Option<FunctionAST> {
+    for i in (0..self.functions.len()).rev() {
+      let node = self.functions[i].clone();
+      if name == node.get_name() {
+        return Some(node);
+      }
+    }
+    return None;
+  }
+
+  pub fn get_variables(&self) -> &Vec<VariableAST> {
+    &self.variables
+  }
+
+  pub fn get_variable_index(&self, index: usize) -> Option<&VariableAST> {
+    self.variables.get(index)
+  }
+
+  pub fn push_variable(&mut self, var: VariableAST) {
+    self.variables.push(var);
+  }
+
+  pub fn get_varibale_len(&self) -> usize {
+    self.variables.len()
+  }
+
+  pub fn serch_variable(&self, name: &str) -> Option<Syntax> {
+    for i in (0..self.variables.len()).rev() {
+      let node = &self.variables[i];
+      if name == node.get_name() {
+        if node.get_varibale_len() > 0 {
+          return Some(Syntax::Var(node.clone()));
+        }
+
+        if node.get_function_len() > 0 {
+          return Some(Syntax::Var(node.clone()));
+        }
+
+        match node.get_node_index(0) {
+          Some(node) => {
+            return Some(node.clone());
+          }
+
+          None => {
+            return None;
+          }
+        }
+      }
+    }
+    return None;
   }
 
   pub fn get_name(&self) -> &str {

@@ -65,7 +65,7 @@ impl Interpreter {
 
     match self.serch_fun(call.get_name()) {
       Some(fun) => {
-        let result = self.function_run(&fun, call);
+        let result = self.function_run(&fun, call, None);
         return (Some(result), None);
       }
       None => {}

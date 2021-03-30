@@ -1,5 +1,7 @@
 pub mod interpreter;
 pub mod judge;
+pub mod variables;
+pub mod functions;
 
 #[cfg(test)]
 mod tests {
@@ -138,7 +140,7 @@ mod tests {
     let result = parse.run();
     match result {
       Ok(result) => {
-        let mut interpreter = interpreter::Interpreter::new("");
+        let mut interpreter = interpreter::Interpreter::new("", "");
         match interpreter.debug_run(result) {
           Ok(result) => {
             return result[0].to_string();
@@ -162,7 +164,7 @@ mod tests {
     let result = parse.run();
     match result {
       Ok(result) => {
-        let mut interpreter = interpreter::Interpreter::new("");
+        let mut interpreter = interpreter::Interpreter::new("", "");
         match interpreter.debug_run(result) {
           Ok(result) => {
             return result[0].to_string();

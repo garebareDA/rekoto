@@ -1,4 +1,7 @@
+import "./d.rk";
+
 fn test(a:number, b:number):number {
+  d.d();
   let c = a + b;
   print(c);
   if 1 == 1 {

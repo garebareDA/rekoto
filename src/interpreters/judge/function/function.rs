@@ -8,6 +8,7 @@ impl Interpreter {
     &mut self,
     fun: &ast::FunctionAST,
     call: &ast::CallAST,
+    add_scope: Option<&ast::VariableAST>
   ) -> Result<Option<Syntax>, result::Error> {
     let argments = call.get_argment();
     let params = fun.get_param();
@@ -21,6 +22,19 @@ impl Interpreter {
     }
 
     self.push_scope();
+    match add_scope {
+      Some(add) => {
+        for var in add.get_variables().iter() {
+          self.push_var(var)?;
+        }
+
+        for fun in add.get_functions().iter() {
+          self.push_fun(fun);
+        }
+      }
+      None => {}
+    }
+
     for (index, param) in params.iter().enumerate() {
       let types: &ast::Types;
       let name: &str;
@@ -303,8 +317,7 @@ impl Interpreter {
         Syntax::Import(import) => match import.get_node_index(0) {
           Some(inner) => match inner {
             Syntax::Str(strs) => {
-              //TODO import
-              self.import(strs.get_str())?;
+              self.push_var(&self.import(strs.get_str())?)?;
             }
 
             _ => {

@@ -2,110 +2,8 @@ use crate::error::result;
 use crate::parser::ast;
 use crate::parser::ast::ast::{Node, RootAST, Syntax, Types};
 
-#[derive(Debug, Clone)]
-pub struct Variables {
-  node: Vec<Vec<ast::ast::VariableAST>>,
-}
-
-impl Variables {
-  pub fn new() -> Self {
-    Self { node: Vec::new() }
-  }
-
-  pub fn push_scope(&mut self) {
-    self.node.push(Vec::new());
-  }
-
-  pub fn pop_scope(&mut self) {
-    self.node.remove(self.node.len() - 1);
-  }
-
-  pub fn push_node(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
-    if node.get_is_def() {
-      let index = self.node.len() - 1;
-      self.node[index].push(node.clone());
-      return Ok(());
-    }
-
-    for i in (0..self.node.len()).rev() {
-      for j in (0..self.node[i].len()).rev() {
-        let nodes = &self.node[i][j];
-        if node.get_name() == nodes.get_name() {
-          if nodes.get_is_mutable() == true {
-            self.node[i][j] = node.clone();
-            return Ok(());
-          } else {
-            return Err(result::Error::InterpreterError(format!(
-              "{} is imutable",
-              nodes.get_name()
-            )));
-          }
-        }
-      }
-    }
-
-    return Err(result::Error::InterpreterError(format!(
-      "{} is not found variant",
-      node.get_name()
-    )));
-  }
-
-  pub fn serch(&self, name: &str, index: usize) -> Option<Syntax> {
-    for i in (index..self.node.len()).rev() {
-      for j in (0..self.node[i].len()).rev() {
-        let node = &self.node[i][j];
-        if name == node.get_name() {
-          match node.get_node_index(0) {
-            Some(node) => {
-              return Some(node.clone());
-            }
-
-            None => {
-              return None;
-            }
-          }
-        }
-      }
-    }
-    return None;
-  }
-}
-
-#[derive(Debug, Clone)]
-struct Functions {
-  node: Vec<Vec<ast::ast::FunctionAST>>,
-}
-
-impl Functions {
-  pub fn new() -> Self {
-    Self { node: Vec::new() }
-  }
-
-  pub fn push_scope(&mut self) {
-    self.node.push(Vec::new());
-  }
-
-  pub fn pop_scope(&mut self) {
-    self.node.remove(self.node.len() - 1);
-  }
-
-  pub fn push_node(&mut self, node: &ast::ast::FunctionAST) {
-    let index = self.node.len() - 1;
-    self.node[index].push(node.clone());
-  }
-
-  pub fn serch(&self, name: &str) -> Option<ast::ast::FunctionAST> {
-    for i in (0..self.node.len()).rev() {
-      for j in (0..self.node[i].len()).rev() {
-        let node = &self.node[i][j];
-        if name == node.get_name() {
-          return Some(node.clone());
-        }
-      }
-    }
-    return None;
-  }
-}
+use super::functions::Functions;
+use super::variables::Variables;
 
 #[derive(PartialEq, Debug)]
 pub enum InterpreterState {
@@ -120,24 +18,29 @@ pub enum InterpreterState {
 pub struct Interpreter {
   var: Variables,
   fun: Functions,
-  state: Vec<InterpreterState>,
   path: String,
+  name: String,
+  state: Vec<InterpreterState>,
 }
 
 impl Interpreter {
-  pub fn new(path:impl Into<String>) -> Self {
+  pub fn new(path: impl Into<String>, name: impl Into<String>) -> Self {
     Self {
       var: Variables::new(),
       fun: Functions::new(),
-      state: Vec::new(),
       path:path.into(),
+      name:name.into(),
+      state: Vec::new(),
     }
   }
 
-  pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
+  pub fn run(
+    &mut self,
+    root: RootAST,
+  ) -> Result<(), result::Error> {
     self.push_scope();
     self.function_init(&root)?;
-    self.push_state(InterpreterState::Call);
+    self.push_state(InterpreterState::Main);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
@@ -167,11 +70,10 @@ impl Interpreter {
 
   pub fn debug_run(&mut self, root: RootAST) -> Result<Vec<String>, result::Error> {
     let mut log: Vec<String> = Vec::new();
-
     self.push_scope();
     self.function_init(&root)?;
     self.push_scope();
-    self.push_state(InterpreterState::Call);
+    self.push_state(InterpreterState::Main);
     match self.serch_fun("main") {
       Some(main) => {
         for ast in main.get_node().iter() {
@@ -240,6 +142,8 @@ impl Interpreter {
 
         Syntax::Str(_) => (Some(var), Ok(Some(Types::String))),
 
+        Syntax::Var(_) => (Some(var), Ok(None)),
+
         _ => {
           return (
             None,
@@ -256,8 +160,12 @@ impl Interpreter {
     }
   }
 
-  pub fn get_path(&self) -> &str{
+  pub fn get_path(&self) -> &str {
     &self.path
+  }
+
+  pub fn get_name(&self) -> &str {
+    &self.name
   }
 
   pub fn serch_fun(&self, name: &str) -> Option<ast::ast::FunctionAST> {

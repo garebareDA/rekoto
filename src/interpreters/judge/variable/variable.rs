@@ -68,10 +68,37 @@ impl Interpreter {
                   }
 
                   return Err(result::Error::InterpreterError(format!(
-                    "{} only increment and decrement operators are supported.",
+                    "{} only dot, increment and decrement operators are supported.",
                     vars.get_name()
                   )));
                 }
+
+                Syntax::Var(var) => {
+                  if TOKEN._dot == bin.get_token() {
+                    match bin.get_node_index(0) {
+                      Some(node) => match node {
+                        Syntax::Call(call) => match var.serch_functions(call.get_name()) {
+                          Some(inner) => {
+                            self.function_run(&inner, call, None)?;
+                            return Ok(());
+                          }
+                          None => {
+                            return Err(result::Error::InterpreterError(format!(
+                              "{} function not found",
+                              call.get_name()
+                            )));
+                          }
+                        },
+                        _ => {
+                          return Ok(());
+                        }
+                      },
+                      None => return Err(result::Error::InterpreterError(format!("value error"))),
+                    }
+                  }
+                  return Err(result::Error::InterpreterError(format!("{} error dot oprator support", var.get_name())));
+                }
+
                 _ => {
                   return Err(result::Error::InterpreterError(format!(
                     "{} is missmatched type",
