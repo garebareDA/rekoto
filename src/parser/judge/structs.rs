@@ -45,7 +45,7 @@ impl Parsers {
       None => {}
     }
 
-    return Err(result::Error::SyntaxError("".to_string()));
+    return Err(result::Error::SyntaxError("sytax error struct".to_string()));
   }
 
   pub(crate) fn member(&mut self) -> Result<ast::Syntax, result::Error> {
@@ -90,6 +90,17 @@ impl Parsers {
         }
         Err(e) => {
           return Err(e);
+        }
+      }
+
+      match self.judge() {
+        Some(_) => {
+          return Err(result::Error::SyntaxError(
+            "member syntax commma error".to_string(),
+          ));
+        }
+        None => {
+          self.index_inc();
         }
       }
 
