@@ -19,6 +19,7 @@ pub fn lex(word: &str) -> lelex::lexers::Lexer {
   lex.push_reserved_word(TOKEN._break, "break").unwrap();
   lex.push_reserved_word(TOKEN._true, "true").unwrap();
   lex.push_reserved_word(TOKEN._false, "false").unwrap();
+  lex.push_reserved_word(TOKEN._struct, "struct").unwrap();
   lex.push_between_ward(TOKEN._string, "\"").unwrap();
   lex.push_between_ward(TOKEN._string, "\'").unwrap();
   lex.set_number_token(TOKEN._number).unwrap();
