@@ -137,6 +137,11 @@ impl Parsers {
     }
 
     if token == TOKEN._braces_right {
+      if self.get_last_state() == &ParseState::Struct {
+        self.pop_state();
+        return None
+      }
+
       if self.get_last_state() != &ParseState::Scope {
         return Some(Err(result::Error::SyntaxError(
           "scope error { is not found".to_string(),
@@ -153,6 +158,10 @@ impl Parsers {
       }
 
       if self.get_last_state() == &ParseState::Function {
+        return None;
+      }
+
+      if self.get_last_state() == &ParseState::Struct {
         return None;
       }
     }
