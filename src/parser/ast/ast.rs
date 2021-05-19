@@ -21,6 +21,8 @@ pub enum Syntax {
   Elif(Box<ElifAST>),
   For(Box<ForsAST>),
   Fn(FunctionAST),
+  Struct(StructAST),
+  Member(MemberAST),
   Return(Box<ReturnAST>),
   Import(Box<ImportAST>),
   Break,
@@ -712,13 +714,13 @@ impl Node for ImportAST {
 }
 
 #[derive(Debug, Clone)]
-pub struct Member{
+pub struct MemberAST{
   types: Option<Types>,
   name: String,
   node:Vec<Syntax>,
 }
 
-impl Member {
+impl MemberAST {
   pub fn new(types: Option<Types>, name: impl Into<String>) -> Self {
     Self {
       types,
@@ -732,7 +734,7 @@ impl Member {
   }
 }
 
-impl Node for Member {
+impl Node for MemberAST {
   fn get_node(&self) -> &Vec<Syntax> {
     &self.node
   }
@@ -750,7 +752,7 @@ impl Node for Member {
   }
 }
 
-impl Type for Member {
+impl Type for MemberAST {
   fn set_type(&mut self, types: Option<Types>) {
     self.types = types;
   }
@@ -760,10 +762,10 @@ impl Type for Member {
   }
 }
 
-
+#[derive(Debug, Clone)]
 pub struct StructAST {
   name: String,
-  member: Vec<Member>,
+  member: Vec<MemberAST>,
 }
 
 impl StructAST {
@@ -774,19 +776,23 @@ impl StructAST {
     }
   }
 
+  pub fn set_name(&mut self, name:impl Into<String>) {
+    self.name = name.into();
+  }
+
   pub fn get_name(&self) -> &str {
     return &self.name
   }
 
-  pub fn get_member(&self) -> &Vec<Member> {
+  pub fn get_member(&self) -> &Vec<MemberAST> {
     &self.member
   }
 
-  pub fn get_member_index(&self, index:usize) -> Option<&Member> {
+  pub fn get_member_index(&self, index:usize) -> Option<&MemberAST> {
     self.get_member().get(index)
   }
 
-  pub fn push_member(&mut self, member:&Member) {
+  pub fn push_member(&mut self, member:&MemberAST) {
     self.member.push(member.clone())
   }
 }

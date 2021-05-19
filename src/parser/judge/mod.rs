@@ -8,3 +8,4 @@ pub mod function;
 pub mod scope;
 pub mod returns;
 pub mod import;
+pub mod structs;

@@ -128,6 +128,10 @@ impl Parsers {
     }
 
     if token == TOKEN._braces_left {
+      if self.get_last_state() == &ParseState::Struct {
+        return Some(self.member());
+      }
+
       self.push_state(ParseState::Scope);
       return Some(self.scope());
     }
@@ -151,6 +155,13 @@ impl Parsers {
       if self.get_last_state() == &ParseState::Function {
         return None;
       }
+    }
+
+    if token == TOKEN._struct {
+      self.push_state(ParseState::Struct);
+      let ret = self.structs();
+      self.pop_state();
+      return Some(ret);
     }
 
     if token == TOKEN._import {

@@ -13,6 +13,7 @@ pub enum ParseState {
   Function,
   Call,
   Scope,
+  Struct,
 }
 
 pub struct Parsers {

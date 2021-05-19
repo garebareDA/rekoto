@@ -28,7 +28,7 @@ impl Parsers {
       },
 
       None => {
-        return Err(result::Error::InterpreterError(
+        return Err(result::Error::SyntaxError(
           "fucntion name error possible parser bug".to_string(),
         ));
       }
