@@ -710,3 +710,83 @@ impl Node for ImportAST {
     self.node.push(node);
   }
 }
+
+#[derive(Debug, Clone)]
+pub struct Member{
+  types: Option<Types>,
+  name: String,
+  node:Vec<Syntax>,
+}
+
+impl Member {
+  pub fn new(types: Option<Types>, name: impl Into<String>) -> Self {
+    Self {
+      types,
+      name:name.into(),
+      node:Vec::new(),
+    }
+  }
+
+  pub fn get_name(&self) -> &str {
+    &self.name
+  }
+}
+
+impl Node for Member {
+  fn get_node(&self) -> &Vec<Syntax> {
+    &self.node
+  }
+
+  fn get_node_index(&self, index: usize) -> Option<&Syntax> {
+    self.get_node().get(index)
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node: Syntax) {
+    self.node.push(node);
+  }
+}
+
+impl Type for Member {
+  fn set_type(&mut self, types: Option<Types>) {
+    self.types = types;
+  }
+
+  fn get_type(&self) -> &Option<Types> {
+    &self.types
+  }
+}
+
+
+pub struct StructAST {
+  name: String,
+  member: Vec<Member>,
+}
+
+impl StructAST {
+  pub fn new(name: impl Into<String>) -> Self {
+    Self {
+      name:name.into(),
+      member: Vec::new(),
+    }
+  }
+
+  pub fn get_name(&self) -> &str {
+    return &self.name
+  }
+
+  pub fn get_member(&self) -> &Vec<Member> {
+    &self.member
+  }
+
+  pub fn get_member_index(&self, index:usize) -> Option<&Member> {
+    self.get_member().get(index)
+  }
+
+  pub fn push_member(&mut self, member:&Member) {
+    self.member.push(member.clone())
+  }
+}
