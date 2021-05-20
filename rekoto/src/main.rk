@@ -1,5 +1,10 @@
 import "./test.rk";
 
+struct test {
+  a: string,
+  b: string,
+}
+
 fn main() {
   let a = test.test(1 + 1, 1) + 1;
   a++;

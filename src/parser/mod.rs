@@ -696,4 +696,67 @@ mod tests {
       }
     }
   }
+
+  #[test]
+  fn structs() {
+    let mut lex = lexers::lex("
+    struct test {
+      a: string,
+      b: number,
+    }
+    ");
+    let result = lex.run().get_tokens();
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Struct(st) => {
+              match st.get_member_index(0){
+                Some(inner) => {
+                  assert_eq!(inner.get_name(), "a");
+                  match inner.get_type().clone().unwrap() {
+                    ast::ast::Types::String => {
+
+                    }
+                    _ => {
+                      panic!();
+                    }
+                  }
+                }
+                None => {
+                  panic!();
+                }
+              }
+
+              match st.get_member_index(1){
+                Some(inner) => {
+                  assert_eq!(inner.get_name(), "b");
+                  match inner.get_type().clone().unwrap() {
+                    ast::ast::Types::Number => {
+
+                    }
+                    _ => {
+                      panic!();
+                    }
+                  }
+                }
+                None => {
+                  panic!();
+                }
+              }
+            }
+            _=> {
+              panic!();
+            }
+          }
+        }
+      }
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
 }
