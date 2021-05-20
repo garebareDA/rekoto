@@ -219,6 +219,10 @@ impl Parsers {
       return Ok(ast::Syntax::Var(ast));
     }
 
+    if self.get_last_state() == &ParseState::Member {
+      return Ok(ast::Syntax::Var(ast));
+    }
+
     match self.formula_judge() {
       Some(formu) => {
         ast.push_node(formu?);

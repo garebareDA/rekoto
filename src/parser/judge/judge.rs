@@ -137,7 +137,7 @@ impl Parsers {
     }
 
     if token == TOKEN._braces_right {
-      if self.get_last_state() == &ParseState::Struct {
+      if self.get_last_state() == &ParseState::Member {
         self.pop_state();
         return None
       }
@@ -161,7 +161,7 @@ impl Parsers {
         return None;
       }
 
-      if self.get_last_state() == &ParseState::Struct {
+      if self.get_last_state() == &ParseState::Member {
         return None;
       }
     }

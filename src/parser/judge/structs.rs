@@ -51,7 +51,7 @@ impl Parsers {
   pub(crate) fn member(&mut self) -> Result<ast::Syntax, result::Error> {
     self.index_inc();
     let mut structs_ast = ast::StructAST::new("");
-    println!("{:?}", self.get_tokens(self.get_index()));
+    self.push_state(ParseState::Member);
     loop {
       let name;
       let member_types;
@@ -76,7 +76,7 @@ impl Parsers {
         },
 
         None => {
-          if self.get_last_state() != &ParseState::Struct {
+          if self.get_last_state() != &ParseState::Member {
             break;
           }
 
@@ -89,6 +89,7 @@ impl Parsers {
       match self.check_types() {
         Ok(types) => {
           member_types = types;
+          self.index_inc();
         }
         Err(e) => {
           return Err(e);
@@ -110,6 +111,7 @@ impl Parsers {
       structs_ast.push_member(&member_ast);
     }
 
+    self.pop_state();
     return Ok(Syntax::Struct(structs_ast));
   }
 }

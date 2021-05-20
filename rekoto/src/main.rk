@@ -1,5 +1,3 @@
-
-
 struct test {
   a: string,
   b: string,
