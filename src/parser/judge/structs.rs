@@ -51,6 +51,7 @@ impl Parsers {
   pub(crate) fn member(&mut self) -> Result<ast::Syntax, result::Error> {
     self.index_inc();
     let mut structs_ast = ast::StructAST::new("");
+    println!("{:?}", self.get_tokens(self.get_index()));
     loop {
       let name;
       let member_types;
