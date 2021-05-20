@@ -203,6 +203,10 @@ impl Parsers {
           return judge;
         }
 
+        if verification_token == TOKEN._braces_left && self.get_last_state() == &ParseState::Struct {
+          return Ok(ast::Syntax::Var(ast));
+        }
+
         if verification_token == TOKEN._equal && self.get_last_state() != &ParseState::Var {
           return self.variable_def(true, false);
         }

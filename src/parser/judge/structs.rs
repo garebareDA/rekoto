@@ -32,6 +32,7 @@ impl Parsers {
       }
     }
 
+    self.index_inc();
     match self.judge() {
       Some(judge) => match judge? {
         Syntax::Struct(mut st) => {
@@ -41,7 +42,6 @@ impl Parsers {
 
         _ => {}
       },
-
       None => {}
     }
 
@@ -49,6 +49,7 @@ impl Parsers {
   }
 
   pub(crate) fn member(&mut self) -> Result<ast::Syntax, result::Error> {
+    self.index_inc();
     let mut structs_ast = ast::StructAST::new("");
     loop {
       let name;

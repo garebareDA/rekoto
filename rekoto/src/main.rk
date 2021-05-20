@@ -1,7 +1,6 @@
-import "./test.rk";
 
-fn main() {
-  let a = test.test(1 + 1, 1) + 1;
-  a++;
-  print(a);
+
+struct test {
+  a: string,
+  b: string,
 }
