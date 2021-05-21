@@ -80,6 +80,12 @@ impl Parsers {
                 )));
               }
 
+              ast::Syntax::Struct(structs) => {
+                let ast = ast::Syntax::Struct(structs);
+                var.push_node(ast);
+                return Ok(ast::Syntax::Var(var));
+              }
+
               _ => {
                 return Err(result::Error::SyntaxError(format!(
                   "syntax error scope {}",

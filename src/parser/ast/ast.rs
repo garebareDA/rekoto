@@ -769,7 +769,7 @@ pub struct StructAST {
 }
 
 impl StructAST {
-  pub fn new(name: &str) -> Self {
+  pub fn new(name:impl Into<String>) -> Self {
     Self {
       name:name.into(),
       member: Vec::new(),

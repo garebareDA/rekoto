@@ -1,7 +1,7 @@
+use super::super::super::lexer::token;
 use super::super::ast::{ast, ast::Node, ast::Syntax};
 use super::super::parsers::ParseState;
 use super::super::parsers::Parsers;
-use super::super::super::lexer::token;
 use crate::error::result;
 
 static TOKEN: token::Token = token::Token::new();
@@ -117,10 +117,10 @@ impl Parsers {
   }
 
   pub(crate) fn instance(&mut self) -> Result<ast::Syntax, result::Error> {
-    let name: &str;
+    let name: String;
     match self.get_tokens(self.get_index()) {
       Some(tokens) => {
-        name = tokens.get_value();
+        name = tokens.get_value().to_string();
       }
 
       None => {
@@ -130,13 +130,28 @@ impl Parsers {
       }
     }
 
-    let structs = ast::StructAST::new(name.into());
-    //TODO judgeでmemberを取得
-    return Ok(ast::Syntax::Struct(structs));
+    self.index_inc();
+    match self.judge() {
+      Some(judge) => match judge? {
+        Syntax::Struct(mut structs) => {
+          structs.set_name(name);
+          return Ok(ast::Syntax::Struct(structs));
+        }
+
+        _ => {}
+      },
+      None => {}
+    }
+
+    return Err(result::Error::SyntaxError(
+      "struct instance error".to_string(),
+    ));
   }
 
   pub(crate) fn instance_member(&mut self) -> Result<ast::Syntax, result::Error> {
+    self.index_inc();
     let mut structs_ast = ast::StructAST::new("");
+
     loop {
       let name;
       let member;
