@@ -229,6 +229,7 @@ impl Parsers {
 
     if self.get_last_state() == &ParseState::Var
       || self.get_last_state() == &ParseState::Member
+      || self.get_last_state() == &ParseState::New
     {
       return Ok(ast::Syntax::Var(ast));
     }

@@ -185,7 +185,8 @@ impl Parsers {
         }
       }
 
-      match self.get_tokens(self.get_index() + 1) {
+      self.index_inc();
+      match self.get_tokens(self.get_index()) {
         Some(tokens) => {
           if tokens.get_token() != TOKEN._colon {
             return Err(result::Error::SyntaxError(
@@ -202,7 +203,6 @@ impl Parsers {
       }
 
       self.index_inc();
-
       match self.judge() {
         Some(judge) => {
           member = judge?;
