@@ -132,6 +132,10 @@ impl Parsers {
         return Some(self.member());
       }
 
+      if self.get_last_state() == &ParseState::New {
+        
+      }
+
       self.push_state(ParseState::Scope);
       return Some(self.scope());
     }
@@ -153,15 +157,11 @@ impl Parsers {
     }
 
     if token == TOKEN._comma {
-      if self.get_last_state() == &ParseState::Call {
-        return None;
-      }
-
-      if self.get_last_state() == &ParseState::Function {
-        return None;
-      }
-
-      if self.get_last_state() == &ParseState::Member {
+      if self.get_last_state() == &ParseState::Call
+        || self.get_last_state() == &ParseState::Function
+        || self.get_last_state() == &ParseState::Member
+        || self.get_last_state() == &ParseState::New
+      {
         return None;
       }
     }

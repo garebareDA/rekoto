@@ -213,20 +213,17 @@ impl Parsers {
 
         if verification_token == TOKEN._braces_left {
           self.push_state(ParseState::New);
-          //TODO　構造体のインスタンス
-          
-          self.pop_state();
+          //インスタンスを返す
+          return self.instance();
         }
       }
 
       None => {}
     };
 
-    if self.get_last_state() == &ParseState::Var {
-      return Ok(ast::Syntax::Var(ast));
-    }
-
-    if self.get_last_state() == &ParseState::Member {
+    if self.get_last_state() == &ParseState::Var
+      || self.get_last_state() == &ParseState::Member
+    {
       return Ok(ast::Syntax::Var(ast));
     }
 

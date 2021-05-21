@@ -1,8 +1,10 @@
 use super::super::ast::{ast, ast::Node, ast::Syntax};
 use super::super::parsers::ParseState;
 use super::super::parsers::Parsers;
+use super::super::super::lexer::token;
 use crate::error::result;
 
+static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn structs(&mut self) -> Result<ast::Syntax, result::Error> {
@@ -111,7 +113,108 @@ impl Parsers {
       structs_ast.push_member(&member_ast);
     }
 
-    self.pop_state();
+    return Ok(Syntax::Struct(structs_ast));
+  }
+
+  pub(crate) fn instance(&mut self) -> Result<ast::Syntax, result::Error> {
+    let name: &str;
+    match self.get_tokens(self.get_index()) {
+      Some(tokens) => {
+        name = tokens.get_value();
+      }
+
+      None => {
+        return Err(result::Error::SyntaxError(
+          "struct instance error".to_string(),
+        ));
+      }
+    }
+
+    let structs = ast::StructAST::new(name.into());
+    //TODO judgeでmemberを取得
+    return Ok(ast::Syntax::Struct(structs));
+  }
+
+  pub(crate) fn instance_member(&mut self) -> Result<ast::Syntax, result::Error> {
+    let mut structs_ast = ast::StructAST::new("");
+    loop {
+      let name;
+      let member;
+      match self.judge() {
+        Some(judge) => match judge? {
+          Syntax::Var(var) => {
+            if var.get_node_len() < 1 {
+              name = var.get_name().to_string();
+            } else {
+              return Err(result::Error::SyntaxError(
+                "instance member name error possible parser bug".to_string(),
+              ));
+            }
+          }
+
+          _ => {
+            return Err(result::Error::SyntaxError(
+              "instance member syntax error".to_string(),
+            ));
+          }
+        },
+
+        None => {
+          if self.get_last_state() != &ParseState::New {
+            break;
+          }
+
+          return Err(result::Error::SyntaxError(
+            "instance member syntax error".to_string(),
+          ));
+        }
+      }
+
+      match self.get_tokens(self.get_index() + 1) {
+        Some(tokens) => {
+          if tokens.get_token() != TOKEN._colon {
+            return Err(result::Error::SyntaxError(
+              "instance member colon noting error".to_string(),
+            ));
+          }
+        }
+
+        None => {
+          return Err(result::Error::SyntaxError(
+            "instance member colon noting error".to_string(),
+          ))
+        }
+      }
+
+      self.index_inc();
+
+      match self.judge() {
+        Some(judge) => {
+          member = judge?;
+        }
+        None => {
+          return Err(result::Error::SyntaxError(
+            "instance member error".to_string(),
+          ))
+        }
+      }
+
+      match self.judge() {
+        Some(_) => {
+          return Err(result::Error::SyntaxError(
+            "instance member comma nothing".to_string(),
+          ))
+        }
+        None => {}
+      }
+
+      self.index_inc();
+
+      let mut member_ast = ast::MemberAST::new(None, name);
+      member_ast.push_node(member);
+      structs_ast.push_member(&member_ast);
+    }
+
     return Ok(Syntax::Struct(structs_ast));
   }
 }
