@@ -10,13 +10,8 @@ impl Interpreter {
     Option<Result<Option<Syntax>, result::Error>>,
     Option<String>,
   ) {
-    let node_len = call.get_node_len();
-    let argment_len = call.get_argment_len();
-    let argment = call.get_argment();
-    let name = call.get_name();
-
-    if name == "print" {
-      if node_len != 0 {
+    if call.get_name() == "print" {
+      if call.get_node_len() != 0 {
         return (
           Some(Err(result::Error::InterpreterError(
             "error print cannot be incorporated into formulas".to_string(),
@@ -25,7 +20,7 @@ impl Interpreter {
         );
       }
 
-      if argment_len != 1 {
+      if call.get_argment_len() != 1 {
         return (
           Some(Err(result::Error::InterpreterError(
             "error print argment 1".to_string(),
@@ -34,10 +29,9 @@ impl Interpreter {
         );
       }
 
-      match argment.get(0) {
+      match call.get_argment().get(0) {
         Some(argment) => {
-          let result = self.formula(argment);
-          match result {
+          match self.formula(argment) {
             Ok(result) => match self.print(&result) {
               Ok(ret) => {
                 return (None, Some(ret));
@@ -74,7 +68,7 @@ impl Interpreter {
     return (
       Some(Err(result::Error::InterpreterError(format!(
         "not found function {}",
-        name
+        call.get_name(),
       )))),
       None,
     );
