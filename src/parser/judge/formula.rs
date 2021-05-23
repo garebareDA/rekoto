@@ -268,11 +268,11 @@ impl Parsers {
     }
   }
 
-  pub(crate) fn formula_same_check(&self, check: i64, value: &str) -> Result<(), result::Error> {
+  pub(crate) fn formula_same_check(&self, check_num: i64, value: &str) -> Result<(), result::Error> {
     match self.get_tokens(self.get_index() + 1) {
       Some(tokens) => {
         let tokens_is = tokens.get_token();
-        if tokens_is == check {
+        if tokens_is == check_num {
           return Ok(());
         } else {
           return Err(result::Error::SyntaxError(format!(

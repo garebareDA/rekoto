@@ -551,16 +551,16 @@ impl Node for ElifAST {
 pub struct ForsAST {
   init: Syntax,
   judge: Syntax,
-  add: Syntax,
+  counter: Syntax,
   scope: Vec<Syntax>,
 }
 
 impl ForsAST {
-  pub fn new(init: Syntax, judge: Syntax, add: Syntax) -> Self {
+  pub fn new(init: Syntax, judge: Syntax, counter: Syntax) -> Self {
     Self {
       init,
       judge,
-      add,
+      counter,
       scope: Vec::new(),
     }
   }
@@ -573,8 +573,8 @@ impl ForsAST {
     &self.judge
   }
 
-  pub fn get_add(&self) -> &Syntax {
-    &self.add
+  pub fn get_counter(&self) -> &Syntax {
+    &self.counter
   }
 }
 

@@ -443,7 +443,7 @@ mod tests {
                 }
               }
 
-              let add = fors.get_add();
+              let add = fors.get_counter();
               match add {
                 ast::ast::Syntax::Var(_) => {}
                 _ => {

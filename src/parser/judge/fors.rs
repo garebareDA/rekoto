@@ -6,7 +6,7 @@ impl Parsers {
   pub(crate) fn fors(&mut self) -> Result<Syntax, result::Error> {
     let init: Syntax;
     let judges: Syntax;
-    let add: Syntax;
+    let counter: Syntax;
 
     self.index_inc();
     match self.judge() {
@@ -68,19 +68,19 @@ impl Parsers {
     match self.judge() {
       Some(judge) => match judge? {
         Syntax::Num(num) => {
-          add = Syntax::Num(num);
+          counter = Syntax::Num(num);
         }
 
         Syntax::Str(strs) => {
-          add = Syntax::Str(strs);
+          counter = Syntax::Str(strs);
         }
 
         Syntax::Call(call) => {
-          add = Syntax::Call(call);
+          counter = Syntax::Call(call);
         }
 
         Syntax::Var(var) => {
-          add = Syntax::Var(var);
+          counter = Syntax::Var(var);
         }
 
         _ => {
@@ -93,7 +93,7 @@ impl Parsers {
       }
     }
 
-    let mut fors = ast::ForsAST::new(init, judges, add);
+    let mut fors = ast::ForsAST::new(init, judges, counter);
     self.index_inc();
     match self.judge() {
       Some(judge) => match judge {
