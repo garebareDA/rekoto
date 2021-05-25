@@ -395,91 +395,84 @@ impl Interpreter {
     inner: &ast::VariableAST,
     formula: &mut Formula,
   ) -> Result<(), result::Error> {
-    match node.get_node_index(0) {
-      Some(var) => match var {
-        Syntax::Bin(bin) => {
-          if bin.get_token() == TOKEN._dot {
-            match bin.get_node_index(0) {
-              Some(ast) => match ast {
-                Syntax::Var(var) => {
-                  let serch = inner.serch_variable(var.get_name());
-                  match serch {
-                    Some(inner) => match inner {
-                      Syntax::Var(vars) => {
-                        return Err(result::Error::InterpreterError(format!(
-                          "{} can't access this",
-                          vars.get_name()
-                        )))
-                      }
-                      _ => {
-                        self.formula_push(formula, &inner, FormulaBeforeState::None)?;
-                        return self.formula_continue(var, formula, FormulaBeforeState::None);
-                      }
-                    },
-                    None => {
-                      return Err(result::Error::InterpreterError(format!(
-                        "{} is notfound",
-                        var.get_name()
-                      )))
-                    }
-                  }
-                }
+    let var = node
+      .get_node_index(0)
+      .ok_or(Err(result::Error::InterpreterError(format!(
+        "the import value error"
+      ))))?;
+    let bin: &ast::BinaryAST;
 
-                Syntax::Call(call) => {
-                  let function = inner.serch_functions(call.get_name());
-                  match function {
-                    Some(fun) => {
-                      let result = self.function_run(&fun, call, Some(inner))?;
-                      match result {
-                        Some(returns) => {
-                          self.formula_push(formula, &returns, FormulaBeforeState::None)?;
-                          return self.formula_continue(call, formula, FormulaBeforeState::None);
-                        }
-                        None => {
-                          return Err(result::Error::InterpreterError(format!(
-                            "{} is notfound return value",
-                            call.get_name(),
-                          )))
-                        }
-                      }
-                    }
-                    None => {
-                      return Err(result::Error::InterpreterError(format!(
-                        "{} is notfound function",
-                        call.get_name()
-                      )))
-                    }
-                  }
-                }
+    match &var {
+      &Syntax::Bin(b) => {
+        bin = b;
+      }
 
-                _ => {
-                  return Err(result::Error::InterpreterError(format!(
-                    "no member specified to access"
-                  )))
-                }
-              },
-              None => {
-                return Err(result::Error::InterpreterError(format!(
-                  "no member specified to access"
-                )))
-              }
+      _ => {
+        return Err(result::Error::InterpreterError(format!(
+          "the import value error"
+        )))
+      }
+    }
+
+    if bin.get_token() != TOKEN._dot {
+      return Err(result::Error::InterpreterError(format!(
+        "the import value error"
+      )));
+    }
+
+    match bin.get_node_index(0) {
+      Some(ast) => match ast {
+        Syntax::Var(var) => match inner.serch_variable(var.get_name()) {
+          Some(inner) => match inner {
+            Syntax::Var(vars) => {
+              return Err(result::Error::InterpreterError(format!(
+                "{} can't access this",
+                vars.get_name()
+              )))
             }
-          } else {
+            _ => {
+              self.formula_push(formula, &inner, FormulaBeforeState::None)?;
+              return self.formula_continue(var, formula, FormulaBeforeState::None);
+            }
+          },
+          None => {
             return Err(result::Error::InterpreterError(format!(
-              "the import value error"
-            )));
+              "{} is notfound",
+              var.get_name()
+            )))
           }
-        }
+        },
+
+        Syntax::Call(call) => match inner.serch_functions(call.get_name()) {
+          Some(function) => match self.function_run(&function, call, Some(inner))? {
+            Some(returns) => {
+              self.formula_push(formula, &returns, FormulaBeforeState::None)?;
+              return self.formula_continue(call, formula, FormulaBeforeState::None);
+            }
+            None => {
+              return Err(result::Error::InterpreterError(format!(
+                "{} is notfound return value",
+                call.get_name(),
+              )))
+            }
+          },
+          None => {
+            return Err(result::Error::InterpreterError(format!(
+              "{} is notfound function",
+              call.get_name()
+            )))
+          }
+        },
+
         _ => {
           return Err(result::Error::InterpreterError(format!(
-            "the import value error"
+            "no member specified to access"
           )))
         }
       },
-
       None => {
         return Err(result::Error::InterpreterError(format!(
-          "the import value error"
+          "no member specified to access"
         )))
       }
     }
