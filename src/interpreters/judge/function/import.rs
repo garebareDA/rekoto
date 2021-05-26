@@ -9,26 +9,18 @@ use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax};
 use crate::parser::parsers;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 impl Interpreter {
   pub(crate) fn import(&self, path: &str) -> Result<ast::VariableAST, result::Error> {
     let my_path = Path::new(self.get_path());
     let parent = my_path.parent();
-    let join_path: PathBuf;
-
-    match parent {
-      Some(p) => {
-        join_path = p.join(path);
-      }
-
-      None => {
-        return Err(result::Error::InterpreterError(format!(
-          "{} is not found",
-          my_path.display()
-        )))
-      }
-    }
+    let join_path = parent
+      .ok_or(result::Error::InterpreterError(format!(
+        "{} is not found",
+        my_path.display()
+      )))?
+      .join(path);
 
     let mut f: File;
     match File::open(join_path) {
@@ -71,8 +63,11 @@ impl Interpreter {
           var_ast.push_variable(var.clone());
         }
 
-        Syntax::Import(import) => match import.get_node_index(0) {
-          Some(inner) => match inner {
+        Syntax::Import(import) => {
+          let inner = import
+            .get_node_index(0)
+            .ok_or(result::Error::InterpreterError(format!("import error")))?;
+          match inner {
             Syntax::Str(strs) => {
               var_ast.push_variable(self.import(strs.get_str())?);
             }
@@ -82,11 +77,8 @@ impl Interpreter {
                 "please specify import as a string ".to_string(),
               ));
             }
-          },
-          None => {
-            return Err(result::Error::InterpreterError(format!("import error")));
           }
-        },
+        }
 
         _ => {
           return Err(result::Error::InterpreterError(

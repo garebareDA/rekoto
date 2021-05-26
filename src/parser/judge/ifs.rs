@@ -28,61 +28,45 @@ impl Parsers {
 
   fn if_judge(&mut self) -> Result<ast::Syntax, result::Error> {
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge? {
-        Syntax::Str(strs) => {
-          return Ok(Syntax::Str(strs));
-        }
+    let judge = self.judge().ok_or(result::Error::SyntaxError(format!(
+      "if syntax error possible parser bug"
+    )))?;
+    match judge? {
+      Syntax::Str(strs) => {
+        return Ok(Syntax::Str(strs));
+      }
 
-        Syntax::Num(num) => {
-          return Ok(Syntax::Num(num));
-        }
+      Syntax::Num(num) => {
+        return Ok(Syntax::Num(num));
+      }
 
-        Syntax::Var(var) => {
-          return Ok(Syntax::Var(var));
-        }
+      Syntax::Var(var) => {
+        return Ok(Syntax::Var(var));
+      }
 
-        _ => {
-          return Err(result::Error::SyntaxError(
-            "if syntax error must be string number boolean variable".to_string(),
-          ));
-        }
-      },
-
-      None => {
-        return Err(result::Error::SyntaxError(format!(
-          "if syntax error possible parser bug"
-        )));
+      _ => {
+        return Err(result::Error::SyntaxError(
+          "if syntax error must be string number boolean variable".to_string(),
+        ));
       }
     }
   }
 
   fn if_scope(&mut self) -> Result<ast::Syntax, result::Error> {
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge {
-        Ok(obj) => match obj {
-          Syntax::Bin(bin) => {
-            return Err(result::Error::SyntaxError(format!(
-              "if scope {} syntax error",
-              bin.get_bin()
-            )));
-          }
+    let judge = self.judge().ok_or(result::Error::SyntaxError(
+      "if scope error possible parser bug".to_string(),
+    ))??;
+    match judge {
+      Syntax::Bin(bin) => {
+        return Err(result::Error::SyntaxError(format!(
+          "if scope {} syntax error",
+          bin.get_bin()
+        )));
+      }
 
-          _ => {
-            return Ok(obj);
-          }
-        },
-
-        Err(e) => {
-          return Err(e);
-        }
-      },
-
-      None => {
-        return Err(result::Error::SyntaxError(
-          "if scope error possible parser bug".to_string(),
-        ));
+      _ => {
+        return Ok(judge);
       }
     }
   }

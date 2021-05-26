@@ -84,7 +84,7 @@ impl Interpreter {
         }
       }
 
-      let formula = self.judge(fors.get_add());
+      let formula = self.judge(fors.get_counter());
       match formula.0 {
         Some(s) => match s {
           Ok(_) => {}

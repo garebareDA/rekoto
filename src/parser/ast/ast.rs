@@ -21,6 +21,8 @@ pub enum Syntax {
   Elif(Box<ElifAST>),
   For(Box<ForsAST>),
   Fn(FunctionAST),
+  Struct(StructAST),
+  Member(MemberAST),
   Return(Box<ReturnAST>),
   Import(Box<ImportAST>),
   Break,
@@ -34,7 +36,7 @@ pub trait Node {
 }
 
 pub trait Type {
-  fn get_type(&self) -> &Option<Types>;
+  fn get_type(&self) -> Option<&Types>;
   fn set_type(&mut self, types: Option<Types>);
 }
 
@@ -158,7 +160,7 @@ impl VariableAST {
     self.functions.len()
   }
 
-  pub fn serch_functions(&self, name:&str) -> Option<FunctionAST> {
+  pub fn serch_functions(&self, name: &str) -> Option<FunctionAST> {
     for i in (0..self.functions.len()).rev() {
       let node = self.functions[i].clone();
       if name == node.get_name() {
@@ -254,8 +256,14 @@ impl Type for VariableAST {
     self.types = types;
   }
 
-  fn get_type(&self) -> &Option<Types> {
-    &self.types
+  fn get_type(&self) -> Option<&Types> {
+    match &self.types {
+      Some(t) => return Some(&t),
+
+      None => {
+        return None;
+      }
+    }
   }
 }
 
@@ -549,16 +557,16 @@ impl Node for ElifAST {
 pub struct ForsAST {
   init: Syntax,
   judge: Syntax,
-  add: Syntax,
+  counter: Syntax,
   scope: Vec<Syntax>,
 }
 
 impl ForsAST {
-  pub fn new(init: Syntax, judge: Syntax, add: Syntax) -> Self {
+  pub fn new(init: Syntax, judge: Syntax, counter: Syntax) -> Self {
     Self {
       init,
       judge,
-      add,
+      counter,
       scope: Vec::new(),
     }
   }
@@ -571,8 +579,8 @@ impl ForsAST {
     &self.judge
   }
 
-  pub fn get_add(&self) -> &Syntax {
-    &self.add
+  pub fn get_counter(&self) -> &Syntax {
+    &self.counter
   }
 }
 
@@ -648,8 +656,13 @@ impl Type for FunctionAST {
     self.types = types;
   }
 
-  fn get_type(&self) -> &Option<Types> {
-    &self.types
+  fn get_type(&self) -> Option<&Types> {
+    match &self.types {
+      Some(t) => {
+        return Some(&t);
+      }
+      None => return None
+    }
   }
 }
 
@@ -708,5 +721,94 @@ impl Node for ImportAST {
 
   fn push_node(&mut self, node: Syntax) {
     self.node.push(node);
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct MemberAST {
+  types: Option<Types>,
+  name: String,
+  node: Vec<Syntax>,
+}
+
+impl MemberAST {
+  pub fn new(types: Option<Types>, name: impl Into<String>) -> Self {
+    Self {
+      types,
+      name: name.into(),
+      node: Vec::new(),
+    }
+  }
+
+  pub fn get_name(&self) -> &str {
+    &self.name
+  }
+}
+
+impl Node for MemberAST {
+  fn get_node(&self) -> &Vec<Syntax> {
+    &self.node
+  }
+
+  fn get_node_index(&self, index: usize) -> Option<&Syntax> {
+    self.get_node().get(index)
+  }
+
+  fn get_node_len(&self) -> usize {
+    self.get_node().len()
+  }
+
+  fn push_node(&mut self, node: Syntax) {
+    self.node.push(node);
+  }
+}
+
+impl Type for MemberAST {
+  fn set_type(&mut self, types: Option<Types>) {
+    self.types = types;
+  }
+
+  fn get_type(&self) -> Option<&Types> {
+    match &self.types {
+      Some(t) => {
+        return Some(&t);
+      }
+      None => return None
+    }
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct StructAST {
+  name: String,
+  member: Vec<MemberAST>,
+}
+
+impl StructAST {
+  pub fn new(name: impl Into<String>) -> Self {
+    Self {
+      name: name.into(),
+      member: Vec::new(),
+    }
+  }
+
+  pub fn set_name(&mut self, name: impl Into<String>) {
+    self.name = name.into();
+  }
+
+  pub fn get_name(&self) -> &str {
+    return &self.name;
+  }
+
+  pub fn get_member(&self) -> &Vec<MemberAST> {
+    &self.member
+  }
+
+  pub fn get_member_index(&self, index: usize) -> Option<&MemberAST> {
+    self.get_member().get(index)
+  }
+
+  pub fn push_member(&mut self, member: &MemberAST) {
+    self.member.push(member.clone())
   }
 }

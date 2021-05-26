@@ -443,7 +443,7 @@ mod tests {
                 }
               }
 
-              let add = fors.get_add();
+              let add = fors.get_counter();
               match add {
                 ast::ast::Syntax::Var(_) => {}
                 _ => {
@@ -667,14 +667,71 @@ mod tests {
       Ok(result) => {
         for obj in result.get_node() {
           match obj {
-            ast::ast::Syntax::Import(import) => {
-              match import.get_node_index(0) {
-                Some(inner) => {
-                  match inner {
-                    ast::ast::Syntax::Str(strs) => {
-                      assert_eq!(strs.get_str(), "./url/test");
-                    }
+            ast::ast::Syntax::Import(import) => match import.get_node_index(0) {
+              Some(inner) => match inner {
+                ast::ast::Syntax::Str(strs) => {
+                  assert_eq!(strs.get_str(), "./url/test");
+                }
 
+                _ => {
+                  panic!();
+                }
+              },
+              None => {
+                panic!();
+              }
+            },
+            _ => {
+              panic!();
+            }
+          }
+        }
+      }
+      Err(e) => {
+        panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn structs() {
+    let mut lex = lexers::lex(
+      "
+    struct test {
+      a: string,
+      b: number,
+    }
+    ",
+    );
+    let result = lex.run().get_tokens();
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Struct(st) => {
+              match st.get_member_index(0) {
+                Some(inner) => {
+                  assert_eq!(inner.get_name(), "a");
+                  match inner.get_type().clone().unwrap() {
+                    ast::ast::Types::String => {}
+                    _ => {
+                      panic!();
+                    }
+                  }
+                }
+                None => {
+                  panic!();
+                }
+              }
+
+              match st.get_member_index(1) {
+                Some(inner) => {
+                  assert_eq!(inner.get_name(), "b");
+                  match inner.get_type().clone().unwrap() {
+                    ast::ast::Types::Number => {}
                     _ => {
                       panic!();
                     }
@@ -693,6 +750,72 @@ mod tests {
       }
       Err(e) => {
         panic!(e);
+      }
+    }
+  }
+
+  #[test]
+  fn instance() {
+    let mut lex = lexers::lex(
+      "
+    test {
+      a: 1,
+      b: 1,
+    }
+    ",
+    );
+    let result = lex.run().get_tokens();
+    let mut parse = parsers::Parsers::new(result.to_vec());
+    let result = parse.run();
+    match result {
+      Ok(result) => {
+        for obj in result.get_node() {
+          match obj {
+            ast::ast::Syntax::Struct(structs) => {
+              match structs.get_member_index(0) {
+                Some(mem) => match mem.get_node_index(0) {
+                  Some(syn) => match syn {
+                    ast::ast::Syntax::Num(num) => {
+                      assert_eq!(1, num.get_num());
+                    }
+                    _ => {
+                      panic!()
+                    }
+                  },
+                  None => {
+                    panic!()
+                  }
+                },
+                None => {
+                  panic!();
+                }
+              }
+
+              match structs.get_member_index(1) {
+                Some(mem) => match mem.get_node_index(0) {
+                  Some(syn) => match syn {
+                    ast::ast::Syntax::Num(num) => {
+                      assert_eq!(1, num.get_num());
+                    }
+                    _ => {
+                      panic!()
+                    }
+                  },
+                  None => {
+                    panic!()
+                  }
+                },
+                None => {
+                  panic!();
+                }
+              }
+            }
+            _ => panic!(),
+          }
+        }
+      }
+      Err(e) => {
+        panic!(e)
       }
     }
   }

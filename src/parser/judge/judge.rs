@@ -128,29 +128,47 @@ impl Parsers {
     }
 
     if token == TOKEN._braces_left {
+      if self.get_last_state() == &ParseState::Struct {
+        return Some(self.member());
+      }
+
+      if self.get_last_state() == &ParseState::New {
+        return Some(self.instance_member());
+      }
+
       self.push_state(ParseState::Scope);
       return Some(self.scope());
     }
 
     if token == TOKEN._braces_right {
-      if self.get_last_state() != &ParseState::Scope {
-        return Some(Err(result::Error::SyntaxError(
-          "scope error { is not found".to_string(),
-        )));
+      if self.get_last_state() == &ParseState::New
+        || self.get_last_state() == &ParseState::Member
+        || self.get_last_state() == &ParseState::Scope
+      {
+        self.pop_state();
+        return None;
       }
 
-      self.pop_state();
-      return None;
+      return Some(Err(result::Error::SyntaxError(
+        "scope error { is not found".to_string(),
+      )));
     }
 
     if token == TOKEN._comma {
-      if self.get_last_state() == &ParseState::Call {
+      if self.get_last_state() == &ParseState::Call
+        || self.get_last_state() == &ParseState::Function
+        || self.get_last_state() == &ParseState::Member
+        || self.get_last_state() == &ParseState::New
+      {
         return None;
       }
+    }
 
-      if self.get_last_state() == &ParseState::Function {
-        return None;
-      }
+    if token == TOKEN._struct {
+      self.push_state(ParseState::Struct);
+      let ret = self.structs();
+      self.pop_state();
+      return Some(ret);
     }
 
     if token == TOKEN._import {
