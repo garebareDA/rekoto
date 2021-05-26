@@ -36,7 +36,7 @@ pub trait Node {
 }
 
 pub trait Type {
-  fn get_type(&self) -> &Option<Types>;
+  fn get_type(&self) -> Option<&Types>;
   fn set_type(&mut self, types: Option<Types>);
 }
 
@@ -160,7 +160,7 @@ impl VariableAST {
     self.functions.len()
   }
 
-  pub fn serch_functions(&self, name:&str) -> Option<FunctionAST> {
+  pub fn serch_functions(&self, name: &str) -> Option<FunctionAST> {
     for i in (0..self.functions.len()).rev() {
       let node = self.functions[i].clone();
       if name == node.get_name() {
@@ -256,8 +256,14 @@ impl Type for VariableAST {
     self.types = types;
   }
 
-  fn get_type(&self) -> &Option<Types> {
-    &self.types
+  fn get_type(&self) -> Option<&Types> {
+    match &self.types {
+      Some(t) => return Some(&t),
+
+      None => {
+        return None;
+      }
+    }
   }
 }
 
@@ -650,8 +656,13 @@ impl Type for FunctionAST {
     self.types = types;
   }
 
-  fn get_type(&self) -> &Option<Types> {
-    &self.types
+  fn get_type(&self) -> Option<&Types> {
+    match &self.types {
+      Some(t) => {
+        return Some(&t);
+      }
+      None => return None
+    }
   }
 }
 
@@ -714,18 +725,18 @@ impl Node for ImportAST {
 }
 
 #[derive(Debug, Clone)]
-pub struct MemberAST{
+pub struct MemberAST {
   types: Option<Types>,
   name: String,
-  node:Vec<Syntax>,
+  node: Vec<Syntax>,
 }
 
 impl MemberAST {
   pub fn new(types: Option<Types>, name: impl Into<String>) -> Self {
     Self {
       types,
-      name:name.into(),
-      node:Vec::new(),
+      name: name.into(),
+      node: Vec::new(),
     }
   }
 
@@ -757,8 +768,13 @@ impl Type for MemberAST {
     self.types = types;
   }
 
-  fn get_type(&self) -> &Option<Types> {
-    &self.types
+  fn get_type(&self) -> Option<&Types> {
+    match &self.types {
+      Some(t) => {
+        return Some(&t);
+      }
+      None => return None
+    }
   }
 }
 
@@ -769,30 +785,30 @@ pub struct StructAST {
 }
 
 impl StructAST {
-  pub fn new(name:impl Into<String>) -> Self {
+  pub fn new(name: impl Into<String>) -> Self {
     Self {
-      name:name.into(),
+      name: name.into(),
       member: Vec::new(),
     }
   }
 
-  pub fn set_name(&mut self, name:impl Into<String>) {
+  pub fn set_name(&mut self, name: impl Into<String>) {
     self.name = name.into();
   }
 
   pub fn get_name(&self) -> &str {
-    return &self.name
+    return &self.name;
   }
 
   pub fn get_member(&self) -> &Vec<MemberAST> {
     &self.member
   }
 
-  pub fn get_member_index(&self, index:usize) -> Option<&MemberAST> {
+  pub fn get_member_index(&self, index: usize) -> Option<&MemberAST> {
     self.get_member().get(index)
   }
 
-  pub fn push_member(&mut self, member:&MemberAST) {
+  pub fn push_member(&mut self, member: &MemberAST) {
     self.member.push(member.clone())
   }
 }

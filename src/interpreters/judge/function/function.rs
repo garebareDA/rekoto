@@ -8,7 +8,7 @@ impl Interpreter {
     &mut self,
     fun: &ast::FunctionAST,
     call: &ast::CallAST,
-    add_scope: Option<&ast::VariableAST>
+    add_scope: Option<&ast::VariableAST>,
   ) -> Result<Option<Syntax>, result::Error> {
     let argments = call.get_argment();
     let params = fun.get_param();
@@ -39,19 +39,16 @@ impl Interpreter {
       let types: &ast::Types;
       let name: &str;
       match param {
-        Syntax::Var(var) => match var.get_type() {
-          Some(t) => {
-            types = t;
-            name = var.get_name();
-          }
-          None => {
-            return Err(result::Error::InterpreterError(format!(
+        Syntax::Var(var) => {
+          types = var
+            .get_type()
+            .ok_or(result::Error::InterpreterError(format!(
               "function {} argment {} th not found type impossible interpreter bug",
               call.get_name(),
               index,
-            )));
-          }
-        },
+            )))?;
+          name = var.get_name();
+        }
         _ => {
           return Err(result::Error::InterpreterError(format!(
             "function {} argment {} th not found type impossible interpreter bug",
@@ -61,153 +58,143 @@ impl Interpreter {
         }
       }
 
-      match argments.get(index) {
-        Some(args) => self.function_type_check(args, types, index, name, call)?,
-        None => {
-          return Err(result::Error::InterpreterError(format!(
-            "function {} argment {} th not found impossible interpreter bug",
-            call.get_name(),
-            index,
-          )));
-        }
-      }
+      let args = argments
+        .get(index)
+        .ok_or(result::Error::InterpreterError(format!(
+          "function {} argment {} th not found impossible interpreter bug",
+          call.get_name(),
+          index,
+        )))?;
+      self.function_type_check(args, &types, index, name, call)?;
     }
 
     self.push_state(InterpreterState::Call);
-    match fun.get_node_index(0) {
-      Some(scope) => match scope {
-        Syntax::Scope(s) => {
-          let scopes = self.scope(s);
+    let scope = fun
+      .get_node_index(0)
+      .ok_or(result::Error::InterpreterError(format!(
+        "{} function not found scope",
+        fun.get_name()
+      )))?;
 
-          match self.get_last_state() {
-            Some(state) => {
-              if state == &InterpreterState::IfDone {
-                self.pop_state();
-              }
+    match scope {
+      Syntax::Scope(s) => {
+        let scopes = self.scope(s);
+        match self.get_last_state() {
+          Some(state) => {
+            if state == &InterpreterState::IfDone {
+              self.pop_state();
             }
-            None => {}
           }
+          None => {}
+        }
 
-          match scopes.0 {
-            Some(is_ok) => match is_ok? {
-              Some(some_returns) => match some_returns {
-                Syntax::Num(_) => {
-                  if fun.get_type() != &Some(Types::Number) {
-                    return Err(result::Error::InterpreterError(format!(
-                      "{} is return value missmatched type",
-                      fun.get_name()
-                    )));
-                  }
-                  self.pop_scope();
-                  self.pop_state();
-                  return Ok(Some(some_returns));
-                }
-                Syntax::Str(_) => {
-                  if fun.get_type() != &Some(Types::String) {
-                    return Err(result::Error::InterpreterError(format!(
-                      "{} is return value missmatched type",
-                      fun.get_name()
-                    )));
-                  }
+        match scopes.0 {
+          Some(is_ok) => {
+            let some_return = is_ok?.ok_or(result::Error::InterpreterError(format!(
+              "break cannot be used in the scope of the function {} function",
+              fun.get_name()
+            )))?;
 
-                  self.pop_scope();
-                  self.pop_state();
-                  return Ok(Some(some_returns));
-                }
-                Syntax::Bool(_) => {
-                  if fun.get_type() != &Some(Types::Bool) {
-                    return Err(result::Error::InterpreterError(format!(
-                      "{} is return value missmatched type",
-                      fun.get_name()
-                    )));
-                  }
-
-                  self.pop_scope();
-                  self.pop_state();
-                  return Ok(Some(some_returns));
-                }
-
-                Syntax::Var(var) => {
-                  let serch_var = self.serch_var(var.get_name());
-                  match serch_var.1? {
-                    Some(types) => {
-                      if fun.get_type() != &Some(types) {
-                        return Err(result::Error::InterpreterError(format!(
-                          "{} is return value missmatched type",
-                          fun.get_name()
-                        )));
-                      }
-
-                      match serch_var.0 {
-                        Some(var) => {
-                          self.pop_scope();
-                          self.pop_state();
-                          return Ok(Some(var.clone()));
-                        }
-
-                        None => {
-                          return Err(result::Error::InterpreterError(format!(
-                            "{} is return value variable not found",
-                            var.get_name()
-                          )));
-                        }
-                      }
-                    }
-                    None => {
-                      return Err(result::Error::InterpreterError(format!(
-                        "{} is return value variable not found",
-                        var.get_name()
-                      )));
-                    }
-                  }
-                }
-
-                Syntax::Return(_) => {
-                  if fun.get_type() != &None {
-                    return Err(result::Error::InterpreterError(format!(
-                      "{} is return value missmatched type",
-                      fun.get_name()
-                    )));
-                  }
-
-                  self.pop_scope();
-                  self.pop_state();
-                  return Ok(None);
-                }
-                _ => {
+            match some_return {
+              Syntax::Num(_) => {
+                if fun.get_type() != Some(&Types::Number) {
                   return Err(result::Error::InterpreterError(format!(
-                    "cannot be specified as a return value",
+                    "{} is return value missmatched type",
+                    fun.get_name()
                   )));
                 }
-              },
-              None => {
-                return Err(result::Error::InterpreterError(format!(
-                  "break cannot be used in the scope of the function {} function",
-                  fun.get_name()
-                )));
+                self.pop_scope();
+                self.pop_state();
+                return Ok(Some(some_return));
               }
-            },
+              Syntax::Str(_) => {
+                if fun.get_type() != Some(&Types::String) {
+                  return Err(result::Error::InterpreterError(format!(
+                    "{} is return value missmatched type",
+                    fun.get_name()
+                  )));
+                }
 
-            None => {
-              if fun.get_type() != &None {
+                self.pop_scope();
+                self.pop_state();
+                return Ok(Some(some_return));
+              }
+              Syntax::Bool(_) => {
+                if fun.get_type() != Some(&Types::Bool) {
+                  return Err(result::Error::InterpreterError(format!(
+                    "{} is return value missmatched type",
+                    fun.get_name()
+                  )));
+                }
+
+                self.pop_scope();
+                self.pop_state();
+                return Ok(Some(some_return));
+              }
+
+              Syntax::Var(var) => {
+                let serched_var = self.serch_var(var.get_name());
+                let serched_var_type =
+                  serched_var
+                    .1?
+                    .ok_or(result::Error::InterpreterError(format!(
+                      "{} is return value variable not found",
+                      var.get_name()
+                    )))?;
+
+                let serched_var_value =
+                  serched_var
+                    .0
+                    .ok_or(result::Error::InterpreterError(format!(
+                      "{} is return value variable not found",
+                      var.get_name()
+                    )))?;
+
+                if fun.get_type() != Some(&serched_var_type) {
+                  return Err(result::Error::InterpreterError(format!(
+                    "{} is return value missmatched type",
+                    fun.get_name()
+                  )));
+                }
+
+                self.pop_scope();
+                self.pop_state();
+                return Ok(Some(serched_var_value));
+              }
+
+              Syntax::Return(_) => {
+                if fun.get_type() != None {
+                  return Err(result::Error::InterpreterError(format!(
+                    "{} is return value missmatched type",
+                    fun.get_name()
+                  )));
+                }
+
+                self.pop_scope();
+                self.pop_state();
+                return Ok(None);
+              }
+              _ => {
                 return Err(result::Error::InterpreterError(format!(
-                  "{} is return value missmatched type",
-                  fun.get_name()
+                  "cannot be specified as a return value",
                 )));
               }
-              return Ok(None);
             }
           }
-        }
 
-        _ => {
-          return Err(result::Error::InterpreterError(format!(
-            "{} function not found scope",
-            fun.get_name()
-          )))
+          None => {
+            if fun.get_type() != None {
+              return Err(result::Error::InterpreterError(format!(
+                "{} is return value missmatched type",
+                fun.get_name()
+              )));
+            }
+            return Ok(None);
+          }
         }
-      },
-      None => {
+      }
+
+      _ => {
         return Err(result::Error::InterpreterError(format!(
           "{} function not found scope",
           fun.get_name()
@@ -314,8 +301,12 @@ impl Interpreter {
           self.variable(var)?;
         }
 
-        Syntax::Import(import) => match import.get_node_index(0) {
-          Some(inner) => match inner {
+        Syntax::Import(import) => {
+          let inner = import
+            .get_node_index(0)
+            .ok_or(result::Error::InterpreterError(format!("import error")))?;
+
+          match inner {
             Syntax::Str(strs) => {
               self.push_var(&self.import(strs.get_str())?)?;
             }
@@ -325,11 +316,8 @@ impl Interpreter {
                 "please specify import as a string ".to_string(),
               ));
             }
-          },
-          None => {
-            return Err(result::Error::InterpreterError(format!("import error")));
           }
-        },
+        }
 
         _ => {
           return Err(result::Error::InterpreterError(

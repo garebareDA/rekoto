@@ -9,92 +9,83 @@ impl Parsers {
     let counter: Syntax;
 
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge? {
-        Syntax::Var(var) => {
-          if var.get_node_len() > 0 {
-            init = Syntax::Var(var);
-          } else {
-            return Err(result::Error::SyntaxError(format!(
-              "var {} initlize error",
-              var.get_name()
-            )));
-          }
+    let judge = self
+      .judge()
+      .ok_or(result::Error::SyntaxError("for initlize error".to_string()))?;
+    match judge? {
+      Syntax::Var(var) => {
+        if var.get_node_len() > 0 {
+          init = Syntax::Var(var);
+        } else {
+          return Err(result::Error::SyntaxError(format!(
+            "var {} initlize error",
+            var.get_name()
+          )));
         }
+      }
 
-        _ => {
-          return Err(result::Error::SyntaxError("for initlize error".to_string()));
-        }
-      },
-      None => {
+      _ => {
         return Err(result::Error::SyntaxError("for initlize error".to_string()));
       }
     }
 
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge? {
-        Syntax::Num(num) => {
-          judges = Syntax::Num(num);
-        }
+    let judge = self.judge().ok_or(result::Error::SyntaxError(
+      "for judgement error".to_string(),
+    ))?;
+    match judge? {
+      Syntax::Num(num) => {
+        judges = Syntax::Num(num);
+      }
 
-        Syntax::Str(strs) => {
-          judges = Syntax::Str(strs);
-        }
+      Syntax::Str(strs) => {
+        judges = Syntax::Str(strs);
+      }
 
-        Syntax::Call(call) => {
-          judges = Syntax::Call(call);
-        }
+      Syntax::Call(call) => {
+        judges = Syntax::Call(call);
+      }
 
-        Syntax::Var(var) => {
-          judges = Syntax::Var(var);
-        }
+      Syntax::Var(var) => {
+        judges = Syntax::Var(var);
+      }
 
-        _ => {
-          return Err(result::Error::SyntaxError(
-            "for initlize errorjdugement error".to_string(),
-          ));
-        }
-      },
-
-      None => {
+      _ => {
         return Err(result::Error::SyntaxError(
-          "for judgement error".to_string(),
+          "for initlize errorjdugement error".to_string(),
         ));
       }
     }
 
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge? {
-        Syntax::Num(num) => {
-          counter = Syntax::Num(num);
-        }
+    let judge = self
+      .judge()
+      .ok_or(result::Error::SyntaxError("for formula error".to_string()))?;
+    match judge? {
+      Syntax::Num(num) => {
+        counter = Syntax::Num(num);
+      }
 
-        Syntax::Str(strs) => {
-          counter = Syntax::Str(strs);
-        }
+      Syntax::Str(strs) => {
+        counter = Syntax::Str(strs);
+      }
 
-        Syntax::Call(call) => {
-          counter = Syntax::Call(call);
-        }
+      Syntax::Call(call) => {
+        counter = Syntax::Call(call);
+      }
 
-        Syntax::Var(var) => {
-          counter = Syntax::Var(var);
-        }
+      Syntax::Var(var) => {
+        counter = Syntax::Var(var);
+      }
 
-        _ => {
-          return Err(result::Error::SyntaxError("for formula error".to_string()));
-        }
-      },
-
-      None => {
+      _ => {
         return Err(result::Error::SyntaxError("for formula error".to_string()));
       }
     }
 
     let mut fors = ast::ForsAST::new(init, judges, counter);
     self.index_inc();
+
     match self.judge() {
       Some(judge) => match judge {
         Ok(obj) => {

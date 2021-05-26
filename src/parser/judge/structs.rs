@@ -10,43 +10,37 @@ impl Parsers {
   pub(crate) fn structs(&mut self) -> Result<ast::Syntax, result::Error> {
     let name: String;
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge? {
-        Syntax::Var(var) => {
-          if var.get_node_len() < 1 {
-            name = var.get_name().to_string();
-          } else {
-            return Err(result::Error::SyntaxError(
-              "struct name error possible parser bug".to_string(),
-            ));
-          }
-        }
-        _ => {
+    let judge = self.judge().ok_or(result::Error::SyntaxError(
+      "struct name error possible parser bug".to_string(),
+    ))?;
+    match judge? {
+      Syntax::Var(var) => {
+        if var.get_node_len() < 1 {
+          name = var.get_name().to_string();
+        } else {
           return Err(result::Error::SyntaxError(
             "struct name error possible parser bug".to_string(),
           ));
         }
-      },
-      None => {
+      }
+      _ => {
         return Err(result::Error::SyntaxError(
           "struct name error possible parser bug".to_string(),
         ));
       }
     }
-
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge? {
-        Syntax::Struct(mut st) => {
-          st.set_name(name);
-          return Ok(Syntax::Struct(st));
-        }
 
-        _ => {}
-      },
-      None => {}
+    let judge = self
+      .judge()
+      .ok_or(result::Error::SyntaxError("sytax error struct".to_string()))?;
+    match judge? {
+      Syntax::Struct(mut st) => {
+        st.set_name(name);
+        return Ok(Syntax::Struct(st));
+      }
+      _ => {}
     }
-
     return Err(result::Error::SyntaxError("sytax error struct".to_string()));
   }
 
@@ -117,30 +111,25 @@ impl Parsers {
   }
 
   pub(crate) fn instance(&mut self) -> Result<ast::Syntax, result::Error> {
-    let name: String;
-    match self.get_tokens(self.get_index()) {
-      Some(tokens) => {
-        name = tokens.get_value().to_string();
-      }
-
-      None => {
-        return Err(result::Error::SyntaxError(
-          "struct instance error".to_string(),
-        ));
-      }
-    }
+    let name = self
+      .get_tokens(self.get_index())
+      .ok_or(result::Error::SyntaxError(
+        "struct instance error".to_string(),
+      ))?
+      .get_value()
+      .to_string();
 
     self.index_inc();
-    match self.judge() {
-      Some(judge) => match judge? {
-        Syntax::Struct(mut structs) => {
-          structs.set_name(name);
-          return Ok(ast::Syntax::Struct(structs));
-        }
 
-        _ => {}
-      },
-      None => {}
+    let judge = self.judge().ok_or(result::Error::SyntaxError(
+      "struct instance error".to_string(),
+    ))?;
+    match judge? {
+      Syntax::Struct(mut structs) => {
+        structs.set_name(name);
+        return Ok(ast::Syntax::Struct(structs));
+      }
+      _ => {}
     }
 
     return Err(result::Error::SyntaxError(
@@ -154,7 +143,6 @@ impl Parsers {
 
     loop {
       let name;
-      let member;
       match self.judge() {
         Some(judge) => match judge? {
           Syntax::Var(var) => {
@@ -186,33 +174,22 @@ impl Parsers {
       }
 
       self.index_inc();
-      match self.get_tokens(self.get_index()) {
-        Some(tokens) => {
-          if tokens.get_token() != TOKEN._colon {
-            return Err(result::Error::SyntaxError(
-              "instance member colon noting error".to_string(),
-            ));
-          }
-        }
-
-        None => {
-          return Err(result::Error::SyntaxError(
-            "instance member colon noting error".to_string(),
-          ))
-        }
+      let tokens = self
+        .get_tokens(self.get_index())
+        .ok_or(result::Error::SyntaxError(
+          "instance member colon noting error".to_string(),
+        ))?;
+      if tokens.get_token() != TOKEN._colon {
+        return Err(result::Error::SyntaxError(
+          "instance member colon noting error".to_string(),
+        ));
       }
 
       self.index_inc();
-      match self.judge() {
-        Some(judge) => {
-          member = judge?;
-        }
-        None => {
-          return Err(result::Error::SyntaxError(
-            "instance member error".to_string(),
-          ))
-        }
-      }
+      let judge = self.judge().ok_or(result::Error::SyntaxError(
+        "instance member error".to_string(),
+      ))?;
+      let member = judge?;
 
       match self.judge() {
         Some(_) => {

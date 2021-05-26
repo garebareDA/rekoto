@@ -41,12 +41,10 @@ impl Formula {
           break 'inner;
         }
 
-        let bin: i64;
-        match self.bin_stack.get(i) {
-          Some(b) => bin = *b,
-          None => return Err(result::Error::InterpreterError(format!("calclation error"))),
-        }
-
+        let bin = *self
+          .bin_stack
+          .get(i)
+          .ok_or(result::Error::InterpreterError(format!("calclation error")))?;
         if index == 0 {
           //単行演算子
           if bin == TOKEN._dot {
@@ -189,14 +187,14 @@ impl Formula {
     }
 
     if self.stack.len() == 1 {
-      match self.stack.get(0) {
-        Some(stack) => Ok(stack),
-        None => {
-          return Err(result::Error::InterpreterError(format!(
+      return Ok(
+        self
+          .stack
+          .get(0)
+          .ok_or(result::Error::InterpreterError(format!(
             "calclation error intepreter bug"
-          )))
-        }
-      }
+          ))),
+      )?;
     } else {
       return Err(result::Error::InterpreterError(format!(
         "missing or many numbers or not present"
@@ -317,57 +315,50 @@ impl Interpreter {
       }
 
       Syntax::Var(vars) => {
-        let (serch, types) = self.serch_var(vars.get_name());
-        match serch {
-          Some(inner) => {
-            match types? {
-              Some(_) => {}
-              None => match &inner {
-                Syntax::Var(vars2) => {
-                  return self.formula_object(vars, vars2, formula);
-                }
-                _ => {
-                  return Err(result::Error::InterpreterError(format!(
-                    "{} is not found",
-                    vars.get_name()
-                  )));
-                }
-              },
-            }
-            self.formula_push(formula, &inner, FormulaBeforeState::None)?;
-            return self.formula_continue(vars, formula, FormulaBeforeState::None);
-          }
+        let (serched_var, types) = self.serch_var(vars.get_name());
+        let serched_var_inner = serched_var.ok_or(result::Error::InterpreterError(format!(
+          "{} is not init",
+          vars.get_name()
+        )))?;
 
-          None => {
-            return Err(result::Error::InterpreterError(format!(
-              "{} is not init",
-              vars.get_name()
-            )))
+        if types?.is_none() {
+          match &serched_var_inner {
+            Syntax::Var(vars_2) => {
+              return self.formula_object(vars, vars_2, formula);
+            }
+            _ => {
+              return Err(result::Error::InterpreterError(format!(
+                "{} is not found",
+                vars.get_name()
+              )));
+            }
           }
         }
+
+        self.formula_push(formula, &serched_var_inner, FormulaBeforeState::None)?;
+        return self.formula_continue(vars, formula, FormulaBeforeState::None);
       }
 
-      Syntax::Call(call) => match self.serch_fun(call.get_name()) {
-        Some(inner) => match self.function_run(&inner, call, None)? {
-          Some(returns) => {
-            self.formula_push(formula, &returns, FormulaBeforeState::None)?;
-            return self.formula_continue(call, formula, FormulaBeforeState::None);
-          }
-          None => {
-            return Err(result::Error::InterpreterError(format!(
-              "{} not a return value",
-              call.get_name()
-            )))
-          }
-        },
-
-        None => {
-          return Err(result::Error::InterpreterError(format!(
+      Syntax::Call(call) => {
+        let inner = self
+          .serch_fun(call.get_name())
+          .ok_or(result::Error::InterpreterError(format!(
             "{} function not found",
             call.get_name()
-          )))
-        }
-      },
+          )))?;
+
+        let function_return =
+          self
+            .function_run(&inner, call, None)?
+            .ok_or(result::Error::InterpreterError(format!(
+              "{} not a return value",
+              call.get_name()
+            )))?;
+
+        self.formula_push(formula, &function_return, FormulaBeforeState::None)?;
+        return self.formula_continue(call, formula, FormulaBeforeState::None);
+      }
+
       _ => Err(result::Error::InterpreterError(
         "variable error cannot be assigned".to_string(),
       )),
@@ -388,7 +379,6 @@ impl Interpreter {
     }
   }
 
-  //TODO:リファクタリング
   fn formula_object<T: Node>(
     &mut self,
     node: &T,
@@ -397,11 +387,11 @@ impl Interpreter {
   ) -> Result<(), result::Error> {
     let var = node
       .get_node_index(0)
-      .ok_or(Err(result::Error::InterpreterError(format!(
+      .ok_or(result::Error::InterpreterError(format!(
         "the import value error"
-      ))))?;
-    let bin: &ast::BinaryAST;
+      )))?;
 
+    let bin: &ast::BinaryAST;
     match &var {
       &Syntax::Bin(b) => {
         bin = b;
@@ -420,57 +410,58 @@ impl Interpreter {
       )));
     }
 
-    match bin.get_node_index(0) {
-      Some(ast) => match ast {
-        Syntax::Var(var) => match inner.serch_variable(var.get_name()) {
-          Some(inner) => match inner {
-            Syntax::Var(vars) => {
-              return Err(result::Error::InterpreterError(format!(
-                "{} can't access this",
-                vars.get_name()
-              )))
-            }
-            _ => {
-              self.formula_push(formula, &inner, FormulaBeforeState::None)?;
-              return self.formula_continue(var, formula, FormulaBeforeState::None);
-            }
-          },
-          None => {
-            return Err(result::Error::InterpreterError(format!(
+    let bin_innner_node = bin
+      .get_node_index(0)
+      .ok_or(result::Error::InterpreterError(format!(
+        "no member specified to access"
+      )))?;
+
+    match bin_innner_node {
+      Syntax::Var(var) => {
+        let serched_var =
+          inner
+            .serch_variable(var.get_name())
+            .ok_or(result::Error::InterpreterError(format!(
               "{} is notfound",
               var.get_name()
+            )))?;
+
+        match serched_var {
+          Syntax::Var(vars) => {
+            return Err(result::Error::InterpreterError(format!(
+              "{} can't access this",
+              vars.get_name()
             )))
           }
-        },
 
-        Syntax::Call(call) => match inner.serch_functions(call.get_name()) {
-          Some(function) => match self.function_run(&function, call, Some(inner))? {
-            Some(returns) => {
-              self.formula_push(formula, &returns, FormulaBeforeState::None)?;
-              return self.formula_continue(call, formula, FormulaBeforeState::None);
-            }
-            None => {
-              return Err(result::Error::InterpreterError(format!(
-                "{} is notfound return value",
-                call.get_name(),
-              )))
-            }
-          },
-          None => {
-            return Err(result::Error::InterpreterError(format!(
+          _ => {
+            self.formula_push(formula, &serched_var, FormulaBeforeState::None)?;
+            return self.formula_continue(var, formula, FormulaBeforeState::None);
+          }
+        }
+      }
+
+      Syntax::Call(call) => {
+        let serched_function =
+          inner
+            .serch_functions(call.get_name())
+            .ok_or(result::Error::InterpreterError(format!(
               "{} is notfound function",
               call.get_name()
-            )))
-          }
-        },
+            )))?;
 
-        _ => {
-          return Err(result::Error::InterpreterError(format!(
-            "no member specified to access"
-          )))
-        }
-      },
-      None => {
+        let function_return = self
+          .function_run(&serched_function, call, Some(inner))?
+          .ok_or(result::Error::InterpreterError(format!(
+            "{} is notfound return value",
+            call.get_name(),
+          )))?;
+
+        self.formula_push(formula, &function_return, FormulaBeforeState::None)?;
+        return self.formula_continue(call, formula, FormulaBeforeState::None);
+      }
+
+      _ => {
         return Err(result::Error::InterpreterError(format!(
           "no member specified to access"
         )))

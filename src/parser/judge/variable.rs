@@ -12,7 +12,11 @@ impl Parsers {
   ) -> Result<Syntax, result::Error> {
     //letまたはconstの変数名を取得
     self.push_state(ParseState::Var);
-    match self.variable_def_inner()? {
+
+    let judge = self
+      .judge()
+      .ok_or(result::Error::SyntaxError(format!("syntax error variable")))?;
+    match judge? {
       ast::Syntax::Var(mut var) => {
         var.set_is_def(is_def);
         var.set_is_mutable(is_mutable);
@@ -33,7 +37,10 @@ impl Parsers {
 
         self.pop_state();
 
-        match self.variable_def_inner() {
+        let judge = self
+          .judge()
+          .ok_or(result::Error::SyntaxError(format!("syntax error variable")))?;
+        match judge {
           Ok(syn) => {
             //変数の中身を入れる
             match syn {
@@ -143,20 +150,12 @@ impl Parsers {
     }
   }
 
-  //変数を取得
-  fn variable_def_inner(&mut self) -> Result<ast::Syntax, result::Error> {
-    match self.judge() {
-      Some(syn) => {
-        return Ok(syn?);
-      }
-
-      None => return Err(result::Error::SyntaxError(format!("syntax error variable"))),
-    }
-  }
-
   fn variable_def_inspect(&mut self) -> Result<(), result::Error> {
     self.index_inc();
-    match self.variable_def_inner()? {
+    let judge = self
+      .judge()
+      .ok_or(result::Error::SyntaxError(format!("syntax error variable")))?;
+    match judge? {
       ast::Syntax::Bin(bin) => {
         let bin = bin.get_bin();
         if bin == "=" {
@@ -213,7 +212,8 @@ impl Parsers {
           return self.variable_def(true, false);
         }
 
-        if verification_token == TOKEN._braces_left && self.get_last_state() == &ParseState::Struct {
+        if verification_token == TOKEN._braces_left && self.get_last_state() == &ParseState::Struct
+        {
           return Ok(ast::Syntax::Var(ast));
         }
 
@@ -244,44 +244,35 @@ impl Parsers {
   }
 
   pub(crate) fn check_types(&mut self) -> Result<Option<ast::Types>, result::Error> {
-    match self.get_tokens(self.get_index() + 1) {
-      Some(tokens) => {
-        if tokens.get_token() != TOKEN._colon {
-          if self.get_last_state() == &ParseState::Function {
-            return Err(result::Error::SyntaxError(
-              "param not found type".to_string(),
-            ));
-          }
-          return Ok(None);
-        }
+    let tokens = self
+      .get_tokens(self.get_index() + 1)
+      .ok_or(result::Error::SyntaxError("Syntax error type".to_string()))?;
 
-        self.index_add(2);
-        match self.get_tokens(self.get_index()) {
-          Some(tokens) => {
-            let types = tokens.get_value();
-            if types == "number" {
-              return Ok(Some(ast::Types::Number));
-            } else if types == "string" {
-              return Ok(Some(ast::Types::String));
-            } else if types == "bool" {
-              return Ok(Some(ast::Types::Bool));
-            }
-
-            return Err(result::Error::SyntaxError(format!(
-              "nofound types {}",
-              types
-            )));
-          }
-
-          None => {
-            return Err(result::Error::SyntaxError("Syntax error type".to_string()));
-          }
-        }
+    if tokens.get_token() != TOKEN._colon {
+      if self.get_last_state() == &ParseState::Function {
+        return Err(result::Error::SyntaxError(
+          "param not found type".to_string(),
+        ));
       }
-
-      None => {
-        return Err(result::Error::SyntaxError("Syntax error type".to_string()));
-      }
+      return Ok(None);
     }
+
+    self.index_add(2);
+    let tokens = self
+      .get_tokens(self.get_index())
+      .ok_or(result::Error::SyntaxError("Syntax error type".to_string()))?;
+    let types = tokens.get_value();
+    if types == "number" {
+      return Ok(Some(ast::Types::Number));
+    } else if types == "string" {
+      return Ok(Some(ast::Types::String));
+    } else if types == "bool" {
+      return Ok(Some(ast::Types::Bool));
+    }
+
+    return Err(result::Error::SyntaxError(format!(
+      "nofound types {}",
+      types
+    )));
   }
 }

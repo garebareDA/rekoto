@@ -6,80 +6,56 @@ static TOKEN: token::Token = token::Token::new();
 
 impl Parsers {
   pub(crate) fn call(&mut self) -> Result<ast::Syntax, result::Error> {
-    let name: String;
-    match self.get_tokens(self.get_index()) {
-      Some(tokens) => {
-        name = tokens.get_value().to_string();
-      }
-
-      None => {
-        return Err(result::Error::SyntaxError(
-          "function call error".to_string(),
-        ));
-      }
-    }
+    let name = self
+      .get_tokens(self.get_index())
+      .ok_or(result::Error::SyntaxError(
+        "function call error".to_string(),
+      ))?
+      .get_value()
+      .to_string();
 
     let mut call_ast = ast::CallAST::new(&name);
     self.index_inc();
 
-    match self.get_tokens(self.get_index()) {
-      Some(tokens) => {
-        if tokens.get_token() != TOKEN._paren_left {
-          return Err(result::Error::SyntaxError(format!(
-            "Error {} not a function",
-            tokens.get_value()
-          )));
-        }
-      }
+    let tokens = self
+      .get_tokens(self.get_index())
+      .ok_or(result::Error::SyntaxError("strings error".to_string()))?;
 
-      None => {
-        return Err(result::Error::SyntaxError("strings error".to_string()));
-      }
+    if tokens.get_token() != TOKEN._paren_left {
+      return Err(result::Error::SyntaxError(format!(
+        "Error {} not a function",
+        tokens.get_value()
+      )));
     }
 
     loop {
       self.index_inc();
-
-      match self.get_tokens(self.get_index()) {
-        Some(tokens) => {
-          if tokens.get_token() == TOKEN._paren_right {
-            break;
-          }
-        }
-
-        None => {
-          return Err(result::Error::SyntaxError("strings error".to_string()));
-        }
+      let tokens = self
+        .get_tokens(self.get_index())
+        .ok_or(result::Error::SyntaxError("strings error".to_string()))?;
+      if tokens.get_token() == TOKEN._paren_right {
+        break;
       }
 
-      match self.judge() {
-        Some(judge) => {
-          let verification_token: i64;
-          match self.get_tokens(self.get_index()) {
-            Some(tokens) => {
-              verification_token = tokens.get_token();
-            }
-            None => {
-              return Err(result::Error::SyntaxError("strings error".to_string()));
-            }
-          }
-          call_ast.push_argment(&judge?);
-          if verification_token == TOKEN._paren_right {
-            break;
-          } else if verification_token == TOKEN._comma {
-            continue;
-          } else {
-            return Err(result::Error::SyntaxError(format!(
-              "syntax error  call function {} argments",
-              name
-            )));
-          }
-        }
-        None => {
-          return Err(result::Error::SyntaxError(format!(
-            "syntax error call judge"
-          )));
-        }
+      let judge = self.judge().ok_or(result::Error::SyntaxError(format!(
+        "syntax error call judge"
+      )))?;
+
+      let verification_token = self
+        .get_tokens(self.get_index())
+        .ok_or(result::Error::SyntaxError("strings error".to_string()))?
+        .get_token();
+
+      call_ast.push_argment(&judge?);
+      if verification_token == TOKEN._paren_right {
+        break;
+      } else if verification_token == TOKEN._comma {
+        continue;
+      } else {
+        return Err(result::Error::SyntaxError(format!(
+          "syntax error  call function {} argments",
+          name,
+        )));
       }
     }
 

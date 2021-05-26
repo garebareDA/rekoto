@@ -28,16 +28,13 @@ impl Interpreter {
     Self {
       var: Variables::new(),
       fun: Functions::new(),
-      path:path.into(),
-      name:name.into(),
+      path: path.into(),
+      name: name.into(),
       state: Vec::new(),
     }
   }
 
-  pub fn run(
-    &mut self,
-    root: RootAST,
-  ) -> Result<(), result::Error> {
+  pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
     self.push_scope();
     self.function_init(&root)?;
     self.push_state(InterpreterState::Main);
@@ -74,36 +71,33 @@ impl Interpreter {
     self.function_init(&root)?;
     self.push_scope();
     self.push_state(InterpreterState::Main);
-    match self.serch_fun("main") {
-      Some(main) => {
-        for ast in main.get_node().iter() {
-          let result = self.judge(ast);
+    let main = self
+      .serch_fun("main")
+      .ok_or(result::Error::InterpreterError(
+        "not found main fucntion".to_string(),
+      ))?;
 
-          match result.1 {
-            Some(lo) => {
-              log.push(lo);
-            }
+    for ast in main.get_node().iter() {
+      let result = self.judge(ast);
 
-            None => {}
-          }
-
-          match result.0 {
-            Some(judge) => match judge {
-              Ok(_) => {
-                break;
-              }
-              Err(e) => {
-                return Err(e);
-              }
-            },
-            None => {}
-          }
+      match result.1 {
+        Some(lo) => {
+          log.push(lo);
         }
+
+        None => {}
       }
-      None => {
-        return Err(result::Error::InterpreterError(
-          "not found main fucntion".to_string(),
-        ));
+
+      match result.0 {
+        Some(judge) => match judge {
+          Ok(_) => {
+            break;
+          }
+          Err(e) => {
+            return Err(e);
+          }
+        },
+        None => {}
       }
     }
 
