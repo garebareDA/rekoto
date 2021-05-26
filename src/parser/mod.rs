@@ -162,14 +162,7 @@ mod tests {
   #[test]
   fn scope() {
     let fun = |obj: &ast::ast::Syntax| match obj {
-      ast::ast::Syntax::Scope(scope) => {
-        let scope = scope.get_node();
-        match &scope[0] {
-          ast::ast::Syntax::Scope(_) => {}
-          _ => {
-            panic!();
-          }
-        }
+      ast::ast::Syntax::Scope(_) => {
       }
 
       _ => {
