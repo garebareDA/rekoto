@@ -37,7 +37,7 @@ impl Interpreter {
 
   pub fn run(&mut self, root: RootAST) -> Result<(), result::Error> {
     self.push_scope();
-    self.function_init(&root)?;
+    self.interpreter_init(&root)?;
     self.push_state(InterpreterState::Main);
     match self.serch_fun("main") {
       Some(main) => {
