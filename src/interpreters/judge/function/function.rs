@@ -287,45 +287,4 @@ impl Interpreter {
     }
     return Ok(());
   }
-
-  pub(crate) fn function_init(&mut self, root: &ast::RootAST) -> Result<(), result::Error> {
-    for ast in root.get_node().iter() {
-      match ast {
-        Syntax::Fn(fun) => {
-          self.push_fun(fun);
-        }
-
-        Syntax::Var(var) => {
-          //下の階層にあれば計算してvarにpush
-          //なければそのままvar_push
-          self.variable(var)?;
-        }
-
-        Syntax::Import(import) => {
-          let inner = import
-            .get_node_index(0)
-            .ok_or(result::Error::InterpreterError(format!("import error")))?;
-
-          match inner {
-            Syntax::Str(strs) => {
-              self.push_var(&self.import(strs.get_str())?)?;
-            }
-
-            _ => {
-              return Err(result::Error::InterpreterError(
-                "please specify import as a string ".to_string(),
-              ));
-            }
-          }
-        }
-
-        _ => {
-          return Err(result::Error::InterpreterError(
-            "the syntax is not written inside the function".to_string(),
-          ));
-        }
-      }
-    }
-    return Ok(());
-  }
 }

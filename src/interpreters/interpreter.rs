@@ -3,8 +3,8 @@ use crate::parser::ast;
 use crate::parser::ast::ast::{Node, RootAST, Syntax, Types};
 
 use super::functions::Functions;
-use super::variables::Variables;
 use super::variables::Scope;
+use super::variables::Variables;
 
 #[derive(PartialEq, Debug)]
 pub enum InterpreterState {
@@ -69,7 +69,7 @@ impl Interpreter {
   pub fn debug_run(&mut self, root: RootAST) -> Result<Vec<String>, result::Error> {
     let mut log: Vec<String> = Vec::new();
     self.push_scope();
-    self.function_init(&root)?;
+    self.interpreter_init(&root)?;
     self.push_scope();
     self.push_state(InterpreterState::Main);
     let main = self
@@ -103,6 +103,51 @@ impl Interpreter {
     }
 
     return Ok(log);
+  }
+
+  fn interpreter_init(&mut self, root: &ast::ast::RootAST) -> Result<(), result::Error> {
+    for ast in root.get_node().iter() {
+      match ast {
+        Syntax::Fn(fun) => {
+          self.push_fun(fun);
+        }
+
+        Syntax::Var(var) => {
+          //下の階層にあれば計算してvarにpush
+          //なければそのままvar_push
+          self.variable(var)?;
+        }
+
+        Syntax::Struct(structs) => {
+          //TODO structをpushする
+        },
+
+        Syntax::Import(import) => {
+          let inner = import
+            .get_node_index(0)
+            .ok_or(result::Error::InterpreterError(format!("import error")))?;
+
+          match inner {
+            Syntax::Str(strs) => {
+              self.push_var(&self.import(strs.get_str())?)?;
+            }
+
+            _ => {
+              return Err(result::Error::InterpreterError(
+                "please specify import as a string ".to_string(),
+              ));
+            }
+          }
+        }
+
+        _ => {
+          return Err(result::Error::InterpreterError(
+            "the syntax is not written inside the function".to_string(),
+          ));
+        }
+      }
+    }
+    return Ok(());
   }
 
   pub fn push_scope(&mut self) {
