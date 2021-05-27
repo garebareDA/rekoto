@@ -778,6 +778,7 @@ impl Type for MemberAST {
   }
 }
 
+//TODO インスタンスかどうかのフラグを追加する
 #[derive(Debug, Clone)]
 pub struct StructAST {
   name: String,

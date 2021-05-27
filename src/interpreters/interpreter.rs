@@ -2,9 +2,10 @@ use crate::error::result;
 use crate::parser::ast;
 use crate::parser::ast::ast::{Node, RootAST, Syntax, Types};
 
-use super::functions::Functions;
 use super::variables::Scope;
 use super::variables::Variables;
+use super::functions::Functions;
+use super::structs::Structs;
 
 #[derive(PartialEq, Debug)]
 pub enum InterpreterState {
@@ -19,6 +20,7 @@ pub enum InterpreterState {
 pub struct Interpreter {
   var: Variables,
   fun: Functions,
+  structs: Structs,
   path: String,
   name: String,
   state: Vec<InterpreterState>,
@@ -29,6 +31,7 @@ impl Interpreter {
     Self {
       var: Variables::new(),
       fun: Functions::new(),
+      structs: Structs::new(),
       path: path.into(),
       name: name.into(),
       state: Vec::new(),
@@ -119,7 +122,7 @@ impl Interpreter {
         }
 
         Syntax::Struct(structs) => {
-          //TODO structをpushする
+          self.push_struct(structs);
         },
 
         Syntax::Import(import) => {
@@ -153,11 +156,13 @@ impl Interpreter {
   pub fn push_scope(&mut self) {
     self.var.push_scope();
     self.fun.push_scope();
+    self.structs.push_scope();
   }
 
   pub fn pop_scope(&mut self) {
     self.var.pop_scope();
     self.fun.pop_scope();
+    self.structs.pop_scope();
   }
 
   pub fn push_var(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
@@ -214,6 +219,14 @@ impl Interpreter {
 
   pub fn push_fun(&mut self, node: &ast::ast::FunctionAST) {
     self.fun.push_node(node);
+  }
+
+  pub fn serch_struct(&self, name: &str) -> Option<ast::ast::StructAST> {
+    self.structs.serch(name)
+  }
+
+  pub fn push_struct(&mut self, node: &ast::ast::StructAST) {
+    self.structs.push_node(node);
   }
 
   pub fn get_last_state(&self) -> Option<&InterpreterState> {
