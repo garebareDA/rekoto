@@ -4,6 +4,7 @@ use crate::parser::ast::ast::{Node, RootAST, Syntax, Types};
 
 use super::functions::Functions;
 use super::variables::Variables;
+use super::variables::Scope;
 
 #[derive(PartialEq, Debug)]
 pub enum InterpreterState {

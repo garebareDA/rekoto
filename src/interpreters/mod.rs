@@ -2,6 +2,7 @@ pub mod interpreter;
 pub mod judge;
 pub mod variables;
 pub mod functions;
+pub mod structs;
 
 #[cfg(test)]
 mod tests {
