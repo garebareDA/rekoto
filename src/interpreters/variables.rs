@@ -1,10 +1,15 @@
 use crate::error::result;
 use crate::parser::ast;
-use crate::parser::ast::ast::{Node,Syntax};
+use crate::parser::ast::ast::{Node, Syntax};
 
 #[derive(Debug, Clone)]
 pub struct Variables {
   node: Vec<Vec<ast::ast::VariableAST>>,
+}
+
+pub trait Scope {
+  fn push_scope(&mut self);
+  fn pop_scope(&mut self);
 }
 
 impl Variables {
@@ -12,12 +17,32 @@ impl Variables {
     Self { node: Vec::new() }
   }
 
-  pub fn push_scope(&mut self) {
-    self.node.push(Vec::new());
-  }
+  pub fn serch(&self, name: &str, index: usize) -> Option<Syntax> {
+    for i in (index..self.node.len()).rev() {
+      for j in (0..self.node[i].len()).rev() {
+        let node = &self.node[i][j];
+        if name == node.get_name() {
+          if node.get_varibale_len() > 0 {
+            return Some(Syntax::Var(node.clone()));
+          }
 
-  pub fn pop_scope(&mut self) {
-    self.node.remove(self.node.len() - 1);
+          if node.get_function_len() > 0 {
+            return Some(Syntax::Var(node.clone()));
+          }
+
+          match node.get_node_index(0) {
+            Some(node) => {
+              return Some(node.clone());
+            }
+
+            None => {
+              return None;
+            }
+          }
+        }
+      }
+    }
+    return None;
   }
 
   pub fn push_node(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
@@ -49,32 +74,14 @@ impl Variables {
       node.get_name()
     )));
   }
+}
 
-  pub fn serch(&self, name: &str, index: usize) -> Option<Syntax> {
-    for i in (index..self.node.len()).rev() {
-      for j in (0..self.node[i].len()).rev() {
-        let node = &self.node[i][j];
-        if name == node.get_name() {
-          if node.get_varibale_len() > 0 {
-            return Some(Syntax::Var(node.clone()));
-          }
+impl Scope for Variables {
+  fn push_scope(&mut self) {
+    self.node.push(Vec::new());
+  }
 
-          if node.get_function_len() > 0 {
-            return Some(Syntax::Var(node.clone()));
-          }
-
-          match node.get_node_index(0) {
-            Some(node) => {
-              return Some(node.clone());
-            }
-
-            None => {
-              return None;
-            }
-          }
-        }
-      }
-    }
-    return None;
+  fn pop_scope(&mut self) {
+    self.node.remove(self.node.len() - 1);
   }
 }

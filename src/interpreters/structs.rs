@@ -1,22 +1,22 @@
-use crate::parser::ast;
 use super::variables;
+use crate::parser::ast;
 
 #[derive(Debug, Clone)]
-pub struct Functions {
-  node: Vec<Vec<ast::ast::FunctionAST>>,
+pub struct Structs {
+  node: Vec<Vec<ast::ast::StructAST>>,
 }
 
-impl Functions {
+impl Structs {
   pub fn new() -> Self {
     Self { node: Vec::new() }
   }
 
-  pub fn push_node(&mut self, node: &ast::ast::FunctionAST) {
+  pub fn push_node(&mut self, node: &ast::ast::StructAST) {
     let index = self.node.len() - 1;
     self.node[index].push(node.clone());
   }
 
-  pub fn serch(&self, name: &str) -> Option<ast::ast::FunctionAST> {
+  pub fn serch(&self, name: &str) -> Option<ast::ast::StructAST> {
     for i in (0..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
         let node = &self.node[i][j];
@@ -29,7 +29,7 @@ impl Functions {
   }
 }
 
-impl variables::Scope for Functions {
+impl variables::Scope for Structs {
   fn push_scope(&mut self) {
     self.node.push(Vec::new());
   }
