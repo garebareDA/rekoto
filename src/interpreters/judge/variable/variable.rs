@@ -48,6 +48,11 @@ impl Interpreter {
         return self.is_node_index(vars, var_node);
       }
 
+      Syntax::Struct(structs) => {
+        //ToDOstruct の処理
+        return Ok(());
+      }
+
       Syntax::Bin(bin) => {
         let serched_var = self.serch_var(vars.get_name());
         let serched_var_value = serched_var

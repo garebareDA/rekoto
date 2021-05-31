@@ -661,7 +661,7 @@ impl Type for FunctionAST {
       Some(t) => {
         return Some(&t);
       }
-      None => return None
+      None => return None,
     }
   }
 }
@@ -773,7 +773,7 @@ impl Type for MemberAST {
       Some(t) => {
         return Some(&t);
       }
-      None => return None
+      None => return None,
     }
   }
 }
@@ -803,6 +803,10 @@ impl StructAST {
 
   pub fn get_member(&self) -> &Vec<MemberAST> {
     &self.member
+  }
+
+  pub fn get_member_len(&self) -> usize {
+    self.get_member().len()
   }
 
   pub fn get_member_index(&self, index: usize) -> Option<&MemberAST> {
