@@ -49,8 +49,8 @@ impl Interpreter {
       }
 
       Syntax::Struct(structs) => {
-        //ToDOstruct の処理
-        return Ok(());
+        self.structs(structs)?;
+        return self.is_node_index(vars, var_node);
       }
 
       Syntax::Bin(bin) => {
