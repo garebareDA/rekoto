@@ -1,8 +1,8 @@
 import "./test.rk";
 
 struct test {
-  a: string,
-  b: string,
+  a: number,
+  b: number,
 }
 
 fn main() {

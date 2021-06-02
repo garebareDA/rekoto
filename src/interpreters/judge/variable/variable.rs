@@ -48,6 +48,16 @@ impl Interpreter {
         return self.is_node_index(vars, var_node);
       }
 
+      Syntax::Struct(structs) => {
+        //そのまま変数の配列に突っ込んでるだけ
+        //式になってたりしても知らん
+       //エラーになっても知らんからァァァァァ
+        self.structs(structs)?;
+        let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
+        var.push_node(Syntax::Struct(structs.clone()));
+        return self.push_var(&var);
+      }
+
       Syntax::Bin(bin) => {
         let serched_var = self.serch_var(vars.get_name());
         let serched_var_value = serched_var
