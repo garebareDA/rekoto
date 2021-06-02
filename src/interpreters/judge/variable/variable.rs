@@ -49,8 +49,13 @@ impl Interpreter {
       }
 
       Syntax::Struct(structs) => {
+        //そのまま変数の配列に突っ込んでるだけ
+        //式になってたりしても知らん
+       //エラーになっても知らんからァァァァァ
         self.structs(structs)?;
-        return self.is_node_index(vars, var_node);
+        let mut var = VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
+        var.push_node(Syntax::Struct(structs.clone()));
+        return self.push_var(&var);
       }
 
       Syntax::Bin(bin) => {
