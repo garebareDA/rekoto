@@ -129,6 +129,7 @@ pub struct VariableAST {
   node: Vec<Syntax>,
   functions: Vec<FunctionAST>,
   variables: Vec<VariableAST>,
+  structs: Vec<StructAST>,
 }
 
 impl VariableAST {
@@ -141,6 +142,7 @@ impl VariableAST {
       node: Vec::new(),
       functions: Vec::new(),
       variables: Vec::new(),
+      structs: Vec::new(),
     }
   }
 
@@ -160,9 +162,9 @@ impl VariableAST {
     self.functions.len()
   }
 
-  pub fn serch_functions(&self, name: &str) -> Option<FunctionAST> {
+  pub fn serch_functions(&self, name: &str) -> Option<&FunctionAST> {
     for i in (0..self.functions.len()).rev() {
-      let node = self.functions[i].clone();
+      let node = &self.functions[i];
       if name == node.get_name() {
         return Some(node);
       }
@@ -188,14 +190,14 @@ impl VariableAST {
 
   pub fn serch_variable(&self, name: &str) -> Option<Syntax> {
     for i in (0..self.variables.len()).rev() {
-      let node = &self.variables[i];
+      let node = self.variables[i].clone();
       if name == node.get_name() {
         if node.get_varibale_len() > 0 {
-          return Some(Syntax::Var(node.clone()));
+          return Some(Syntax::Var(node));
         }
 
         if node.get_function_len() > 0 {
-          return Some(Syntax::Var(node.clone()));
+          return Some(Syntax::Var(node));
         }
 
         match node.get_node_index(0) {
@@ -207,6 +209,32 @@ impl VariableAST {
             return None;
           }
         }
+      }
+    }
+    return None;
+  }
+
+  pub fn get_struct(&self) -> &Vec<StructAST> {
+    &self.structs
+  }
+
+  pub fn get_struct_index(&self, index: usize) -> Option<&StructAST> {
+    self.structs.get(index)
+  }
+
+  pub fn push_struct(&mut self, structs: StructAST) {
+    self.structs.push(structs);
+  }
+
+  pub fn get_struct_len(&self) -> usize {
+    self.structs.len()
+  }
+
+  pub fn serch_struct(&self, name: &str) -> Option<&StructAST> {
+    for i in (0..self.structs.len()).rev() {
+      let node = &self.structs[i];
+      if name == node.get_name() {
+        return Some(node);
       }
     }
     return None;

@@ -20,7 +20,7 @@ impl Variables {
   pub fn serch(&self, name: &str, index: usize) -> Option<Syntax> {
     for i in (index..self.node.len()).rev() {
       for j in (0..self.node[i].len()).rev() {
-        let node = &self.node[i][j];
+        let node = self.node[i][j].clone();
         if name == node.get_name() {
           if node.get_varibale_len() > 0 {
             return Some(Syntax::Var(node.clone()));
