@@ -63,6 +63,10 @@ impl Interpreter {
           var_ast.push_variable(var.clone());
         }
 
+        Syntax::Struct(structs) => {
+          var_ast.push_struct(structs.clone());
+        }
+
         Syntax::Import(import) => {
           let inner = import
             .get_node_index(0)

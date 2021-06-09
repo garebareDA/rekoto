@@ -451,7 +451,7 @@ impl Interpreter {
             )))?;
 
         let function_return = self
-          .function_run(&serched_function, call, Some(inner))?
+          .function_run(serched_function, call, Some(inner))?
           .ok_or(result::Error::InterpreterError(format!(
             "{} is notfound return value",
             call.get_name(),

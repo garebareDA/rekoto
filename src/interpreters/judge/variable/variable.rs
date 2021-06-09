@@ -49,7 +49,7 @@ impl Interpreter {
       }
 
       Syntax::Struct(structs) => {
-        //そのまま変数の配列に突っ込んでるだけ
+        //そのまま変数の配列に突っ込んでるだけで参照はできない
         //式になってたりしても知らん
        //エラーになっても知らんからァァァァァ
         self.structs(structs)?;
@@ -105,7 +105,7 @@ impl Interpreter {
                         "{} function not found",
                         call.get_name()
                       )))?;
-                  self.function_run(&serched_function, call, None)?;
+                  self.function_run(serched_function, call, None)?;
                   return Ok(());
                 }
                 _ => {
