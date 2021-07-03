@@ -1,7 +1,7 @@
 use rekoto::read;
 
 fn main() {
-    match read::file::read_file() {
+    match read::file::read_file(){
         Ok(()) => {}
 
         Err(e) => {

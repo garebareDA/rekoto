@@ -189,8 +189,6 @@ impl Interpreter {
 
         Syntax::Var(_) => (Some(var), Ok(None)),
 
-        Syntax::Struct(_) => (Some(var), Ok(Some(Types::Struct))),
-
         _ => {
           return (
             None,
