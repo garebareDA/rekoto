@@ -4,6 +4,7 @@ pub enum Types {
   Number,
   String,
   Bool,
+  Struct,
 }
 
 #[derive(Debug, Clone)]
