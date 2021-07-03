@@ -1,4 +1,4 @@
-
+import "./test.rk";
 
 struct st {
   a: number,
@@ -6,6 +6,9 @@ struct st {
 }
 
 fn main() {
+  let a = test.test(1 + 1, 1) + 1;
+  a++;
+  print(a);
 
   let b = st {
     a:1,
