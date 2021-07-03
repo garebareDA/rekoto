@@ -16,5 +16,5 @@ fn main() {
   }
 
   let c = b.a;
-  print(a);
+  print(c);
 }

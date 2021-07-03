@@ -1,6 +1,5 @@
 use super::super::super::interpreter::Interpreter;
 use crate::error::result;
-use crate::interpreters::judge::call::print;
 use crate::lexer::token;
 use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax, VariableAST};
@@ -27,8 +26,6 @@ impl Interpreter {
             .ok_or(result::Error::InterpreterError(
                 "Cannot assign to variable".to_string(),
             ))?;
-
-        println!("var {:?}", &var_node);
 
         match var_node {
             Syntax::Var(_) => {

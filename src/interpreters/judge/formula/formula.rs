@@ -341,54 +341,11 @@ impl Interpreter {
                         ))? {
                         Syntax::Bin(bin) => {
                             if TOKEN._dot == bin.get_token() {
-                                match bin.get_node_index(0).ok_or(
-                                    result::Error::InterpreterError(
-                                        "No member specified.".to_string(),
-                                    ),
-                                )? {
-                                    Syntax::Var(var) => match &serched_var_inner {
-                                        Syntax::Struct(structs) => {
-                                            for i in 0..structs.get_member_len() {
-                                                let member = structs.get_member_index(i).ok_or(
-                                                    result::Error::InterpreterError(
-                                                        "No member specified.".to_string(),
-                                                    ),
-                                                )?;
-
-                                                if member.get_name() == var.get_name() {
-                                                    let n = member.get_node_index(0).ok_or(
-                                                        result::Error::InterpreterError(
-                                                            "No member specified.".to_string(),
-                                                        ),
-                                                    )?;
-
-                                                    self.formula_push(
-                                                        formula,
-                                                        n,
-                                                        FormulaBeforeState::None,
-                                                    )?;
-
-                                                    return self.formula_continue(
-                                                        var,
-                                                        formula,
-                                                        FormulaBeforeState::None,
-                                                    );
-                                                }
-                                            }
-                                        }
-                                        _ => {}
-                                    },
-
-                                    _ => {}
-                                }
+                               return self.var_struct(bin, &serched_var_inner, formula);
                             }
                         }
                         _ => {}
                     }
-
-                    return Err(result::Error::InterpreterError(
-                        "It is not a dot operator.".to_string(),
-                    ));
                 }
 
                 self.formula_push(formula, &serched_var_inner, FormulaBeforeState::None)?;
@@ -523,6 +480,58 @@ impl Interpreter {
                 return Err(result::Error::InterpreterError(format!(
                     "no member specified to access"
                 )))
+            }
+        }
+    }
+
+    fn var_struct(
+        &mut self,
+        bin: &ast::BinaryAST,
+        serched_var_inner: &Syntax,
+        formula: &mut Formula,
+    ) -> Result<(), result::Error> {
+        match bin
+            .get_node_index(0)
+            .ok_or(result::Error::InterpreterError(
+                "No member specified.".to_string(),
+            ))? {
+            Syntax::Var(var) => match &serched_var_inner {
+                Syntax::Struct(structs) => {
+                    for i in 0..structs.get_member_len() {
+                        let member =
+                            structs
+                                .get_member_index(i)
+                                .ok_or(result::Error::InterpreterError(
+                                    "No member specified".to_string(),
+                                ))?;
+
+                        if member.get_name() == var.get_name() {
+                            let n =
+                                member
+                                    .get_node_index(0)
+                                    .ok_or(result::Error::InterpreterError(
+                                        "No member specified".to_string(),
+                                    ))?;
+
+                            self.formula_push(formula, n, FormulaBeforeState::None)?;
+                            return self.formula_continue(var, formula, FormulaBeforeState::None);
+                        }
+                    }
+
+                    return Err(result::Error::InterpreterError(
+                        "No member specified".to_string(),
+                    ));
+                }
+                _ => {
+                    return Err(result::Error::InterpreterError(
+                        "It's not a structure".to_string(),
+                    ));
+                }
+            },
+            _ => {
+                return Err(result::Error::InterpreterError(
+                    "No member specified".to_string(),
+                ));
             }
         }
     }
