@@ -1,5 +1,6 @@
 use super::super::super::interpreter::Interpreter;
 use crate::error::result;
+use crate::interpreters::judge::call::print;
 use crate::lexer::token;
 use crate::parser::ast::ast;
 use crate::parser::ast::ast::{Node, Syntax, VariableAST};
@@ -26,6 +27,9 @@ impl Interpreter {
             .ok_or(result::Error::InterpreterError(
                 "Cannot assign to variable".to_string(),
             ))?;
+
+        println!("var {:?}", &var_node);
+
         match var_node {
             Syntax::Var(_) => {
                 //変数の検索
@@ -53,7 +57,6 @@ impl Interpreter {
                 let mut var =
                     VariableAST::new(vars.get_name(), vars.get_is_mutable(), vars.get_is_def());
                 var.push_node(Syntax::Struct(structs.clone()));
-                println!(" {:?}", var);
                 return self.push_var(&var);
             }
 
