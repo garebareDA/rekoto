@@ -166,8 +166,7 @@ impl Interpreter {
   }
 
   pub fn push_var(&mut self, node: &ast::ast::VariableAST) -> Result<(), result::Error> {
-    let a = self.var.push_node(node);
-    return a;
+    self.var.push_node(node)
   }
 
   pub fn serch_var(&self, name: &str) -> (Option<Syntax>, Result<Option<Types>, result::Error>) {

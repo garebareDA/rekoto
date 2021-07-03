@@ -314,7 +314,7 @@ impl Interpreter {
 
             Syntax::Var(vars) => {
                 let (serched_var, types) = self.serch_var(vars.get_name());
-                let serched_var_inner = serched_var.ok_or(result::Error::InterpreterError(
+                let serched_var_inner = &serched_var.ok_or(result::Error::InterpreterError(
                     format!("{} is not init", vars.get_name()),
                 ))?;
 
