@@ -1,6 +1,6 @@
 import "./test.rk";
 
-struct st {
+struct test {
   a: number,
   b: number,
 }
@@ -10,7 +10,7 @@ fn main() {
   a++;
   print(a);
 
-  let b = st {
+  let a = test {
     a:1,
     b:1,
   }
