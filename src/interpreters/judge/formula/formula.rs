@@ -359,6 +359,11 @@ impl Interpreter {
         return self.formula_continue(call, formula, FormulaBeforeState::None);
       }
 
+      Syntax::Struct(structs) => {
+        println!("st {:?}", structs);
+        return  Err(result::Error::InterpreterError("The structure cannot be incorporated into an expression".to_string()));
+      }
+
       _ => Err(result::Error::InterpreterError(
         "variable error cannot be assigned".to_string(),
       )),
