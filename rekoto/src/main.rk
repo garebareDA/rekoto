@@ -10,6 +10,9 @@ fn main() {
   a++;
   print(a);
 
+  let str = "Hello";
+  print(str + "World");
+
   let b = st {
     a:1,
     b:1,
