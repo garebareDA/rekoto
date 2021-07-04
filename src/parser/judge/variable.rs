@@ -270,9 +270,6 @@ impl Parsers {
       return Ok(Some(ast::Types::Bool));
     }
 
-    return Err(result::Error::SyntaxError(format!(
-      "nofound types {}",
-      types
-    )));
+    return Ok(Some(ast::Types::Struct));
   }
 }
