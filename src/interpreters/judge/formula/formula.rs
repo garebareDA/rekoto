@@ -186,6 +186,8 @@ impl Formula {
             ));
         }
 
+        println!("{:?}", self.stack);
+
         if self.stack.len() == 1 {
             return Ok(self
                 .stack
