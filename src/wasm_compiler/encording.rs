@@ -1,17 +1,17 @@
 use byteorder::{ByteOrder, LittleEndian};
 
-pub(crate) fn ieee754(n: u32) -> [u8; 4] {
+pub fn ieee_754(n: u32) -> Vec<u8> {
     let mut buf: [u8; 4] = [0; 4];
     LittleEndian::write_u32(&mut buf, n);
-    return buf;
+    return buf.to_vec();
 }
 
-pub(crate) fn encode_string(str: &str) -> Vec<u16> {
+pub fn encode_string(str: &str) -> Vec<u16> {
     let v: Vec<u16> = str.encode_utf16().collect();
     return v;
 }
 
-pub(crate) fn signedLEB128(mut n: u8) -> Vec<u8> {
+pub fn signed_leb_128(mut n: u8) -> Vec<u8> {
     let mut buf: Vec<u8> = Vec::new();
     let mut more = true;
     loop {
@@ -32,7 +32,7 @@ pub(crate) fn signedLEB128(mut n: u8) -> Vec<u8> {
     return buf;
 }
 
-pub(crate) fn unsignedLEB128(mut n: u8) -> Vec<u8> {
+pub fn unsigned_leb_128(mut n: u8) -> Vec<u8> {
     let mut buf: Vec<u8> = Vec::new();
     loop {
         let mut byte = n & 0x7f;

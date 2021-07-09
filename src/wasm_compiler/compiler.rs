@@ -9,7 +9,7 @@ pub struct Compiler {
 }
 
 impl Compiler {
-    pub fn new(path: impl Into<String>, name: impl Into<String>) -> Self {
+    pub fn new() -> Self {
         Self {
             var: variables::Variables::new(),
             fun: functions::Functions::new(),
