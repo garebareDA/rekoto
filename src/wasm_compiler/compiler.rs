@@ -4,8 +4,6 @@ use crate::parser::ast;
 use crate::parser::ast::ast::Node;
 
 pub struct Compiler {
-    path: String,
-    name: String,
     var: variables::Variables,
     fun: functions::Functions,
 }
@@ -13,8 +11,6 @@ pub struct Compiler {
 impl Compiler {
     pub fn new(path: impl Into<String>, name: impl Into<String>) -> Self {
         Self {
-            path: path.into(),
-            name: name.into(),
             var: variables::Variables::new(),
             fun: functions::Functions::new(),
         }
@@ -26,7 +22,7 @@ impl Compiler {
             .serch_fun("main")
             .ok_or(result::Error::CompileError("not found main fucntion".into()))?;
         for ast in main.get_node().iter() {
-            
+            self.judge(ast)?;
         }
         return Ok(());
     }
