@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 lelex = { git = "https://github.com/garebareDA/lelex" }
+byteorder = "1"

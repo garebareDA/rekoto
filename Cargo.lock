@@ -10,6 +10,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "byteorder"
+version = "1.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
+
+[[package]]
 name = "lelex"
 version = "0.1.0"
 source = "git+https://github.com/garebareDA/lelex#584b75c835a6cb81a04d0893856e3d31ec89bd31"
@@ -51,6 +57,7 @@ checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
 name = "rekoto"
 version = "0.1.0"
 dependencies = [
+ "byteorder",
  "lelex",
 ]
 
