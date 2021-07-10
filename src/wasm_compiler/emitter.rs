@@ -54,7 +54,7 @@ pub fn emiter() -> Vec<u8> {
     let mut function_section = create_section(Section::Func, encode_vector(vec![0x00], false));
 
     let mut e: Vec<u8> = Vec::new();
-    e.append(&mut "run".as_bytes().to_vec());
+    e.append(&mut encording::encode_string("run"));
     e.push(ExportType::Func as u8);
     e.push(0x00);
     let mut export_section = create_section(Section::Export, encode_vector(e, false));
@@ -70,7 +70,7 @@ pub fn emiter() -> Vec<u8> {
     f.push(EMPTY_ARRAY);
     f.append(&mut code);
     f.push(Opcodes::End as u8);
-    let function_body = encode_vector(f, false);
+    let function_body = encode_vector(f, true);
     let mut code_section = create_section(Section::Code, encode_vector(function_body, false));
 
     let mut format: Vec<u8> = Vec::new();

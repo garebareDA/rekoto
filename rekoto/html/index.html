@@ -13,10 +13,9 @@
         const importObject = { imports: { imported_func: arg => console.log(arg) } }
         fetch("main.wasm").then(res => res.arrayBuffer()).then(
             byte => WebAssembly.instantiate(byte, importObject)
-        ).then(ressults => {
-            results.instance.exports.exported_func();
+        ).then(result => {
+            console.log(result.instance.exports.run(5,6));
         });
     </script>
 </body>
-
 </html>

@@ -6,6 +6,13 @@ pub fn ieee_754(n: u32) -> Vec<u8> {
     return buf.to_vec();
 }
 
+pub fn encode_string(strs: &str) -> Vec<u8> {
+    let mut vec:Vec<u8> = Vec::new();
+    vec.push(strs.len() as u8);
+    vec.append(&mut strs.as_bytes().to_vec());
+    return vec;
+}
+
 pub fn signed_leb_128(mut n: u8) -> Vec<u8> {
     let mut buf: Vec<u8> = Vec::new();
     let mut more = true;
