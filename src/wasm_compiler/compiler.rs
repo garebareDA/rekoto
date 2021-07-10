@@ -3,7 +3,7 @@ use crate::interpreters::{functions, variables, variables::Scope};
 use crate::parser::ast;
 use crate::parser::ast::ast::Node;
 use super::emitter;
-
+use std::fmt::Binary;
 pub struct Compiler {
     var: variables::Variables,
     fun: functions::Functions,
@@ -19,7 +19,9 @@ impl Compiler {
 
     pub fn compile(&mut self) -> Result<Vec<u8>, result::Error> {
         let emitter = emitter::emiter();
-        println!("{:?}", &emitter);
+        for e in emitter {
+            println!("{:018b}", &e);
+        }
         return Ok(emitter);
     }
 
