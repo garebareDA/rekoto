@@ -19,8 +19,8 @@ impl Compiler {
 
     pub fn compile(&mut self) -> Result<Vec<u8>, result::Error> {
         let emitter = emitter::emiter();
-        for e in emitter {
-            println!("{:018b}", &e);
+        for e in emitter.iter() {
+            print!(" {:02x}", &e);
         }
         return Ok(emitter);
     }

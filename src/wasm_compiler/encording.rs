@@ -41,5 +41,6 @@ pub fn unsigned_leb_128(mut n: u8) -> Vec<u8> {
             break;
         }
     }
+
     return buf;
 }
